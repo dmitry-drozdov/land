@@ -1,0 +1,103 @@
+DIRECTIVE	: '#' ~[\n\r]*
+
+COMMENT		: COMMENT_L|COMMENT_ML
+COMMENT_L	: '//' ~[\n\r]*
+COMMENT_ML	: '/*' .*? '*/'
+
+STRING		: STRING_STD|STRING_VERB|STRING_INT
+STRING_STD	: '"' ('\\"'|'\\\\'|.)*? '"'
+STRING_VERB	: '@'('"' (~["]|'""')* '"')+
+STRING_INT	: '$"' ('\\"'|'\\\\'|'{{'|STRING_INT_CODE|.)*? '"' | '$@' ('"' ('""'|'{{'|STRING_INT_CODE|.)*? '"')+
+STRING_INT_CODE : '{' (STRING|CHAR|.)*? '}'
+
+CHAR		: '\'' ('\\\''|'\\\\'|.)*? '\''
+MODIFIER	: 'ref'|'fixed'|'public'|'private'|'protected'|'internal'|'static'|'virtual'|'const'|'override'|'new'|'sealed'|'unsafe'|'readonly'|'abstract'|'volatile'|'async'|'partial'
+CLASS_STRUCT_INTERFACE : 'class'|'struct'|'record'|'interface'
+ID			: '@'?[_a-zA-Z\u0430-\u044F\u0410-\u042F][_0-9a-zA-Z\u0430-\u044F\u0410-\u042F]*
+
+GENERAL_ATTRIBUTE_START	:	'[' [ \t\r\f\n]*? ('assembly'|'module')
+ 
+CURVE_BRACKETED : %left '{' %right '}'
+ROUND_BRACKETED : %left '(' %right ')'
+SQUARE_BRACKETED : %left ('['|GENERAL_ATTRIBUTE_START) %right ']'
+
+
+
+ 
+package_content	=	entity*
+package			=	'package' package_name  import  package_content
+
+import = 'import' import_name | import_list
+import_list = 'import' '(' Any ')'
+
+entity	=	enum | class_struct_interface | field | water_entity | struct | interface | var | func
+
+struct = 'type' t_name 'struct' '{' Any '}'
+interface = 'type' t_name 'interface' '{' Any '}'
+
+anon_struct = 'struct' '{' Any '}'
+anon_interface = 'interface' '{' Any '}'
+
+func = 'func' f_reciever* f_name f_args f_return '{' Any '}'
+
+f_reciever = '(' param '*' f_type ')' | '(' param f_type ')'
+f_args = '(' Any ')'
+f_return = Any | anon_struct | anon_interface
+
+var = 'var' param go_type? '=' AnyExcept('var', 'const', 'func', 'type')
+	| 'var' '(' Any ')'
+
+enum			=	common_beginning 'enum' name Any '{' Any '}' ';'?
+class_struct_interface	=	common_beginning CLASS_STRUCT_INTERFACE name Any '{' entity* '}' ';'?
+field			=	common_beginning type name ('[' Any ']')? init_value? (',' name ('[' Any ']')? init_value?)* ';'
+
+
+water_entity	=	Any
+
+common_beginning	=	entity_attribute* modifier* 
+modifier			=	MODIFIER | 'extern'
+init_expression		=	'=>' Any
+init_value			=	'=' init_part+
+init_part			=	Any | type
+
+name_atom	=	ID type_parameters?
+name		=	name_atom (('.'|'::') name_atom)*
+names_list	=	name (',' name)*
+package_name =	ID
+import_name	 =	ID
+param 		 =	ID
+f_type		 =	ID
+f_name		 =	ID
+t_name		 =	ID
+
+tuple			=	'(' type name? (',' type name?)* ')'
+type_atom		=	('unsigned'? ID | tuple) type_parameters? '?'? '*'*
+type			=	type_atom ((('.'|'::') type_atom) | ('[' Any ']'))*!
+type_parameters	=	'<' (AnyAvoid(';') | type_parameters)* '>'
+
+go_type			= ID | '[]' ID
+
+entity_attribute	=	'[' Any ']'
+general_attribute	=	GENERAL_ATTRIBUTE_START Any ']'
+arguments			=	'(' Any ')'
+
+
+%%
+
+%parsing {
+	recovery entity init_part
+	fragment STRING_INT_CODE
+	start package
+	skip COMMENT STRING DIRECTIVE
+}
+
+%nodes {
+	ghost names_list common_beginning entity
+	leaf name type modifier arguments entity_attribute
+}
+
+%customblock {
+	start("//+")
+	end("//-")
+	basetoken COMMENT
+}
