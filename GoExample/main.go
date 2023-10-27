@@ -69,6 +69,8 @@ var tests []testCase = []testCase{
 	{20, "жарко"},
 }
 
+var c = struct{ F struct{} }{}
+
 var a = 1
 
 var f = func() {}
@@ -81,6 +83,58 @@ var m2 = &MockWeatherService{}
 
 var m3 = math.Round(10)
 
+func F(i int) bool { return false }
+
+var m8 = func(i int) bool {
+	var f1 = func(i int) bool { return false }
+	_ = f1
+	return false
+}
+
+func G(i int) {
+	m9()
+	m10()
+}
+
+var m9 = func() {
+	var f1 = func() {}
+	func() { f1() }()
+}
+
+var m10 = func() bool {
+	var f1 = func() {}
+	func() { f1() }()
+	return m8(0)
+}
+
+var m11 = func() func() bool {
+	var f1 = func() {}
+	func() { f1() }()
+	return nil
+}
+
+var m12 = func() bool {
+	var f1 = func() {}
+	func() { f1() }()
+	var f2 = func(i int) bool { return false }
+	m11()
+	return f2(0)
+}
+
+var m13 = func() func() struct{} {
+	var f1 = func() {}
+	func() {
+		f1()
+		m12()
+	}()
+	return nil
+}
+
+var m14 = func() func() func(i int) func(int) {
+	f2()
+	return nil
+}
+
 var (
 	m4 = 0
 	m5 = math.Round(11)
@@ -88,6 +142,7 @@ var (
 	m7 = func(x int) {
 		x++
 	}
+	f2 = func() func() func(i int) func(int) { return nil }
 )
 
 func SuppressWarnings() interface{} {
@@ -95,8 +150,11 @@ func SuppressWarnings() interface{} {
 	_ = m1
 	_ = m2
 	_ = m6
+	_ = m8
 	m7(a + int(m3) + int(m4) + int(m5))
 	f()
+	m13()
+	m14()
 	return struct{}{}
 }
 
@@ -109,6 +167,8 @@ func ReturnStruct() struct{} {
 }
 
 func ReturnStruct2() struct{ test bool } {
+	var f1 = func(i int) bool { return false }
+	_ = f1
 	return struct{ test bool }{false}
 }
 

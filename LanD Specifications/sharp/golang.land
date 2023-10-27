@@ -44,7 +44,11 @@ f_reciever = '(' param '*' f_type ')' | '(' param f_type ')'
 f_args = '(' Any ')'
 f_return = Any | anon_struct | anon_interface
 
-var = 'var' param go_type? '=' AnyExcept('var', 'const', 'func', 'type')
+// вложенные функции как лямбды должны относиться к одному целому
+
+// func отдельная {} / отдельная без func
+// struct{}
+var = 'var' param go_type? '=' 'func'? AnyExcept('var', 'const', 'func', 'type')
 	| 'var' '(' Any ')'
 
 enum			=	common_beginning 'enum' name Any '{' Any '}' ';'?
