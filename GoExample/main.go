@@ -8,9 +8,34 @@ import (
 	"time"
 )
 
+func ReturnPointer() *****int {
+	return nil
+}
+
+func ReturnSlict() [][][]int {
+	return [][][]int{}
+}
+
 type IWeatherService interface {
 	Forecast() int
 }
+
+type Pointer *struct{}
+
+func PointerF() Pointer {
+	return nil
+}
+
+type DoublePointer **struct {
+	Some *int
+}
+
+func DoublePointerF() {
+	panic(0)
+}
+
+type Slice []func()
+type ArraySlice *[10][]func() interface{}
 
 type WeatherService struct{}
 
@@ -162,14 +187,18 @@ func ReturnInterface() interface{ Action(int) struct{} } {
 	return nil
 }
 
+func ReturnInterface2() **[]*[10][]interface{ Action(int) struct{} } {
+	return nil
+}
+
 func ReturnStruct() struct{} {
 	return struct{}{}
 }
 
-func ReturnStruct2() struct{ test bool } {
+func ReturnStruct2() []struct{ test bool } {
 	var f1 = func(i int) bool { return false }
 	_ = f1
-	return struct{ test bool }{false}
+	return []struct{ test bool }{{false}}
 }
 
 func TestForecast(t *testing.T) {
