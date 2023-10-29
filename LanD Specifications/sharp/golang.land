@@ -36,7 +36,7 @@ entity	= water_entity | alias | struct | interface | var | func
 
 struct = 'type' t_name 'struct' '{' Any '}'
 interface = 'type' t_name 'interface' '{' Any '}'
-alias = 'type' t_name Any (anon)?
+alias = 'type' t_name go_type
 
 anon_struct = 'struct' '{' Any '}'
 anon_interface = 'interface' '{' Any '}'
@@ -46,11 +46,13 @@ anon_func = 'func' f_args f_return '{' Any '}'
 anon_func_title = 'func' f_args f_return
 
 map = 'map' '[' go_type ']' go_type
-chan = 'chan' go_type
+chan = 	'chan' go_type
+		| 'chan<-' go_type
+		| '<-chan' go_type
 
 f_reciever = '(' param '*'? f_type ')' 
 f_args = '(' Any ')'
-f_return =  Any anon?
+f_return = Any | go_type
 
 anon = anon_func_title | anon_struct | anon_interface
 
@@ -62,7 +64,6 @@ var = 'var' param go_type
 
 water_entity	=	Any
 
-
 package_name =	ID
 import_name	 =	ID
 param 		 =	ID
@@ -70,13 +71,9 @@ f_type		 =	ID
 f_name		 =	ID
 t_name		 =	ID
 
-go_type			= ID | array (ID | anon | map | chan)
+go_type			= ID | arr_ptr (ID | anon | map | chan)
 
-array			= ('*'* '[' INT? ']' '*'*)*
-
-entity_attribute	=	'[' Any ']'
-general_attribute	=	GENERAL_ATTRIBUTE_START Any ']'
-arguments			=	'(' Any ')'
+arr_ptr			= '*'* ('[' INT? ']' '*'*)*
 
 
 %%
@@ -90,7 +87,7 @@ arguments			=	'(' Any ')'
 
 %nodes {
 	ghost entity
-	leaf arguments entity_attribute
+	leaf 
 }
 
 %customblock {

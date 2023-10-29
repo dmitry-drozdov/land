@@ -185,7 +185,8 @@ var (
 	m7 = func(x int) {
 		x++
 	}
-	f2 = func() func() func(i int) func(int) { return nil }
+	f2  = func() func() func(i int) func(int) { return nil }
+	ch4 = make(chan<- <-chan struct{ f interface{} })
 )
 
 func SuppressWarnings() interface{} {
@@ -244,15 +245,17 @@ var ch3 chan map[struct{}]chan float64
 
 var mp map[chan struct{}]int
 
-var ch2 chan func() chan int
+var ch2 chan<- func() <-chan int
 
 func Chan(<-chan int) chan<- map[chan<- int]struct{} {
 	close(ch)
+	delete(mp, make(chan struct{}))
 	return nil
 }
 
 func Chan2(chan map[chan int]chan string) chan map[chan interface{}]func() {
-	close(ch)
+	close(ch2)
+	close(ch3)
 	return nil
 }
 
