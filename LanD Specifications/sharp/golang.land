@@ -48,10 +48,7 @@ f_reciever = '(' param '*'? f_type ')'
 f_args = '(' Any ')'
 f_return =  Any | array anon_struct | array anon_interface
 
-// вложенные функции как лямбды должны относиться к одному целому
 
-// func отдельная {} / отдельная без func
-// struct{}
 var = 
 	  'var' param go_type? '=' AnyExcept('var', 'const', 'func', 'type')
 	| 'var' param go_type? '=' 'func' f_args f_return '{' Any '}'

@@ -201,6 +201,18 @@ func ReturnStruct2() []struct{ test bool } {
 	return []struct{ test bool }{{false}}
 }
 
+func ReturnStruct3() struct{ test bool } {
+	return struct{ test bool }{false}
+}
+
+func ReturnSeveral(n int, s struct{ p bool }, i interface{}) (struct{}, interface{}) {
+	return struct{}{}, nil
+}
+
+func ReturnSeveral3(n int, s struct{ p bool }, i interface{ Action() struct{} }) (*[]int, [][10]*bool, func(int, bool) []int) {
+	return &[]int{}, nil, nil
+}
+
 func TestForecast(t *testing.T) {
 	service := &MockWeatherService{}
 	weather := Weather{service}
