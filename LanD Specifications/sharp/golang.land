@@ -71,7 +71,7 @@ f_type		 =	ID
 f_name		 =	ID
 t_name		 =	ID
 
-go_type			= ID | arr_ptr (ID | anon | map | chan)
+go_type			= ID | arr_ptr* (ID | anon | map | chan)
 
 arr_ptr			= '*'* ('[' INT? ']' '*'*)*
 
