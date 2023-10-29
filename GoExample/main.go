@@ -164,7 +164,7 @@ var m12 = func() bool {
 	return f2(0)
 }
 
-var m13 = func() func() struct{} {
+var m13 func() func() struct{} = func() func() struct{} {
 	var f1 = func() {}
 	func() {
 		f1()
@@ -173,7 +173,7 @@ var m13 = func() func() struct{} {
 	return nil
 }
 
-var m14 = func() func() func(i int) func(int) {
+var m14 func() func() func(i int) func(int) = func() func() func(i int) func(int) {
 	f2()
 	return nil
 }
