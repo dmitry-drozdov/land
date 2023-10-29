@@ -36,17 +36,18 @@ entity	= water_entity | alias | struct | interface | var | func
 
 struct = 'type' t_name 'struct' '{' Any '}'
 interface = 'type' t_name 'interface' '{' Any '}'
-alias = 'type' t_name AnyInclude(anon_func)
+alias = 'type' t_name Any (anon_func_title | anon_struct | anon_interface)?
 
 anon_struct = 'struct' '{' Any '}'
 anon_interface = 'interface' '{' Any '}'
 
 func = 'func' f_reciever* f_name f_args f_return '{' Any '}'
 anon_func = 'func' f_args f_return '{' Any '}'
+anon_func_title = 'func' f_args f_return
 
 f_reciever = '(' param '*'? f_type ')' 
 f_args = '(' Any ')'
-f_return =  Any | array anon_struct | array anon_interface
+f_return =  Any (anon_struct | anon_interface | anon_func_title)?
 
 
 var = 
@@ -82,7 +83,7 @@ type_atom		=	('unsigned'? ID | tuple) type_parameters? '?'? '*'*
 type			=	type_atom ((('.'|'::') type_atom) | ('[' Any ']'))*!
 type_parameters	=	'<' (AnyAvoid(';') | type_parameters)* '>'
 
-go_type			= ID | '[]' ID
+go_type			= ID | array ID
 
 array			= ('*'* '[' INT? ']' '*'*)*
 

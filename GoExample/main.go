@@ -26,9 +26,9 @@ func PointerF() Pointer {
 	return nil
 }
 
-type DoublePointer **struct {
+type DoublePointer func(**struct {
 	Some *int
-}
+}) func() struct{}
 
 func DoublePointerF() {
 	panic(0)
