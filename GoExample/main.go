@@ -8,8 +8,20 @@ import (
 	"time"
 )
 
-func ReturnPointer() *****int {
+type FMp func(map[struct{}]func() int) map[interface{}]func(int) struct{ f func(bool) }
+
+type MpSimple map[struct{ f bool }]bool
+
+func ReturnMap() *map[int][]*string {
 	return nil
+}
+
+type Mp map[struct{}]func() int
+
+var i int
+
+func ReturnPointer() *****int {
+	panic(i)
 }
 
 func ReturnSlict() [][][]int {
@@ -35,6 +47,11 @@ func DoublePointerF() {
 }
 
 type Slice []func()
+
+var some int
+
+var other func(struct{}) map[struct{}]func() (interface{}, error)
+
 type ArraySlice *[10][]func() interface{}
 
 type WeatherService struct{}
@@ -180,6 +197,9 @@ func SuppressWarnings() interface{} {
 	f()
 	m13()
 	m14()
+	_ = some
+	_ = other
+	_ = c
 	return struct{}{}
 }
 
@@ -211,6 +231,10 @@ func ReturnSeveral(n int, s struct{ p bool }, i interface{}) (struct{}, interfac
 
 func ReturnSeveral3(n int, s struct{ p bool }, i interface{ Action() struct{} }) (*[]int, [][10]*bool, func(int, bool) []int) {
 	return &[]int{}, nil, nil
+}
+
+func WithMap(map[string]func()) (map[string]struct{}, error) {
+	return nil, nil
 }
 
 func TestForecast(t *testing.T) {

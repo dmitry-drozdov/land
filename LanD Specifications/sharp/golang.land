@@ -36,7 +36,7 @@ entity	= water_entity | alias | struct | interface | var | func
 
 struct = 'type' t_name 'struct' '{' Any '}'
 interface = 'type' t_name 'interface' '{' Any '}'
-alias = 'type' t_name Any (anon_func_title | anon_struct | anon_interface)?
+alias = 'type' t_name Any (anon)?
 
 anon_struct = 'struct' '{' Any '}'
 anon_interface = 'interface' '{' Any '}'
@@ -45,13 +45,16 @@ func = 'func' f_reciever* f_name f_args f_return '{' Any '}'
 anon_func = 'func' f_args f_return '{' Any '}'
 anon_func_title = 'func' f_args f_return
 
+map = 'map' '[' Any ']' Any
+
 f_reciever = '(' param '*'? f_type ')' 
 f_args = '(' Any ')'
-f_return =  Any (anon_struct | anon_interface | anon_func_title)?
+f_return =  Any anon?
 
+anon = anon_func_title | anon_struct | anon_interface
 
-var = 
-	  'var' param go_type? '=' AnyExcept('var', 'const', 'func', 'type')
+var = 'var' param go_type
+	| 'var' param go_type? '=' AnyExcept('var', 'const', 'func', 'type')
 	| 'var' param go_type? '=' 'func' f_args f_return '{' Any '}'
 	| 'var' '(' Any ')'
 
@@ -83,7 +86,7 @@ type_atom		=	('unsigned'? ID | tuple) type_parameters? '?'? '*'*
 type			=	type_atom ((('.'|'::') type_atom) | ('[' Any ']'))*!
 type_parameters	=	'<' (AnyAvoid(';') | type_parameters)* '>'
 
-go_type			= ID | array ID
+go_type			= ID | array ID | anon | map
 
 array			= ('*'* '[' INT? ']' '*'*)*
 
