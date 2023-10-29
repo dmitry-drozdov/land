@@ -18,6 +18,7 @@ using Land.Core.Specification;
 using Land.Core.Parsing;
 using Land.Core.Parsing.Preprocessing;
 using Land.Core.Parsing.Tree;
+using System.ComponentModel;
 
 namespace Land.GUI
 {
@@ -235,7 +236,10 @@ namespace Land.GUI
 			);
 
 			Grammar_LogList.Text = String.Join(Environment.NewLine, messages.Where(m => m.Type == MessageType.Trace).Select(m => m.Text));
-			Grammar_ErrorsList.ItemsSource = messages.Where(m => m.Type == MessageType.Error || m.Type == MessageType.Warning);
+			Grammar_ErrorsList.ItemsSource = messages
+				.Where(m => m.Type == MessageType.Error || m.Type == MessageType.Warning)
+				.Select(m => new LogMessage(m))
+				.ToList();
 
 			if (messages.Any(m=>m.Type == MessageType.Error))
 			{
@@ -492,6 +496,27 @@ namespace Land.GUI
 			}
 		}
 
+		private void Grammar_Grid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+		{
+			var dg = sender as DataGrid;
+
+			if (dg.SelectedIndex != -1)
+			{
+				if (dg.SelectedItem is LogMessage msg
+					&& msg.Location != null)
+				{
+					/// Если координаты не выходят за пределы файла, устанавливаем курсор в соответствии с ними, 
+					/// иначе ставим курсор в позицию после последнего элемента последней строки
+					int start = msg.Location.Line <= Grammar_Editor.Document.LineCount
+						? msg.Location.Offset : Grammar_Editor.Document.TextLength;
+
+					Grammar_Editor.Focus();
+					Grammar_Editor.Select(start, 0);
+					Grammar_Editor.ScrollToLine(msg.Location.Line.Value);
+				}
+			}
+		}
+
 		private void RecentItems_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
 			/// Если что-то новое было выделено
@@ -572,8 +597,14 @@ namespace Land.GUI
                     AstView.ItemsSource = new List<Node>() { root };
                 }
 
-                File_LogList.ItemsSource = Parser.Log;
-				File_ErrorsList.ItemsSource = Parser.Log.Where(l=>l.Type != MessageType.Trace).ToList();
+                File_LogList.ItemsSource = Parser.Log
+					.Select(m=>new LogMessage(m))
+					.ToList();
+
+				File_ErrorsList.ItemsSource = Parser.Log
+					.Where(l=>l.Type != MessageType.Trace)
+					.Select(m => new LogMessage(m))
+					.ToList();
             }
 		}
 
@@ -632,13 +663,13 @@ namespace Land.GUI
 			File_Editor.SyntaxHighlighting = null;
 		}
 
-		private void File_ListBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+		private void File_Grid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
 		{
-			var lb = sender as ListBox;
+			var lb = sender as DataGrid;
 
 			if (lb.SelectedIndex != -1)
 			{
-				var msg = (Land.Core.Message)lb.SelectedItem;
+				var msg = (LogMessage)lb.SelectedItem;
 				if (msg.Location != null 
 					&& msg.Location.Line > 0 
 					&& msg.Location.Line <= File_Editor.Document.LineCount)
