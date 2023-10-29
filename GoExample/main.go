@@ -240,6 +240,8 @@ func WithMap(map[string]func()) (map[string]struct{}, error) {
 
 var ch chan struct{}
 
+var ch3 chan map[struct{}]chan float64
+
 var mp map[chan struct{}]int
 
 var ch2 chan func() chan int

@@ -45,7 +45,8 @@ func = 'func' f_reciever* f_name f_args f_return '{' Any '}'
 anon_func = 'func' f_args f_return '{' Any '}'
 anon_func_title = 'func' f_args f_return
 
-map = 'map' '[' Any ']' Any
+map = 'map' '[' go_type ']' go_type
+chan = 'chan' go_type
 
 f_reciever = '(' param '*'? f_type ')' 
 f_args = '(' Any ')'
@@ -58,22 +59,10 @@ var = 'var' param go_type
 	| 'var' param go_type? '=' 'func' f_args f_return '{' Any '}'
 	| 'var' '(' Any ')'
 
-enum			=	common_beginning 'enum' name Any '{' Any '}' ';'?
-class_struct_interface	=	common_beginning CLASS_STRUCT_INTERFACE name Any '{' entity* '}' ';'?
-field			=	common_beginning type name ('[' Any ']')? init_value? (',' name ('[' Any ']')? init_value?)* ';'
-
 
 water_entity	=	Any
 
-common_beginning	=	entity_attribute* modifier* 
-modifier			=	MODIFIER | 'extern'
-init_expression		=	'=>' Any
-init_value			=	'=' init_part+
-init_part			=	Any | type
 
-name_atom	=	ID type_parameters?
-name		=	name_atom (('.'|'::') name_atom)*
-names_list	=	name (',' name)*
 package_name =	ID
 import_name	 =	ID
 param 		 =	ID
@@ -81,12 +70,7 @@ f_type		 =	ID
 f_name		 =	ID
 t_name		 =	ID
 
-tuple			=	'(' type name? (',' type name?)* ')'
-type_atom		=	('unsigned'? ID | tuple) type_parameters? '?'? '*'*
-type			=	type_atom ((('.'|'::') type_atom) | ('[' Any ']'))*!
-type_parameters	=	'<' (AnyAvoid(';') | type_parameters)* '>'
-
-go_type			= ID | array ID | anon | map
+go_type			= ID | array (ID | anon | map | chan)
 
 array			= ('*'* '[' INT? ']' '*'*)*
 
@@ -98,15 +82,15 @@ arguments			=	'(' Any ')'
 %%
 
 %parsing {
-	recovery entity init_part
+	recovery entity 
 	fragment STRING_INT_CODE
 	start package
 	skip COMMENT STRING DIRECTIVE
 }
 
 %nodes {
-	ghost names_list common_beginning entity
-	leaf name type modifier arguments entity_attribute
+	ghost entity
+	leaf arguments entity_attribute
 }
 
 %customblock {
