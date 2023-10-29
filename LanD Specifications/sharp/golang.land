@@ -4,6 +4,8 @@ COMMENT		: COMMENT_L|COMMENT_ML
 COMMENT_L	: '//' ~[\n\r]*
 COMMENT_ML	: '/*' .*? '*/'
 
+INT			: [0-9]+
+
 STRING		: STRING_STD|STRING_VERB|STRING_INT
 STRING_STD	: '"' ('\\"'|'\\\\'|.)*? '"'
 STRING_VERB	: '@'('"' (~["]|'""')* '"')+
@@ -30,25 +32,29 @@ package			=	'package' package_name  import  package_content
 import = 'import' import_name | import_list
 import_list = 'import' '(' Any ')'
 
-entity	=	enum | class_struct_interface | field | water_entity | struct | interface | var | func
+entity	= water_entity | alias | struct | interface | var | func
 
 struct = 'type' t_name 'struct' '{' Any '}'
 interface = 'type' t_name 'interface' '{' Any '}'
+alias = 'type' t_name AnyInclude(anon_func)
 
 anon_struct = 'struct' '{' Any '}'
 anon_interface = 'interface' '{' Any '}'
 
 func = 'func' f_reciever* f_name f_args f_return '{' Any '}'
+anon_func = 'func' f_args f_return '{' Any '}'
 
-f_reciever = '(' param '*' f_type ')' | '(' param f_type ')'
+f_reciever = '(' param '*'? f_type ')' 
 f_args = '(' Any ')'
-f_return = Any | anon_struct | anon_interface
+f_return =  Any | array anon_struct | array anon_interface
 
 // вложенные функции как лямбды должны относиться к одному целому
 
 // func отдельная {} / отдельная без func
 // struct{}
-var = 'var' param go_type? '=' 'func'? AnyExcept('var', 'const', 'func', 'type')
+var = 
+	  'var' param go_type? '=' AnyExcept('var', 'const', 'func', 'type')
+	| 'var' param go_type? '=' 'func' f_args f_return '{' Any '}'
 	| 'var' '(' Any ')'
 
 enum			=	common_beginning 'enum' name Any '{' Any '}' ';'?
@@ -80,6 +86,8 @@ type			=	type_atom ((('.'|'::') type_atom) | ('[' Any ']'))*!
 type_parameters	=	'<' (AnyAvoid(';') | type_parameters)* '>'
 
 go_type			= ID | '[]' ID
+
+array			= ('*'* '[' INT? ']' '*'*)*
 
 entity_attribute	=	'[' Any ']'
 general_attribute	=	GENERAL_ATTRIBUTE_START Any ']'
