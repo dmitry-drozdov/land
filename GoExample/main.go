@@ -138,9 +138,10 @@ func G(i int) {
 	m10()
 }
 
-var m9 = func() {
+var m9 = func() chan<- func() {
 	var f1 = func() {}
 	func() { f1() }()
+	return nil
 }
 
 var m10 = func() bool {
@@ -149,7 +150,7 @@ var m10 = func() bool {
 	return m8(0)
 }
 
-var m11 = func() func() bool {
+var m11 = func() func() chan struct{} {
 	var f1 = func() {}
 	func() { f1() }()
 	return nil
@@ -235,6 +236,22 @@ func ReturnSeveral3(n int, s struct{ p bool }, i interface{ Action() struct{} })
 
 func WithMap(map[string]func()) (map[string]struct{}, error) {
 	return nil, nil
+}
+
+var ch chan struct{}
+
+var mp map[chan struct{}]int
+
+var ch2 chan func() chan int
+
+func Chan(<-chan int) chan<- map[chan<- int]struct{} {
+	close(ch)
+	return nil
+}
+
+func Chan2(chan map[chan int]chan string) chan map[chan interface{}]func() {
+	close(ch)
+	return nil
 }
 
 func TestForecast(t *testing.T) {
