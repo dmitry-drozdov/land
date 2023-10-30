@@ -63,11 +63,17 @@ f_return = f_arg
 
 anon = anon_func_title | anon_struct | anon_interface
 
-var = 'var' param go_type
-	| 'var' param go_type? '=' AnyExcept('var', 'const', 'func', 'type')
-	| 'var' param go_type? '=' 'func' f_args f_returns '{' Any '}'
-	| 'var' '(' Any ')'
+var = 'var' sub_var
+	| 'var' '(' sub_var* ')'
 
+sub_var = param go_type
+		| param go_type? '=' '&'? ID
+		| param go_type? '=' '&'? ID '(' Any ')'
+		| param go_type? '=' '&'? go_type '{' Any '}'
+		| param go_type? '=' '&'? (Any | func_var | struct_var)
+
+func_var = 'func' f_args f_returns '{' Any '}'
+struct_var = 'struct' '{' Any '}' '{' Any '}'
 
 water_entity	=	Any
 

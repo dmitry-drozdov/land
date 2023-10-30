@@ -18,7 +18,7 @@ func ReturnMap() *map[int][]*string {
 
 type Mp map[struct{}]func() int
 
-var i int
+var I int
 
 func ReturnPointer(f func(int, bool) struct{}, i interface{}, f2 func(i int, s struct{}) interface{}) (j *****int) {
 	panic(i)
@@ -111,7 +111,7 @@ var tests []testCase = []testCase{
 	{20, "жарко"},
 }
 
-var c = struct{ F struct{} }{}
+var c = &struct{ F struct{} }{}
 
 var a = 1
 
@@ -121,9 +121,9 @@ var m0 = func(i int) bool { return false }
 
 var m1 = new(MockWeatherService)
 
-var m2 = &MockWeatherService{}
+var m2 *MockWeatherService = &MockWeatherService{}
 
-var m3 = math.Round(10)
+var m3 float64 = math.Round(10)
 
 func F(i int) bool { return false }
 
@@ -150,10 +150,18 @@ var m10 = func() bool {
 	return m8(0)
 }
 
+func Some3(struct{}) chan<- struct{ f interface{} } {
+	return nil
+}
+
 var m11 = func() func() chan struct{} {
 	var f1 = func() {}
 	func() { f1() }()
 	return nil
+}
+
+func Some() {
+
 }
 
 var m12 = func() bool {
@@ -162,6 +170,10 @@ var m12 = func() bool {
 	var f2 = func(i int) bool { return false }
 	m11()
 	return f2(0)
+}
+
+func Some2(struct{}) chan<- struct{ f map[string]struct{} } {
+	return nil
 }
 
 var m13 func() func() struct{} = func() func() struct{} {
@@ -179,14 +191,17 @@ var m14 func() func() func(i int) func(int) = func() func() func(i int) func(int
 }
 
 var (
-	m4 = 0
-	m5 = math.Round(11)
-	m6 = struct{}{}
+	m4 [][100]**[][]struct{} = nil
+	m5                       = &[][10][]float64{{{math.Round(math.Sin(float64(len(map[string]struct{}{}))))}}}
+	m6                       = map[struct {
+		f chan<- func() chan<- interface{}
+	}]chan<- float64{}
 	m7 = func(x int) {
 		x++
 	}
 	f2  = func() func() func(i int) func(int) { return nil }
-	ch4 = make(chan<- <-chan struct{ f interface{} })
+	Ch4 = make(chan<- <-chan struct{ f interface{} })
+	S1  = &struct{}{}
 )
 
 func SuppressWarnings() interface{} {
@@ -195,7 +210,7 @@ func SuppressWarnings() interface{} {
 	_ = m2
 	_ = m6
 	_ = m8
-	m7(a + int(m3) + int(m4) + int(m5))
+	m7(a + int(m3) + int(len(m4)) + int(len(*m5)))
 	f()
 	m13()
 	m14()
@@ -204,6 +219,14 @@ func SuppressWarnings() interface{} {
 	_ = c
 	return struct{}{}
 }
+
+var (
+	I1 int
+	I2 struct{ f func() }
+	I3 map[chan<- int]<-chan struct{ f interface{} }
+	I5                           = func(chan<- func()) {}
+	I6 *map[struct{}]interface{} = new(map[struct{}]interface{})
+)
 
 func ReturnInterface() interface{ Action(int) struct{} } {
 	return nil
