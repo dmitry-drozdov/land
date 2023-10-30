@@ -20,12 +20,12 @@ type Mp map[struct{}]func() int
 
 var i int
 
-func ReturnPointer(f func(int, bool) struct{}, i interface{}, f2 func(i int, s struct{}) interface{}) *****int {
+func ReturnPointer(f func(int, bool) struct{}, i interface{}, f2 func(i int, s struct{}) interface{}) (j *****int) {
 	panic(i)
 }
 
-func ReturnSlict(int, bool, struct{}, interface{}) [][][]int {
-	return [][][]int{}
+func ReturnSlict(int, bool, struct{}, interface{}) (k [][][]int, err error) {
+	return [][][]int{}, nil
 }
 
 type IWeatherService interface {
@@ -209,8 +209,8 @@ func ReturnInterface() interface{ Action(int) struct{} } {
 	return nil
 }
 
-func ReturnInterface2() **[]*[10][]interface{ Action(int) struct{} } {
-	return nil
+func ReturnInterface2() (**[]*[10][]interface{ Action(int) struct{} }, error, bool) {
+	return nil, nil, false
 }
 
 func ReturnStruct() struct{} {
@@ -235,7 +235,7 @@ func ReturnSeveral3(n int, s struct{ p bool }, i interface{ Action() struct{} })
 	return &[]int{}, nil, nil
 }
 
-func WithMap(map[string]func()) (map[string]struct{}, error) {
+func WithMap(map[string]func()) (m map[string]struct{}, e error) {
 	return nil, nil
 }
 

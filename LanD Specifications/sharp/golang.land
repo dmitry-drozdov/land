@@ -41,9 +41,9 @@ alias = 'type' t_name go_type
 anon_struct = 'struct' '{' Any '}'
 anon_interface = 'interface' '{' Any '}'
 
-func = 'func' f_reciever* f_name f_args f_return '{' Any '}'
-anon_func = 'func' f_args f_return '{' Any '}'
-anon_func_title = 'func' f_args f_return
+func = 'func' f_reciever* f_name f_args f_returns '{' Any '}'
+anon_func = 'func' f_args f_returns '{' Any '}'
+anon_func_title = 'func' f_args f_returns
 
 map = 'map' '[' go_type ']' go_type
 chan = 	'chan' go_type
@@ -51,16 +51,21 @@ chan = 	'chan' go_type
 		| '<-chan' go_type
 
 f_reciever = '(' param '*'? f_type ')' 
+
 f_args = '(' ')'
 		|'(' (f_arg ',')* f_arg ')'
 f_arg = (ID go_type) | go_type
-f_return = Any | go_type
+
+f_returns = Any 
+		| go_type
+		|'(' (f_return ',')* f_return ')' 
+f_return = f_arg
 
 anon = anon_func_title | anon_struct | anon_interface
 
 var = 'var' param go_type
 	| 'var' param go_type? '=' AnyExcept('var', 'const', 'func', 'type')
-	| 'var' param go_type? '=' 'func' f_args f_return '{' Any '}'
+	| 'var' param go_type? '=' 'func' f_args f_returns '{' Any '}'
 	| 'var' '(' Any ')'
 
 
