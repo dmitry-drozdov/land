@@ -192,8 +192,8 @@ var m14 func() func() func(i int) func(int) = func() func() func(i int) func(int
 
 var (
 	m4 [][100]**[][]struct{} = nil
-	m5                       = &[][10][]float64{{{math.Round(math.Sin(float64(len(map[string]struct{}{}))))}}}
-	m6                       = map[struct {
+	m5                       = &[]*[10]*[]float64{{{math.Round(math.Sin(float64(len(map[string]struct{}{}))))}}}
+	m6                       = map[*struct {
 		f chan<- func() chan<- interface{}
 	}]chan<- float64{}
 	m7 = func(x int) {
