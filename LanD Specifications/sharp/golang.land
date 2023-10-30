@@ -15,7 +15,7 @@ STRING_INT_CODE : '{' (STRING|CHAR|.)*? '}'
 CHAR		: '\'' ('\\\''|'\\\\'|.)*? '\''
 MODIFIER	: 'ref'|'fixed'|'public'|'private'|'protected'|'internal'|'static'|'virtual'|'const'|'override'|'new'|'sealed'|'unsafe'|'readonly'|'abstract'|'volatile'|'async'|'partial'
 CLASS_STRUCT_INTERFACE : 'class'|'struct'|'record'|'interface'
-ID			: '@'?[_a-zA-Z\u0430-\u044F\u0410-\u042F][_0-9a-zA-Z\u0430-\u044F\u0410-\u042F]*
+ID			: '@'?[_a-zA-Z\u0430-\u044F\u0410-\u042F][_0-9a-zA-Z\u0430-\u044F\u0410-\u042F.]*
 
 GENERAL_ATTRIBUTE_START	:	'[' [ \t\r\f\n]*? ('assembly'|'module')
  
@@ -51,7 +51,9 @@ chan = 	'chan' go_type
 		| '<-chan' go_type
 
 f_reciever = '(' param '*'? f_type ')' 
-f_args = '(' Any ')'
+f_args = '(' ')'
+		|'(' (f_arg ',')* f_arg ')'
+f_arg = (ID go_type) | go_type
 f_return = Any | go_type
 
 anon = anon_func_title | anon_struct | anon_interface

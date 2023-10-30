@@ -20,11 +20,11 @@ type Mp map[struct{}]func() int
 
 var i int
 
-func ReturnPointer() *****int {
+func ReturnPointer(f func(int, bool) struct{}, i interface{}, f2 func(i int, s struct{}) interface{}) *****int {
 	panic(i)
 }
 
-func ReturnSlict() [][][]int {
+func ReturnSlict(int, bool, struct{}, interface{}) [][][]int {
 	return [][][]int{}
 }
 
