@@ -8,12 +8,13 @@ import (
 	"time"
 )
 
+// some comment
 type FMp func(map[struct{}]func() int) map[interface{}]func(int) struct{ f func(bool) }
 
 type MpSimple map[struct{ f bool }]bool
 
 func ReturnMap() *map[int][]*string {
-	return nil
+	return nil // some comment
 }
 
 type Mp map[struct{}]func() int
@@ -74,6 +75,8 @@ func (ws *MockWeatherService) Forecast() int {
 	return ws.Val
 }
 
+// some comment
+// other comment
 func (ws *MockWeatherService) SetVal(x int) {
 	ws.Val = x
 }
@@ -82,6 +85,9 @@ type Weather struct {
 	service IWeatherService
 }
 
+/*
+multiline comment /*
+*/
 func (w Weather) Forecast() string {
 	deg := w.service.Forecast()
 	switch {
@@ -121,6 +127,9 @@ var m0 = func(i int) bool { return false }
 
 var m1 = new(MockWeatherService)
 
+/*
+/* // multiline comment /*
+*/
 var m2 *MockWeatherService = &MockWeatherService{}
 
 var m3 float64 = math.Round(10)
@@ -254,16 +263,22 @@ func ReturnSeveral(n int, s struct{ p bool }, i interface{}) (struct{}, interfac
 	return struct{}{}, nil
 }
 
+/* pure comment
+
+ */
 func ReturnSeveral3(n int, s struct{ p bool }, i interface{ Action() struct{} }) (*[]int, [][10]*bool, func(int, bool) []int) {
 	return &[]int{}, nil, nil
 }
 
+// func func chan<-
 func WithMap(map[string]func()) (m map[string]struct{}, e error) {
 	return nil, nil
 }
 
+// chan struct{}
 var ch chan struct{}
 
+// chan map[struct{}]chan float64
 var ch3 chan map[struct{}]chan float64
 
 var mp map[chan struct{}]int
