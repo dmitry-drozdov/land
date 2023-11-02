@@ -75,11 +75,11 @@ var = 'var' sub_var
 	
 sub_var = params go_type
 		| param go_type
-		| param go_type? '=' '&'? operand
-		| param go_type? '=' '&'? operand '(' Any ')'
-		| param go_type? '=' '&'? go_type '{' Any '}'
-		| param go_type? '=' '&'? (Any | func_var | struct_var)
+		| param go_type? '=' '&'? (operand | (operand '(' Any ')') | (go_type '{' Any '}') | (Any | func_var | struct_var))
+		| params go_type? '=' (right_var ',')* right_var
 		
+right_var = operand | (operand '(' Any ')') | (go_type '{' Any '}') | (Any | func_var | struct_var)		
+
 const = 'const' sub_const
 	| 'const' '(' sub_const* ')'
 	
