@@ -26,7 +26,7 @@ ROUND_BRACKETED : %left '(' %right ')'
 SQUARE_BRACKETED : %left ('['|GENERAL_ATTRIBUTE_START) %right ']'
 
 HEX 		: '0x'[0-9a-fA-F]+
-DEC			: [0-9]+
+DEC			: '-'?[0-9]+
 
  
 package_content	=	entity*
@@ -72,7 +72,8 @@ var = 'var' sub_var
 	| 'var' '(' sub_var* ')'
 	
 	
-sub_var = param go_type
+sub_var = params go_type
+		| param go_type
 		| param go_type? '=' '&'? operand
 		| param go_type? '=' '&'? operand '(' Any ')'
 		| param go_type? '=' '&'? go_type '{' Any '}'
@@ -95,6 +96,8 @@ param 		 =	ID
 f_type		 =	ID
 f_name		 =	ID
 t_name		 =	ID
+
+params =  param (',' param)+ 
 
 
 go_type			= ID | arr_ptr* (ID | anon | map | chan)
