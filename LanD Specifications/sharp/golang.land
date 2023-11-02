@@ -5,6 +5,7 @@ COMMENT_L	: '//' ~[\n\r]*
 COMMENT_ML	: '/*' .*? '*/'
 
 INT			: [0-9]+
+QUOTE		: '"'
 
 STRING		: STRING_STD|STRING_VERB|STRING_INT
 STRING_STD	: '"' ('\\"'|'\\\\'|.)*? '"'
@@ -27,9 +28,9 @@ SQUARE_BRACKETED : %left ('['|GENERAL_ATTRIBUTE_START) %right ']'
 
  
 package_content	=	entity*
-package			=	'package' package_name  import  package_content
+package			=	'package' package_name  import*  package_content
 
-import = 'import' import_name | import_list
+import = 'import' AnyInclude(QUOTE) | import_list
 import_list = 'import' '(' Any ')'
 
 entity	= water_entity | alias | struct | interface | var | func
