@@ -39,7 +39,8 @@ entity	= water_entity | alias | struct | interface | var | const | func
 
 struct = 'type' t_name 'struct' '{' Any '}'
 interface = 'type' t_name 'interface' '{' Any '}'
-alias = 'type' t_name go_type
+alias = 'type' t_name '='? go_type
+		|'type' '(' (t_name '='? go_type)* ')'
 
 anon_struct = 'struct' '{' Any '}'
 anon_interface = 'interface' '{' Any '}'
