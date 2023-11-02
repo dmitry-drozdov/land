@@ -80,8 +80,8 @@ sub_var = params go_type
 		
 right_var = operand | (operand '(' Any ')') | (go_type '{' Any '}') | (Any | func_var | struct_var)		
 
-const = 'const' sub_const
-	| 'const' '(' sub_const* ')'
+const = 'const' param go_type? '=' Any
+	| 'const' '(' Any ')'
 	
 sub_const = param go_type
 		| param go_type? '=' operand
