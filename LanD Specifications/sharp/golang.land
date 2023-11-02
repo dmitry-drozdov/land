@@ -8,6 +8,7 @@ ITALIC_QUOTE : '`' .*? '`'
 
 INT			: [0-9]+
 QUOTE		: '"'
+SPREAD 		: '...'
 
 STRING		: STRING_STD|STRING_VERB|STRING_INT
 STRING_STD	: '"' ('\\"'|'\\\\'|.)*? '"'
@@ -56,12 +57,12 @@ f_reciever = '(' param '*'? f_type ')'
 
 f_args = '(' ')'
 		|'(' (f_arg ',')* f_arg ')'
-f_arg = (ID go_type) | go_type
+f_arg = ID? SPREAD? go_type?
 
 f_returns = Any 
 		| go_type
 		|'(' (f_return ',')* f_return ')' 
-f_return = f_arg
+f_return = ID? go_type?
 
 anon = anon_func_title | anon_struct | anon_interface
 
@@ -84,7 +85,7 @@ sub_const = param go_type
 func_var = 'func' f_args f_returns '{' Any '}'
 struct_var = 'struct' '{' Any '}' '{' Any '}'
 
-water_entity	=	Any
+water_entity	=	Any 'UNREACHED@@@'
 
 package_name =	ID
 import_name	 =	ID

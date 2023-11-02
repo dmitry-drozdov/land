@@ -254,17 +254,17 @@ func ReturnInterface2() (**[]*[10][]interface{ Action(int) struct{} }, error, bo
 	return nil, nil, false
 }
 
-func ReturnStruct() struct{} {
+func ReturnStruct(...float64) struct{} {
 	return struct{}{}
 }
 
-func ReturnStruct2() []struct{ test bool } {
+func ReturnStruct2(int, ...float64) []struct{ test bool } {
 	var f1 = func(i int) bool { return false }
 	_ = f1
 	return []struct{ test bool }{{false}}
 }
 
-func ReturnStruct3() struct{ test bool } {
+func ReturnStruct3(i ...int) struct{ test bool } {
 	return struct{ test bool }{false}
 }
 
