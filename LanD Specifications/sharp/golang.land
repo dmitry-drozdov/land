@@ -6,7 +6,6 @@ COMMENT_ML	: '/*' .*? '*/'
 
 ITALIC_QUOTE : '`' .*? '`'
 
-INT			: [0-9]+
 QUOTE		: '"'
 SPREAD 		: '...'
 
@@ -26,7 +25,8 @@ CURVE_BRACKETED : %left '{' %right '}'
 ROUND_BRACKETED : %left '(' %right ')'
 SQUARE_BRACKETED : %left ('['|GENERAL_ATTRIBUTE_START) %right ']'
 
-
+HEX 		: '0x'[0-9a-fA-F]+
+DEC			: [0-9]+
 
  
 package_content	=	entity*
@@ -71,8 +71,8 @@ var = 'var' sub_var
 	
 	
 sub_var = param go_type
-		| param go_type? '=' '&'? ID
-		| param go_type? '=' '&'? ID '(' Any ')'
+		| param go_type? '=' '&'? operand
+		| param go_type? '=' '&'? operand '(' Any ')'
 		| param go_type? '=' '&'? go_type '{' Any '}'
 		| param go_type? '=' '&'? (Any | func_var | struct_var)
 		
@@ -80,7 +80,7 @@ const = 'const' sub_const
 	| 'const' '(' sub_const* ')'
 	
 sub_const = param go_type
-		| param go_type? '=' (ID | INT)
+		| param go_type? '=' operand
 
 func_var = 'func' f_args f_returns '{' Any '}'
 struct_var = 'struct' '{' Any '}' '{' Any '}'
@@ -94,10 +94,12 @@ f_type		 =	ID
 f_name		 =	ID
 t_name		 =	ID
 
+
 go_type			= ID | arr_ptr* (ID | anon | map | chan)
 
-arr_ptr			= '*'* ('[' INT? ']' '*'*)*
+arr_ptr			= '*'* ('[' DEC? ']' '*'*)*
 
+operand			= ITALIC_QUOTE | STRING | CHAR | HEX | DEC | ID
 
 %%
 
@@ -105,7 +107,7 @@ arr_ptr			= '*'* ('[' INT? ']' '*'*)*
 	recovery entity 
 	fragment STRING_INT_CODE
 	start package
-	skip COMMENT STRING DIRECTIVE ITALIC_QUOTE
+	skip COMMENT STRING DIRECTIVE
 }
 
 %nodes {
