@@ -4,6 +4,8 @@ COMMENT		: COMMENT_L|COMMENT_ML
 COMMENT_L	: '//' ~[\n\r]*
 COMMENT_ML	: '/*' .*? '*/'
 
+ITALIC_QUOTE : '`' .*? '`'
+
 INT			: [0-9]+
 QUOTE		: '"'
 
@@ -14,7 +16,6 @@ STRING_INT	: '$"' ('\\"'|'\\\\'|'{{'|STRING_INT_CODE|.)*? '"' | '$@' ('"' ('""'|
 STRING_INT_CODE : '{' (STRING|CHAR|.)*? '}'
 
 CHAR		: '\'' ('\\\''|'\\\\'|.)*? '\''
-MODIFIER	: 'ref'|'fixed'|'public'|'private'|'protected'|'internal'|'static'|'virtual'|'const'|'override'|'new'|'sealed'|'unsafe'|'readonly'|'abstract'|'volatile'|'async'|'partial'
 CLASS_STRUCT_INTERFACE : 'class'|'struct'|'record'|'interface'
 ID			: '@'?[_a-zA-Z\u0430-\u044F\u0410-\u042F][_0-9a-zA-Z\u0430-\u044F\u0410-\u042F.]*
 
@@ -33,7 +34,7 @@ package			=	'package' package_name  import*  package_content
 import = 'import' AnyInclude(QUOTE) | import_list
 import_list = 'import' '(' Any ')'
 
-entity	= water_entity | alias | struct | interface | var | func
+entity	= water_entity | alias | struct | interface | var | const | func
 
 struct = 'type' t_name 'struct' '{' Any '}'
 interface = 'type' t_name 'interface' '{' Any '}'
@@ -66,12 +67,19 @@ anon = anon_func_title | anon_struct | anon_interface
 
 var = 'var' sub_var
 	| 'var' '(' sub_var* ')'
-
+	
+	
 sub_var = param go_type
 		| param go_type? '=' '&'? ID
 		| param go_type? '=' '&'? ID '(' Any ')'
 		| param go_type? '=' '&'? go_type '{' Any '}'
 		| param go_type? '=' '&'? (Any | func_var | struct_var)
+		
+const = 'const' sub_const
+	| 'const' '(' sub_const* ')'
+	
+sub_const = param go_type
+		| param go_type? '=' (ID | INT)
 
 func_var = 'func' f_args f_returns '{' Any '}'
 struct_var = 'struct' '{' Any '}' '{' Any '}'
@@ -96,7 +104,7 @@ arr_ptr			= '*'* ('[' INT? ']' '*'*)*
 	recovery entity 
 	fragment STRING_INT_CODE
 	start package
-	skip COMMENT STRING DIRECTIVE
+	skip COMMENT STRING DIRECTIVE ITALIC_QUOTE
 }
 
 %nodes {
@@ -106,6 +114,6 @@ arr_ptr			= '*'* ('[' INT? ']' '*'*)*
 
 %customblock {
 	start("//+")
-	end("//-")
+	end("//@")
 	basetoken COMMENT
 }

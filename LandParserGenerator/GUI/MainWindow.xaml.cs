@@ -798,6 +798,7 @@ namespace Land.GUI
 			{
 				try
 				{
+					Console.WriteLine(argument.Files[counter]);
 					Node root = null;
 					FrontendUpdateDispatcher.Invoke((Action)(() => 
 					{

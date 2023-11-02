@@ -8,6 +8,15 @@ import (
 	"time"
 )
 
+const Ptr int = 0
+
+var P = 1991
+
+const (
+	Sme      = 10
+	Sme2 int = 10
+)
+
 // some comment
 type FMp func(map[struct{}]func() int) map[interface{}]func(int) struct{ f func(bool) }
 
