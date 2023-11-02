@@ -73,7 +73,7 @@ func_var = 'func' f_args f_returns '{' Any '}'
 struct_var = 'struct' '{' Any '}' '{' Any '}'
 
 var = 'var' sub_var
-	| 'var' '(' sub_var* ')'
+	| 'var' '(' Any ')'
 	
 	
 sub_var = params go_type
