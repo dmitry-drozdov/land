@@ -60,6 +60,12 @@ type Slice []func()
 
 var some int
 
+type (
+	FInt   int
+	FFloat = float64
+	FFunc  = func() func() map[struct{}]chan<- func() map[*int][]chan<- func(...int)
+)
+
 var other func(struct{}) map[struct{}]func() (interface{}, error)
 
 type ArraySlice *[10][]func() interface{}
