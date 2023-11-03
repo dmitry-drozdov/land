@@ -60,7 +60,7 @@ sub_generic = ID '~'? go_type?
 
 f_args = '(' ')'
 		|'(' (f_arg ',')* f_arg ')'
-f_arg = ID? SPREAD? go_type?
+f_arg = ID? SPREAD? (go_type generic?)?
 
 f_returns = Any 
 		| go_type generic?
