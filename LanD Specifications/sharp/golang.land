@@ -63,7 +63,7 @@ f_args = '(' ')'
 f_arg = ID? SPREAD? go_type?
 
 f_returns = Any 
-		| go_type
+		| go_type generic?
 		|'(' (f_return ',')* f_return ')' 
 f_return = ID? go_type?
 
