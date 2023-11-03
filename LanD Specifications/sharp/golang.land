@@ -46,7 +46,7 @@ alias = 'type' t_name generic? '='? go_type
 anon_struct = 'struct' '{' Any '}'
 anon_interface = 'interface' '{' Any '}'
 
-func = 'func' f_reciever? f_name generic? f_args f_returns '{' Any '}'
+func = 'func' f_reciever? f_name generic? f_args f_returns ('{' Any '}')?
 anon_func = 'func' f_args f_returns '{' Any '}'
 anon_func_title = 'func' f_args f_returns
 
