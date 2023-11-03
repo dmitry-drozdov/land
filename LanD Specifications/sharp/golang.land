@@ -110,7 +110,7 @@ chan = 	'chan' go_type
 
 go_type			= ID | arr_ptr* (ID | anon | map | chan)
 
-arr_ptr			= '*'* ('[' DEC? ']' '*'*)*
+arr_ptr			= '*'* ('[' DEC? SPREAD? ']' '*'*)*
 
 operand			= ITALIC_QUOTE | STRING | CHAR | HEX | DEC | ID
 
