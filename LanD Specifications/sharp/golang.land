@@ -125,7 +125,7 @@ operand			= ITALIC_QUOTE | STRING | CHAR | HEX | DEC | ID
 
 %nodes {
 	ghost entity
-	leaf 
+	leaf go_type
 }
 
 %customblock {

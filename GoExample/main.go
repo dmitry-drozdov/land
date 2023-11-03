@@ -1,37 +1,173 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"os"
+	"path/filepath"
+	"strconv"
+	"strings"
 )
 
+type FuncStat struct {
+	Name   string
+	Args   int
+	Return int
+}
+
 func main() {
-	// Create the AST by parsing src.
-	fset := token.NewFileSet() // positions are relative to fset
-	f, err := parser.ParseFile(fset, "test.go", nil, 0)
+
+	light, err := ReadResults(`e:\phd\my\results\`)
 	if err != nil {
 		panic(err)
+	}
+
+	full, err := ParseFiles(`e:\phd\my\kubernetes\`)
+	if err != nil {
+		panic(err)
+	}
+
+	mismatch := 0
+	match := 0
+
+	for kf, vf := range full {
+		kl, ok := light[kf]
+		if !ok {
+			continue
+		}
+
+		for k, v := range vf {
+			funcs, ok := kl[k]
+			if !ok {
+				fmt.Println(v)
+				mismatch++
+				continue
+			}
+			if v != funcs {
+				fmt.Println(v, funcs)
+				mismatch++
+				continue
+			}
+
+			match++
+		}
+	}
+
+	fmt.Println(mismatch, match)
+}
+
+func ParseFiles(root string) (map[string]map[string]FuncStat, error) {
+	res := make(map[string]map[string]FuncStat, 10000)
+	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+		if info.IsDir() || filepath.Ext(info.Name()) != ".go" {
+			return nil
+		}
+		if err != nil {
+			return err
+		}
+
+		readFile, err := os.Open(path)
+		if err != nil {
+			return err
+		}
+		defer readFile.Close()
+
+		data, err := ParseFile(path)
+		if err != nil {
+			return err
+		}
+
+		path = strings.ReplaceAll(path, root, "")
+		path = strings.ReplaceAll(path, `\`, "")
+		res[path] = data
+
+		return nil
+	})
+	return res, err
+}
+
+func ParseFile(path string) (map[string]FuncStat, error) {
+	res := make(map[string]FuncStat, 10000)
+
+	fset := token.NewFileSet() // positions are relative to fset
+	f, err := parser.ParseFile(fset, path, nil, 0)
+	if err != nil {
+		return nil, err
 	}
 
 	// Inspect the AST and print all identifiers and literals.
 	ast.Inspect(f, func(n ast.Node) bool {
 		switch x := n.(type) {
-		// case *ast.FuncDecl:
-		// 	fmt.Println(x.Name.Name, x.Type.Params.List, x.Type.Results)
-		case *ast.TypeSpec:
-			typeSpec := n.(*ast.TypeSpec)
-			switch typeSpec.Type.(type) {
-			case *ast.StructType:
-				//fmt.Println(x)
-			case *ast.InterfaceType:
-				//fmt.Println(x)
-			default:
-				fmt.Println(x)
+		case *ast.FuncDecl:
+			ret := 0
+			if x.Type.Results != nil {
+				ret = len(x.Type.Results.List)
+			}
+
+			res[x.Name.Name] = FuncStat{
+				Name:   x.Name.Name,
+				Args:   len(x.Type.Params.List),
+				Return: ret,
 			}
 		}
 		return true
 	})
 
+	return res, nil
+}
+
+func ReadResults(root string) (map[string]map[string]FuncStat, error) {
+	res := make(map[string]map[string]FuncStat, 10000)
+	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+		if info.IsDir() {
+			return nil
+		}
+		if err != nil {
+			return err
+		}
+
+		readFile, err := os.Open(path)
+		if err != nil {
+			return err
+		}
+		defer readFile.Close()
+
+		fileScanner := bufio.NewScanner(readFile)
+		fileScanner.Split(bufio.ScanLines)
+
+		_, ok := res[info.Name()]
+		if !ok {
+			res[info.Name()] = make(map[string]FuncStat, 10)
+		}
+
+		for fileScanner.Scan() {
+			line := fileScanner.Text()
+			words := strings.Split(line, " ")
+			if len(words) != 3 {
+				return fmt.Errorf("incorrect length")
+			}
+
+			nArgs, err := strconv.Atoi(words[1])
+			if err != nil {
+				return err
+			}
+
+			nReturn, err := strconv.Atoi(words[1])
+			if err != nil {
+				return err
+			}
+
+			res[info.Name()][words[0]] = FuncStat{
+				Name:   words[0],
+				Args:   nArgs,
+				Return: nReturn,
+			}
+		}
+
+		return nil
+	})
+	return res, err
 }
