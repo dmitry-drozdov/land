@@ -55,7 +55,8 @@ func main() {
 	}
 
 	total := mismatch + match
-	fmt.Println(mismatch, match, float64(match)/float64(total)*100)
+	skipped := len(full) - len(light)
+	fmt.Printf("skipped: [%v] fail: [%v] ok: [%v] accuracy: [%.1f%%]", skipped, mismatch, match, float64(match)/float64(total)*100)
 }
 
 func ParseFiles(root string) (map[string]map[string]FuncStat, error) {
