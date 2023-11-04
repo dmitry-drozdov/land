@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -17,26 +18,62 @@ import (
 )
 
 type FuncStat struct {
-	Name   string
-	Args   int
-	Return int
+	Name    string
+	Args    []string
+	ArgsCnt int
+	Return  int
+}
+
+func (f *FuncStat) EqualTo(g *FuncStat) bool {
+	if f == nil && g == nil {
+		return true
+	}
+	if f == nil || g == nil {
+		return false
+	}
+	if f.Name != g.Name || f.ArgsCnt != g.ArgsCnt || f.Return != g.Return {
+		return false
+	}
+	if len(f.Args) != len(g.Args) {
+		return false
+	}
+	if len(f.Args) == 0 && len(g.Args) == 0 {
+		return true
+	}
+	sortSlice := func(s []string) {
+		sort.Slice(s, func(i, j int) bool {
+			return s[i] < s[j]
+		})
+	}
+	sortSlice(f.Args)
+	sortSlice(g.Args)
+
+	for i := range f.Args {
+		if f.Args[i] != g.Args[i] {
+			return false
+		}
+	}
+
+	return true
 }
 
 func main() {
 
+	fmt.Println("reading results done...")
 	light, err := ReadResults(`e:\phd\my\results\`)
 	if err != nil {
 		panic(err)
 	}
+	fmt.Println("reading results DONE")
 
-	fmt.Println("read results done")
+	source := `e:\phd\my\go-redis\`
 
-	source := `e:\phd\my\docker-ce\`
-
+	fmt.Println("parsing files with go ast...")
 	full, err := ParseFiles(source)
 	if err != nil {
 		panic(err)
 	}
+	fmt.Println("parsing files with go ast DONE")
 
 	mismatch := 0
 	match := 0
@@ -53,7 +90,7 @@ func main() {
 				mismatch++
 				continue
 			}
-			if v != funcs {
+			if !v.EqualTo(funcs) {
 				mismatch++
 				continue
 			}
@@ -72,8 +109,8 @@ func ratio(part, total int) float64 {
 	return float64(part) / float64(total) * 100
 }
 
-func ParseFiles(root string) (map[string]map[string]FuncStat, error) {
-	res := make(map[string]map[string]FuncStat, 10000)
+func ParseFiles(root string) (map[string]map[string]*FuncStat, error) {
+	res := make(map[string]map[string]*FuncStat, 10000)
 	g := errgroup.Group{}
 	g.SetLimit(runtime.NumCPU() * 2)
 	l := sync.Mutex{}
@@ -115,8 +152,8 @@ func ParseFiles(root string) (map[string]map[string]FuncStat, error) {
 	return res, g.Wait()
 }
 
-func ParseFile(path string) (map[string]FuncStat, error) {
-	res := make(map[string]FuncStat, 10000)
+func ParseFile(path string) (map[string]*FuncStat, error) {
+	res := make(map[string]*FuncStat, 10000)
 
 	fset := token.NewFileSet() // positions are relative to fset
 	f, err := parser.ParseFile(fset, path, nil, 0)
@@ -133,10 +170,34 @@ func ParseFile(path string) (map[string]FuncStat, error) {
 				ret = x.Type.Results.NumFields()
 			}
 
-			res[x.Name.Name] = FuncStat{
-				Name:   x.Name.Name,
-				Args:   x.Type.Params.NumFields(),
-				Return: ret,
+			ptr := &FuncStat{
+				Name:    x.Name.Name,
+				ArgsCnt: x.Type.Params.NumFields(),
+				Return:  ret,
+			}
+			res[x.Name.Name] = ptr
+
+			add := func(a string) {
+				ptr.Args = append(ptr.Args, a)
+			}
+
+			for _, y := range x.Type.Params.List {
+				switch t := y.Type.(type) {
+				case *ast.Ident:
+					add(t.Name)
+				case *ast.SelectorExpr:
+					add(fmt.Sprintf("%v.%v\n", t.Sel.Name, t.X))
+				case *ast.StarExpr:
+					if tx, ok := t.X.(*ast.SelectorExpr); ok {
+						add(fmt.Sprintf("%v.%v\n", tx.Sel.Name, tx.X))
+					}
+				case *ast.FuncType:
+					add("func")
+				case *ast.ChanType:
+					add("chan")
+				case *ast.MapType:
+					add("map")
+				}
 			}
 		}
 		return true
@@ -145,8 +206,8 @@ func ParseFile(path string) (map[string]FuncStat, error) {
 	return res, nil
 }
 
-func ReadResults(root string) (map[string]map[string]FuncStat, error) {
-	res := make(map[string]map[string]FuncStat, 10000)
+func ReadResults(root string) (map[string]map[string]*FuncStat, error) {
+	res := make(map[string]map[string]*FuncStat, 10000)
 	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 		if info.IsDir() {
 			return nil
@@ -166,7 +227,7 @@ func ReadResults(root string) (map[string]map[string]FuncStat, error) {
 
 		_, ok := res[info.Name()]
 		if !ok {
-			res[info.Name()] = make(map[string]FuncStat, 10)
+			res[info.Name()] = make(map[string]*FuncStat, 10)
 		}
 
 		for fileScanner.Scan() {
@@ -186,10 +247,10 @@ func ReadResults(root string) (map[string]map[string]FuncStat, error) {
 				return err
 			}
 
-			res[info.Name()][words[0]] = FuncStat{
-				Name:   words[0],
-				Args:   nArgs,
-				Return: nReturn,
+			res[info.Name()][words[0]] = &FuncStat{
+				Name:    words[0],
+				ArgsCnt: nArgs,
+				Return:  nReturn,
 			}
 		}
 
