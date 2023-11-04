@@ -25,7 +25,9 @@ func main() {
 		panic(err)
 	}
 
-	full, err := ParseFiles(`e:\phd\my\go-redis\`)
+	source := `e:\phd\my\docker-ce\`
+
+	full, err := ParseFiles(source)
 	if err != nil {
 		panic(err)
 	}
@@ -56,7 +58,12 @@ func main() {
 
 	total := mismatch + match
 	skipped := len(full) - len(light)
-	fmt.Printf("skipped: [%v] fail: [%v] ok: [%v] accuracy: [%.1f%%]", skipped, mismatch, match, float64(match)/float64(total)*100)
+	fmt.Printf("source: [%v] skipped: [%v (%.1f%%)] fail: [%v] ok: [%v] accuracy: [%.1f%%]",
+		source, skipped, ratio(skipped, len(full)), mismatch, match, ratio(match, total))
+}
+
+func ratio(part, total int) float64 {
+	return float64(part) / float64(total) * 100
 }
 
 func ParseFiles(root string) (map[string]map[string]FuncStat, error) {
