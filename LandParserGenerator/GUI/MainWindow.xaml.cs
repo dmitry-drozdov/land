@@ -858,7 +858,7 @@ namespace Land.GUI
                                                 sw.Write(' ');
                                                 break;
                                             case "f_returns":
-                                                sw.WriteLine(pcc.Children.Count(x => x.ToString() == "f_return"));
+                                                sw.WriteLine(pcc.Children.Count(x => x.ToString() == "f_return" || x.ToString().StartsWith("go_type")));
                                                 break;
                                         }
 

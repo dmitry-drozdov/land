@@ -25,7 +25,7 @@ func main() {
 		panic(err)
 	}
 
-	full, err := ParseFiles(`e:\phd\my\kubernetes\`)
+	full, err := ParseFiles(`e:\phd\my\go-redis\`)
 	if err != nil {
 		panic(err)
 	}
@@ -42,12 +42,10 @@ func main() {
 		for k, v := range vf {
 			funcs, ok := kl[k]
 			if !ok {
-				fmt.Println(v)
 				mismatch++
 				continue
 			}
 			if v != funcs {
-				fmt.Println(v, funcs)
 				mismatch++
 				continue
 			}
@@ -56,7 +54,8 @@ func main() {
 		}
 	}
 
-	fmt.Println(mismatch, match)
+	total := mismatch + match
+	fmt.Println(mismatch, match, float64(match)/float64(total)*100)
 }
 
 func ParseFiles(root string) (map[string]map[string]FuncStat, error) {
@@ -104,12 +103,12 @@ func ParseFile(path string) (map[string]FuncStat, error) {
 		case *ast.FuncDecl:
 			ret := 0
 			if x.Type.Results != nil {
-				ret = len(x.Type.Results.List)
+				ret = x.Type.Results.NumFields()
 			}
 
 			res[x.Name.Name] = FuncStat{
 				Name:   x.Name.Name,
-				Args:   len(x.Type.Params.List),
+				Args:   x.Type.Params.NumFields(),
 				Return: ret,
 			}
 		}
@@ -155,7 +154,7 @@ func ReadResults(root string) (map[string]map[string]FuncStat, error) {
 				return err
 			}
 
-			nReturn, err := strconv.Atoi(words[1])
+			nReturn, err := strconv.Atoi(words[2])
 			if err != nil {
 				return err
 			}

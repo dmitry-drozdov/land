@@ -60,13 +60,18 @@ generic = '[' (sub_generic ',')* sub_generic ']'
 sub_generic = ID '~'? go_type? 
 
 f_args = '(' ')'
-		|'(' (f_arg ',')* f_arg ')'
-f_arg = ID? SPREAD? (go_type generic?)?
+		|'(' (f_arg ',')* f_arg ','? ')'
+f_arg = ID
+		|ID SPREAD? (go_type generic?)
+		|SPREAD? (go_type generic?)
 
 f_returns = Any 
 		| go_type generic?
-		|'(' (f_return ',')* f_return ')' 
-f_return = ID? (go_type generic?)?
+		|'(' (f_return ',')* f_return ','? ')' 
+f_return = ID
+		|ID? (go_type generic?)
+
+		
 
 anon = anon_func_title | anon_struct | anon_interface
 
