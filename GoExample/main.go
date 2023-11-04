@@ -8,8 +8,12 @@ import (
 	"go/token"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
+	"sync"
+
+	"golang.org/x/sync/errgroup"
 )
 
 type FuncStat struct {
@@ -24,6 +28,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	fmt.Println("read results done")
 
 	source := `e:\phd\my\docker-ce\`
 
@@ -68,6 +74,9 @@ func ratio(part, total int) float64 {
 
 func ParseFiles(root string) (map[string]map[string]FuncStat, error) {
 	res := make(map[string]map[string]FuncStat, 10000)
+	g := errgroup.Group{}
+	g.SetLimit(runtime.NumCPU() * 2)
+	l := sync.Mutex{}
 	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 		if info.IsDir() || filepath.Ext(info.Name()) != ".go" {
 			return nil
@@ -82,18 +91,28 @@ func ParseFiles(root string) (map[string]map[string]FuncStat, error) {
 		}
 		defer readFile.Close()
 
-		data, err := ParseFile(path)
-		if err != nil {
-			return err
-		}
+		pathBk := path
+		g.Go(func() error {
+			data, err := ParseFile(pathBk)
+			if err != nil {
+				return err
+			}
 
-		path = strings.ReplaceAll(path, root, "")
-		path = strings.ReplaceAll(path, `\`, "")
-		res[path] = data
+			pathBk = strings.ReplaceAll(pathBk, root, "")
+			pathBk = strings.ReplaceAll(pathBk, `\`, "")
+			l.Lock()
+			res[pathBk] = data
+			l.Unlock()
+			return nil
+		})
 
 		return nil
 	})
-	return res, err
+	if err != nil {
+		return nil, err
+	}
+
+	return res, g.Wait()
 }
 
 func ParseFile(path string) (map[string]FuncStat, error) {
