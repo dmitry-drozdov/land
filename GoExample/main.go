@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"go/ast"
 	"go/parser"
@@ -10,7 +11,6 @@ import (
 	"path/filepath"
 	"runtime"
 	"sort"
-	"strconv"
 	"strings"
 	"sync"
 
@@ -49,12 +49,20 @@ func (f *FuncStat) EqualTo(g *FuncStat) bool {
 	sortSlice(g.Args)
 
 	for i := range f.Args {
-		if f.Args[i] != g.Args[i] {
+		if !compareStrings(f.Args[i], g.Args[i]) {
 			return false
 		}
 	}
 
 	return true
+}
+
+func compareStrings(s1, s2 string) bool {
+	s1 = strings.TrimSpace(s1)
+	s1 = strings.ToLower(s1)
+	s2 = strings.TrimSpace(s2)
+	s2 = strings.ToLower(s2)
+	return s1 == s2
 }
 
 func main() {
@@ -66,7 +74,7 @@ func main() {
 	}
 	fmt.Println("reading results DONE")
 
-	source := `e:\phd\my\go-redis\`
+	source := `e:\phd\my\tidb\`
 
 	fmt.Println("parsing files with go ast...")
 	full, err := ParseFiles(source)
@@ -91,6 +99,8 @@ func main() {
 				continue
 			}
 			if !v.EqualTo(funcs) {
+				fmt.Println()
+				fmt.Println(kf, v, funcs)
 				mismatch++
 				continue
 			}
@@ -182,28 +192,39 @@ func ParseFile(path string) (map[string]*FuncStat, error) {
 			}
 
 			for _, y := range x.Type.Params.List {
-				switch t := y.Type.(type) {
-				case *ast.Ident:
-					add(t.Name)
-				case *ast.SelectorExpr:
-					add(fmt.Sprintf("%v.%v\n", t.Sel.Name, t.X))
-				case *ast.StarExpr:
-					if tx, ok := t.X.(*ast.SelectorExpr); ok {
-						add(fmt.Sprintf("%v.%v\n", tx.Sel.Name, tx.X))
-					}
-				case *ast.FuncType:
-					add("func")
-				case *ast.ChanType:
-					add("chan")
-				case *ast.MapType:
-					add("map")
-				}
+				add(HumanType(y.Type))
 			}
 		}
 		return true
 	})
 
 	return res, nil
+}
+
+func HumanType(tp ast.Expr) string {
+	switch t := tp.(type) {
+	case *ast.Ident:
+		return t.Name
+	case *ast.SelectorExpr:
+		return fmt.Sprintf("%v.%v\n", t.X, t.Sel.Name)
+	case *ast.StarExpr:
+		return HumanType(t.X)
+	case *ast.ArrayType:
+		return HumanType(t.Elt)
+	case *ast.FuncType:
+		return "anon_func_title"
+	case *ast.ChanType:
+		return "chan"
+	case *ast.MapType:
+		return "map"
+	case *ast.StructType:
+		return "anon_struct"
+	case *ast.InterfaceType:
+		return "anon_interface"
+	case *ast.Ellipsis:
+		return HumanType(t.Elt)
+	}
+	return fmt.Sprintf("%T", tp)
 }
 
 func ReadResults(root string) (map[string]map[string]*FuncStat, error) {
@@ -232,26 +253,12 @@ func ReadResults(root string) (map[string]map[string]*FuncStat, error) {
 
 		for fileScanner.Scan() {
 			line := fileScanner.Text()
-			words := strings.Split(line, " ")
-			if len(words) != 3 {
-				return fmt.Errorf("incorrect length")
-			}
-
-			nArgs, err := strconv.Atoi(words[1])
-			if err != nil {
+			ln := &FuncStat{}
+			if err := json.Unmarshal([]byte(line), ln); err != nil {
 				return err
 			}
 
-			nReturn, err := strconv.Atoi(words[2])
-			if err != nil {
-				return err
-			}
-
-			res[info.Name()][words[0]] = &FuncStat{
-				Name:    words[0],
-				ArgsCnt: nArgs,
-				Return:  nReturn,
-			}
+			res[info.Name()][ln.Name] = ln
 		}
 
 		return nil

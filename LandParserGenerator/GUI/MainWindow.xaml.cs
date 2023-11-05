@@ -19,6 +19,7 @@ using Land.Core.Parsing;
 using Land.Core.Parsing.Preprocessing;
 using Land.Core.Parsing.Tree;
 using System.ComponentModel;
+using System.Text.Json;
 //using System.Windows.Shapes;
 
 namespace Land.GUI
@@ -843,6 +844,8 @@ namespace Land.GUI
                                     if (pc.ToString() != "func")
                                         continue;
 
+                                    var res = new ParseResult();
+
                                     foreach (var pcc in pc.Children)
                                     {
                                         var opt = pcc.ToString();
@@ -850,18 +853,30 @@ namespace Land.GUI
                                         switch (opt)
                                         {
                                             case "f_name":
-                                                sw.Write(pcc.Children[0].ToString().Replace("ID: ", ""));
-                                                sw.Write(' ');
+                                                res.Name = pcc.Children[0].ToString().Replace("ID: ", "");
                                                 break;
                                             case "f_args":
-                                                sw.Write(pcc.Children.Count(x => x.ToString() == "f_arg"));
-                                                sw.Write(' ');
+                                                var args = pcc.Children.Where(x => x.ToString() == "f_arg");
+                                                res.ArgsCnt = args.Count();
+                                                foreach (var arg in args)
+                                                {
+                                                    var types = arg.Children.FirstOrDefault(x => x.ToString() == "go_type");
+                                                    if (types != null)
+                                                    {
+                                                        var type = types.Children.First(x => x.ToString() != "arr_ptr").ToString().Replace("ID: ", "");
+                                                        res.Args.Add(type);
+                                                    }
+                                                }
                                                 break;
                                             case "f_returns":
-                                                sw.WriteLine(pcc.Children.Count(x => x.ToString() == "f_return" || x.ToString().StartsWith("go_type")));
+                                                res.Return = pcc.Children.Count(x => x.ToString() == "f_return" || x.ToString().StartsWith("go_type"));
                                                 break;
                                         }
+                                    }
 
+                                    if (!res.Empty)
+                                    {
+                                        sw.WriteLine(JsonSerializer.Serialize(res));
                                     }
                                 }
                             }
