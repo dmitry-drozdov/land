@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 )
@@ -43,5 +44,9 @@ func ReadResults(root string) (map[string]map[string]*FuncStat, error) {
 
 		return nil
 	})
+
+	if len(res) == 0 {
+		return nil, fmt.Errorf("empty output")
+	}
 	return res, err
 }

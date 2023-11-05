@@ -13,7 +13,8 @@ func main() {
 	}
 	fmt.Println("reading results DONE")
 
-	source := `e:\phd\my\tidb\`
+	sname := "tidb"
+	source := fmt.Sprintf(`e:\phd\my\%s\`, sname)
 
 	fmt.Println("parsing files with go ast...")
 	full, err := ParseFiles(source)
@@ -22,9 +23,11 @@ func main() {
 	}
 	fmt.Println("parsing files with go ast DONE")
 
-	notAllArgs := 0
-	mismatch := 0
-	match := 0
+	a := &AnalyzerStats{
+		Source:  sname,
+		lnFull:  len(full),
+		lnLight: len(light),
+	}
 
 	for kf, vf := range full {
 		kl, ok := light[kf]
@@ -35,31 +38,27 @@ func main() {
 		for k, v := range vf {
 			funcs, ok := kl[k]
 			if !ok {
-				mismatch++
+				a.mismatch++
 				continue
 			}
 
 			if len(v.Args) != len(funcs.Args) || len(funcs.Args) != funcs.ArgsCnt {
-				notAllArgs++
+				a.notAllArgs++
 			}
 
 			if !v.EqualTo(funcs) {
 				// fmt.Println()
 				// fmt.Println(kf, v, funcs)
-				mismatch++
+				a.mismatch++
 				continue
 			}
 
-			match++
+			a.match++
 		}
 	}
 
-	total := mismatch + match
-	skipped := len(full) - len(light)
-	fmt.Printf("source: [%v] skipped: [%v (%.1f%%)] fail: [%v] ok: [%v] accuracy: [%.1f%%] argsCover: [%.1f%%]",
-		source, skipped, ratio(skipped, len(full)), mismatch, match, ratio(match, total), ratio(total-notAllArgs, total))
-}
+	if err := a.Dump(); err != nil {
+		panic(err)
+	}
 
-func ratio(part, total int) float64 {
-	return float64(part) / float64(total) * 100
 }
