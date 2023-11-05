@@ -866,6 +866,10 @@ namespace Land.GUI
                                                         var type = types.Children.First(x => x.ToString() != "arr_ptr").ToString().Replace("ID: ", "");
                                                         res.Args.Add(type);
                                                     }
+                                                    else
+                                                    {
+                                                        //Console.WriteLine(string.Join(" ",arg.Children.Select(x=>x.ToString())));
+                                                    }
                                                 }
                                                 break;
                                             case "f_returns":
