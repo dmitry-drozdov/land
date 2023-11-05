@@ -800,7 +800,6 @@ namespace Land.GUI
             {
                 try
                 {
-                    Console.WriteLine(argument.Files[counter]);
                     Node root = null;
                     FrontendUpdateDispatcher.Invoke((Action)(() =>
                     {
@@ -828,7 +827,6 @@ namespace Land.GUI
                             new List<string> { "name" }
                         );
 
-                        Console.WriteLine(PackageSource);
                         var pth = @"E:\phd\my\results\";
 
 

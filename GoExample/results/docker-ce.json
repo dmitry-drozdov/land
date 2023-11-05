@@ -1,0 +1,9 @@
+{
+ "Source": "docker-ce",
+ "SkippedFiles": 199,
+ "SkippedPerCent": 2.1,
+ "Fail": 86,
+ "Ok": 71548,
+ "Accuracy": 99.9,
+ "ArgsCover": 94.1
+}
