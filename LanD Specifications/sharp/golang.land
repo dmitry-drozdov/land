@@ -1,135 +1,546 @@
-DIRECTIVE	: '#' ~[\n\r]*
 
-COMMENT		: COMMENT_L|COMMENT_ML
-COMMENT_L	: '//' ~[\n\r]*
-COMMENT_ML	: '/*' .*? '*/'
+BREAK                  : 'break'
+DEFAULT                : 'default'
+FUNC                   : 'func'
+INTERFACE              : 'interface'
+SELECT                 : 'select'
+CASE                   : 'case'
+DEFER                  : 'defer'
+GO                     : 'go'
+MAP                    : 'map'
+STRUCT                 : 'struct'
+CHAN                   : 'chan'
+ELSE                   : 'else'
+GOTO                   : 'goto'
+PACKAGE                : 'package'
+SWITCH                 : 'switch'
+CONST                  : 'const'
+FALLTHROUGH            : 'fallthrough'
+IF                     : 'if'
+RANGE                  : 'range'
+TYPE                   : 'type'
+CONTINUE               : 'continue'
+FOR                    : 'for'
+IMPORT                 : 'import'
+RETURN                 : 'return'
+VAR                    : 'var'
 
-ITALIC_QUOTE : '`' .*? '`'
+NIL_LIT                : 'nil'
 
-QUOTE		: '"'
-SPREAD 		: '...'
+IDENTIFIER             : LETTER (LETTER | UNICODE_DIGIT)*
 
-STRING		: STRING_STD|STRING_VERB|STRING_INT
-STRING_STD	: '"' ('\\"'|'\\\\'|.)*? '"'
-STRING_VERB	: '@'('"' (~["]|'""')* '"')+
-STRING_INT	: '$"' ('\\"'|'\\\\'|'{{'|STRING_INT_CODE|.)*? '"' | '$@' ('"' ('""'|'{{'|STRING_INT_CODE|.)*? '"')+
-STRING_INT_CODE : '{' (STRING|CHAR|.)*? '}'
+// Punctuation
 
-CHAR		: '\'' ('\\\''|'\\\\'|.)*? '\''
-CLASS_STRUCT_INTERFACE : 'struct'|'interface'
-ID			: '@'?[_a-zA-Z\u0430-\u044F\u0410-\u042F][_0-9a-zA-Z\u0430-\u044F\u0410-\u042F.]*
+L_PAREN                : '('
+R_PAREN                : ')'
+L_CURLY                : '{'
+R_CURLY                : '}'
+L_BRACKET              : '['
+R_BRACKET              : ']'
+ASSIGN                 : '='
+COMMA                  : ','
+SEMI                   : ';'
+COLON                  : ':'
+DOT                    : '.'
+PLUS_PLUS              : '++'
+MINUS_MINUS            : '--'
+DECLARE_ASSIGN         : ':='
+ELLIPSIS               : '...'
 
-GENERAL_ATTRIBUTE_START	:	'[' [ \t\r\f\n]*? ('assembly'|'module')
- 
-CURVE_BRACKETED : %left '{' %right '}'
-ROUND_BRACKETED : %left '(' %right ')'
-SQUARE_BRACKETED : %left ('['|GENERAL_ATTRIBUTE_START) %right ']'
+// Logical
 
-HEX 		: '0x'[0-9a-fA-F]+
-DEC			: '-'?[0-9]+
+LOGICAL_OR             : '||'
+LOGICAL_AND            : '&&'
 
- 
-package_content	=	entity*
-package			=	'package' package_name  import*  package_content
+// Relation operators
 
-import = 'import' AnyInclude(QUOTE) | import_list
-import_list = 'import' '(' Any ')'
+EQUALS                 : '=='
+NOT_EQUALS             : '!='
+LESS                   : '<'
+LESS_OR_EQUALS         : '<='
+GREATER                : '>'
+GREATER_OR_EQUALS      : '>='
 
-entity	= water_entity | alias | struct | interface | var | const | func
+// Arithmetic operators
 
-struct = 'type' t_name 'struct' '{' Any '}'
-interface = 'type' t_name 'interface' '{' Any '}'
-alias = 'type' t_name generic? '='? go_type
-		|'type' t_name '[' operand? ']' go_type
-		|'type' '(' Any ')'
+OR                     : '|'
+DIV                    : '/'
+MOD                    : '%'
+LSHIFT                 : '<<'
+RSHIFT                 : '>>'
+BIT_CLEAR              : '&^'
+UNDERLYING             : '~'
 
-anon_struct = 'struct' '{' Any '}'
-anon_interface = 'interface' '{' Any '}'
+// Unary operators
 
-func = 'func' f_reciever? f_name generic? f_args f_returns ('{' Any '}')?
-anon_func = 'func' f_args f_returns '{' Any '}'
-anon_func_title = 'func' f_args f_returns
+EXCLAMATION            : '!'
+
+// Mixed operators
+
+PLUS                   : '+'
+MINUS                  : '-'
+CARET                  : '^'
+STAR                   : '*'
+AMPERSAND              : '&'
+RECEIVE                : '<-'
+
+// Number literals
+
+DECIMAL_LIT            : ('0' | [1-9] ('_'? [0-9])*)
+BINARY_LIT             : '0' [bB] ('_'? BIN_DIGIT)+
+OCTAL_LIT              : '0' [oO]? ('_'? OCTAL_DIGIT)+
+HEX_LIT                : '0' [xX]  ('_'? HEX_DIGIT)+
+
+
+FLOAT_LIT : (DECIMAL_FLOAT_LIT | HEX_FLOAT_LIT)
+
+DECIMAL_FLOAT_LIT      : DECIMALS ('.' DECIMALS? EXPONENT? | EXPONENT) | '.' DECIMALS EXPONENT?
+                       
+
+HEX_FLOAT_LIT          : '0' [xX] HEX_MANTISSA HEX_EXPONENT
+                       
+
+HEX_MANTISSA  : ('_'? HEX_DIGIT)+ ('.' ( '_'? HEX_DIGIT )*)? | '.' HEX_DIGIT ('_'? HEX_DIGIT)*
+
+HEX_EXPONENT  : [pP] [+-]? DECIMALS
+
+
+IMAGINARY_LIT          : (DECIMAL_LIT | BINARY_LIT |  OCTAL_LIT | HEX_LIT | FLOAT_LIT) 'i'
+
+// Rune literals
+
+RUNE               : '\'' (UNICODE_VALUE | BYTE_VALUE) '\''
+
+RUNE_LIT                : RUNE
 
 
 
-f_reciever = '(' param '*'? f_type generic? ')' 
-			|'(' '*'? f_type generic?')'
-			|'(' f_type generic?')'  // ???
+BYTE_VALUE : OCTAL_BYTE_VALUE | HEX_BYTE_VALUE
 
-generic = '[' (sub_generic ',')* sub_generic ']'
-sub_generic = ID '~'? go_type? 
+OCTAL_BYTE_VALUE: '\\' OCTAL_DIGIT OCTAL_DIGIT OCTAL_DIGIT
 
-f_args = '(' ')'
-		|'(' (f_arg ',')* f_arg ','? ')'
-f_arg = ID
-		|ID SPREAD? (go_type generic?)
-		|SPREAD? (go_type generic?)
+HEX_BYTE_VALUE: '\\' 'x'  HEX_DIGIT HEX_DIGIT
 
-f_returns = Any 
-		| go_type generic?
-		|'(' (f_return ',')* f_return ','? ')' 
-f_return = ID
-		|ID? (go_type generic?)
+LITTLE_U_VALUE: '\\' 'u' HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT
 
-		
+BIG_U_VALUE: '\\' 'U' HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT
 
-anon = anon_func_title | anon_struct | anon_interface
+// String literals
 
-func_var = 'func' f_args f_returns '{' Any '}'
-struct_var = 'struct' '{' Any '}' '{' Any '}'
+RAW_STRING_LIT         : '`' ~'`'*                      '`'
+INTERPRETED_STRING_LIT : '"' (~["\\] | ESCAPED_VALUE)*  '"'
 
-var = 'var' sub_var
-	| 'var' '(' Any ')'
+// Hidden tokens
+
+//WS                     : [ \t]+             
+COMMENT                : '/*' .*? '*/'     
+TERMINATOR             : [\r\n]+         
+LINE_COMMENT           : '//' ~[\r\n]*  
+
+UNICODE_VALUE: ~[\r\n'] | LITTLE_U_VALUE | BIG_U_VALUE | ESCAPED_VALUE
+
+// Fragments
+
+ESCAPED_VALUE    : '\\' ('u' HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT | 'U' HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT | [abfnrtv\\'"] | OCTAL_DIGIT OCTAL_DIGIT OCTAL_DIGIT | 'x' HEX_DIGIT HEX_DIGIT)
+    
+
+DECIMALS    : [0-9] ('_'? [0-9])*
+    
+
+OCTAL_DIGIT    : [0-7]
+    
+
+HEX_DIGIT    : [0-9a-fA-F]
+    
+
+BIN_DIGIT    : [01]
+
+EXPONENT    : [eE] [+-]? DECIMALS
+
+
+LETTER    : UNICODE_LETTER | '_'
+
+
+//[\p{Nd}] matches a digit zero through nine in any script except ideographic scripts
+UNICODE_DIGIT    : [\p{Nd}]
+
+//[\p{L}] matches any kind of letter from any language
+UNICODE_LETTER    : [\p{L}]
+
+
+
+
+
+// Ignore any comments that only span one line
+COMMENT_NLSEMI                : '/*' ~[\r\n]*? '*/'  
+LINE_COMMENT_NLSEMI : '//' ~[\r\n]*   
+// Emit an EOS token for any newlines, semicolon, multiline comments or the EOF and 
+//return to normal lexing
+EOS:              ([\r\n]+ | ';' | '/*' .*? '*/' | EOF)   
+
+sourceFile =
+	packageClause eos (importDecl eos)* (
+		(functionDecl | methodDecl | declaration) eos
+	)* EOF
+
+packageClause = PACKAGE IDENTIFIER
+
+importDecl =
+	IMPORT (importSpec | L_PAREN (importSpec eos)* R_PAREN)
+
+importSpec = (DOT | IDENTIFIER)? importPath
+
+importPath = string_
+
+declaration = constDecl | typeDecl | varDecl
+
+constDecl = CONST (constSpec | L_PAREN (constSpec eos)* R_PAREN)
+
+constSpec = identifierList (type_? ASSIGN expressionList)?
+
+identifierList = IDENTIFIER (COMMA IDENTIFIER)*
+
+expressionList = expression (COMMA expression)*
+
+typeDecl = TYPE (typeSpec | L_PAREN (typeSpec eos)* R_PAREN)
+
+typeSpec = aliasDecl | typeDef
+
+aliasDecl  = IDENTIFIER ASSIGN type_
+
+typeDef  = IDENTIFIER typeParameters? type_
+
+typeParameters  = L_BRACKET typeParameterDecl (COMMA typeParameterDecl)* R_BRACKET
+
+typeParameterDecl  = identifierList typeElement
+
+typeElement  = typeTerm (OR typeTerm)*
+
+typeTerm  = UNDERLYING? type_
+
+// Function declarations
+
+functionDecl = FUNC IDENTIFIER typeParameters? signature block?
+
+methodDecl = FUNC receiver IDENTIFIER signature block?
+
+receiver = parameters
+
+varDecl = VAR (varSpec | L_PAREN (varSpec eos)* R_PAREN)
+
+varSpec =
+	identifierList (
+		type_ (ASSIGN expressionList)?
+		| ASSIGN expressionList
+	)
+
+block = L_CURLY statementList? R_CURLY
+
+statementList = ((SEMI | EOS )? statement eos)+
+
+statement =
+	declaration
+	| labeledStmt
+	| simpleStmt
+	| goStmt
+	| returnStmt
+	| breakStmt
+	| continueStmt
+	| gotoStmt
+	| fallthroughStmt
+	| block
+	| ifStmt
+	| switchStmt
+	| selectStmt
+	| forStmt
+	| deferStmt
+
+simpleStmt =
+	sendStmt
+	| incDecStmt
+	| assignment
+	| expressionStmt
+	| shortVarDecl
+
+expressionStmt = expression
+
+sendStmt =  expression RECEIVE expression
+
+incDecStmt = expression (PLUS_PLUS | MINUS_MINUS)
+
+assignment = expressionList assign_op expressionList
+
+assign_op = (
+		PLUS
+		| MINUS
+		| OR
+		| CARET
+		| STAR
+		| DIV
+		| MOD
+		| LSHIFT
+		| RSHIFT
+		| AMPERSAND
+		| BIT_CLEAR
+	)? ASSIGN
+
+shortVarDecl = identifierList DECLARE_ASSIGN expressionList
+
+labeledStmt = IDENTIFIER COLON statement?
+
+returnStmt = RETURN expressionList?
+
+breakStmt = BREAK IDENTIFIER?
+
+continueStmt = CONTINUE IDENTIFIER?
+
+gotoStmt = GOTO IDENTIFIER
+
+fallthroughStmt = FALLTHROUGH
+
+deferStmt = DEFER expression
+
+ifStmt =
+	IF ( expression
+			| eos expression
+			| simpleStmt eos expression
+			) block (
+		ELSE (ifStmt | block)
+	)?
+
+switchStmt = exprSwitchStmt | typeSwitchStmt
+
+exprSwitchStmt =
+	SWITCH (expression?
+					| simpleStmt? eos expression?
+					) L_CURLY exprCaseClause* R_CURLY
+
+exprCaseClause = exprSwitchCase COLON statementList?
+
+exprSwitchCase = CASE expressionList | DEFAULT
+
+typeSwitchStmt =
+	SWITCH ( typeSwitchGuard
+					| eos typeSwitchGuard
+					| simpleStmt eos typeSwitchGuard)
+					 L_CURLY typeCaseClause* R_CURLY
+
+typeSwitchGuard = (IDENTIFIER DECLARE_ASSIGN)? primaryExpr DOT L_PAREN TYPE R_PAREN
+
+typeCaseClause = typeSwitchCase COLON statementList?
+
+typeSwitchCase = CASE typeList | DEFAULT
+
+typeList = (type_ | NIL_LIT) (COMMA (type_ | NIL_LIT))*
+
+selectStmt = SELECT L_CURLY commClause* R_CURLY
+
+commClause = commCase COLON statementList?
+
+commCase = CASE (sendStmt | recvStmt) | DEFAULT
+
+recvStmt = (expressionList ASSIGN | identifierList DECLARE_ASSIGN)? expression
+
+forStmt = FOR (expression? | forClause | rangeClause?) block
+
+forClause =
+	 simpleStmt? eos expression? eos simpleStmt?
+
+rangeClause = (
+		expressionList ASSIGN
+		| identifierList DECLARE_ASSIGN
+	)? RANGE expression
+
+goStmt = GO expression
+
+type_ = typeName typeArgs? | typeLit | L_PAREN type_ R_PAREN
+
+typeArgs = L_BRACKET typeList COMMA? R_BRACKET
+
+typeName = qualifiedIdent | IDENTIFIER
+
+typeLit =
+	arrayType
+	| structType
+	| pointerType
+	| functionType
+	| interfaceType
+	| sliceType
+	| mapType
+	| channelType
+
+arrayType = L_BRACKET arrayLength R_BRACKET elementType
+
+arrayLength = expression
+
+elementType = type_
+
+pointerType = STAR type_
+
+interfaceType =
+	INTERFACE L_CURLY ((methodSpec | typeElement ) eos)* R_CURLY
+
+sliceType = L_BRACKET R_BRACKET elementType
+
+// It's possible to replace `type` with more restricted typeLit list and also pay attention to nil maps
+mapType = MAP L_BRACKET type_ R_BRACKET elementType
+
+channelType = (CHAN | CHAN RECEIVE | RECEIVE CHAN) elementType
+
+methodSpec =
+	IDENTIFIER parameters result
+	| IDENTIFIER parameters
+
+functionType = FUNC signature
+
+signature =
+	parameters result?
+
+result = parameters | type_
+
+parameters =
+	L_PAREN (parameterDecl (COMMA parameterDecl)* COMMA?)? R_PAREN
+
+parameterDecl = identifierList? ELLIPSIS? type_
+
+expression =
+	primaryExpr
+	|  (
+		PLUS
+		| MINUS
+		| EXCLAMATION
+		| CARET
+		| STAR
+		| AMPERSAND
+		| RECEIVE
+	) expression
+	| expression (
+		STAR
+		| DIV
+		| MOD
+		| LSHIFT
+		| RSHIFT
+		| AMPERSAND
+		| BIT_CLEAR
+	) expression
+	| expression  (PLUS | MINUS | OR | CARET) expression
+	| expression (
+		EQUALS
+		| NOT_EQUALS
+		| LESS
+		| LESS_OR_EQUALS
+		| GREATER
+		| GREATER_OR_EQUALS
+	) expression
+	| expression LOGICAL_AND expression
+	| expression LOGICAL_OR expression
+
+primaryExpr =
+	operand
+	| conversion
+	| methodExpr
+	| primaryExpr (
+		DOT IDENTIFIER
+		| index
+		| slice_
+		| typeAssertion
+		| arguments
+	)
+
+
+conversion = type_ L_PAREN expression COMMA? R_PAREN
+
+//operand = literal | operandName typeArgs? | L_PAREN expression R_PAREN
+operand = literal | typeName typeArgs? | L_PAREN expression R_PAREN
+
+literal = basicLit | compositeLit | functionLit
+
+basicLit =
+	NIL_LIT
+	| integer
+	| string_
+	| FLOAT_LIT
+
+integer =
+	DECIMAL_LIT
+	| BINARY_LIT
+	| OCTAL_LIT
+	| HEX_LIT
+	| IMAGINARY_LIT
+	| RUNE_LIT
+
+operandName = IDENTIFIER
+
+qualifiedIdent = IDENTIFIER DOT IDENTIFIER
+
+compositeLit = literalType literalValue
+
+literalType =
+	structType
+	| arrayType
+	| L_BRACKET ELLIPSIS R_BRACKET elementType
+	| sliceType
+	| mapType
+	| typeName typeArgs?
+
+literalValue = L_CURLY (elementList COMMA?)? R_CURLY
+
+elementList = keyedElement (COMMA keyedElement)*
+
+keyedElement = (key COLON)? element
+
+key = expression | literalValue
+
+element = expression | literalValue
+
+structType = STRUCT L_CURLY (fieldDecl eos)* R_CURLY
+
+fieldDecl = (
+		identifierList type_
+		| embeddedField
+	) string_?
+
+string_ = RAW_STRING_LIT | INTERPRETED_STRING_LIT
+
+embeddedField = STAR? typeName typeArgs?
+
+functionLit = FUNC signature block // function
+
+index = L_BRACKET expression R_BRACKET
+
+slice_ =
+	L_BRACKET (
+		expression? COLON expression?
+		| expression? COLON expression COLON expression
+	) R_BRACKET
+
+typeAssertion = DOT L_PAREN type_ R_PAREN
+
+arguments =
+	L_PAREN (
+		(expressionList | type_ (COMMA expressionList)?) ELLIPSIS? COMMA?
+	)? R_PAREN
+
+methodExpr = type_ DOT IDENTIFIER
+
+eos =
+	SEMI
+	| EOF
+	| EOS
 	
-	
-sub_var = params go_type
-		| param go_type
-		| param go_type? '=' '&'? (operand | (operand '(' Any ')') | (go_type '{' Any '}') | (Any | func_var | struct_var))
-		| params go_type? '=' (right_var ',')* right_var
-		
-right_var = operand | (operand '(' Any ')') | (go_type '{' Any '}') | (Any | func_var | struct_var)		
-
-const = 'const' param go_type? '=' Any
-	| 'const' '(' Any ')'
-	
-sub_const = param go_type
-		| param go_type? '=' operand
-
-
-
-water_entity	=	Any 'UNREACHED@@@'
-
-package_name =	ID
-import_name	 =	ID
-param 		 =	ID
-f_type		 =	ID
-f_name		 =	ID
-t_name		 =	ID
-
-params =  param (',' param)+ 
-
-map = 'map' '[' go_type ']' go_type
-chan = 	'chan' go_type
-		| 'chan<-' go_type
-		| '<-chan' go_type
-
-go_type			= ID | arr_ptr* (ID | anon | map | chan)
-
-arr_ptr			= '*'* ('[' DEC? SPREAD? ']' '*'*)*
-
-operand			= ITALIC_QUOTE | STRING | CHAR | HEX | DEC | ID
+anything = Any
 
 %%
 
 %parsing {
-	recovery entity 
+	recovery anything 
 	fragment STRING_INT_CODE
-	start package
-	skip COMMENT STRING DIRECTIVE
+	start sourceFile
+	skip COMMENT
 }
 
 %nodes {
-	ghost entity anon
+	ghost
 	leaf 
 }
 
