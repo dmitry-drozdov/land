@@ -21,6 +21,11 @@ namespace Land.GUI
                 return Name == "" && Args.Count == 0 && Return == 0 && ArgsCnt == 0;
             }
         }
+
+        public void Reverse()
+        {
+            Args.Reverse();
+        }
     }
 
 

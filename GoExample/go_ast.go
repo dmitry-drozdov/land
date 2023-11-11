@@ -90,7 +90,10 @@ func ParseFile(path string) (map[string]*FuncStat, error) {
 			}
 
 			for _, y := range x.Type.Params.List {
-				add(HumanType(y.Type))
+				// can be several args with 1 type: n int, j, k, l float
+				for i := 0; i < len(y.Names); i++ {
+					add(HumanType(y.Type))
+				}
 			}
 		}
 		return true

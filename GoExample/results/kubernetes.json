@@ -2,8 +2,8 @@
  "Source": "kubernetes",
  "SkippedFiles": 0,
  "SkippedPerCent": 0.0,
- "Fail": 93,
- "Ok": 127511,
- "Accuracy": 99.9,
- "ArgsCover": 94.8
+ "Fail": 360,
+ "Ok": 127244,
+ "Accuracy": 99.7,
+ "ArgsCover": 99.8
 }

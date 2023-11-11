@@ -2,8 +2,8 @@
  "Source": "go-redis",
  "SkippedFiles": 0,
  "SkippedPerCent": 0.0,
- "Fail": 0,
- "Ok": 1414,
- "Accuracy": 100.0,
- "ArgsCover": 91.8
+ "Fail": 4,
+ "Ok": 1410,
+ "Accuracy": 99.7,
+ "ArgsCover": 99.7
 }

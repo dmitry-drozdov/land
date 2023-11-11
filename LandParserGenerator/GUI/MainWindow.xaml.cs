@@ -862,6 +862,8 @@ namespace Land.GUI
                                                 var onlyTypes = args.All(a => a.Children.Count(x => x.ToString().StartsWith("ID: ")
                                                                                                 || x.ToString().StartsWith("go_type")) == 1);
 
+                                                args = args.Reverse();
+                                                string lastType = null;
                                                 foreach (var arg in args)
                                                 {
                                                     var types = arg.Children.FirstOrDefault(x => x.ToString().StartsWith("go_type"));
@@ -876,9 +878,12 @@ namespace Land.GUI
                                                     }
                                                     if (type != null)
                                                     {
-                                                        res.Args.Add(type.ToString().Replace("ID: ", ""));
+                                                        lastType = type.ToString().Replace("ID: ", "");
                                                     }
+                                                    if (lastType != null)
+                                                        res.Args.Add(lastType);
                                                 }
+                                                res.Reverse();
                                                 break;
                                             case "f_returns":
                                                 res.Return = pcc.Children.Count(x => x.ToString() == "f_return" || x.ToString().StartsWith("go_type"));
