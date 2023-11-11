@@ -94,6 +94,10 @@ func ParseFile(path string) (map[string]*FuncStat, error) {
 				for i := 0; i < len(y.Names); i++ {
 					add(HumanType(y.Type))
 				}
+				// at least 1 name always presented
+				if len(y.Names) == 0 {
+					add(HumanType(y.Type))
+				}
 			}
 		}
 		return true

@@ -1,9 +1,10 @@
 {
  "Source": "moby",
+ "TotalFiles": 7513,
  "SkippedFiles": 0,
  "SkippedPerCent": 0.0,
- "Fail": 61,
- "Ok": 57590,
+ "Fail": 36,
+ "Ok": 57615,
  "Accuracy": 99.9,
- "ArgsCover": 94.4
+ "ArgsCover": 100.0
 }
