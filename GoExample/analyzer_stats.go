@@ -52,7 +52,7 @@ func (a *AnalyzerStats) Dump() error {
 	a.init()
 	bytes, err := a.marshal()
 	if err != nil {
-				return err
+		return err
 	}
 	return ioutil.WriteFile(fmt.Sprintf("results/%s.json", a.Source), bytes, 0644)
 }
