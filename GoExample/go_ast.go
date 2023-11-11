@@ -111,6 +111,8 @@ func HumanType(tp ast.Expr) string {
 		return HumanType(t.Elt)
 	case *ast.IndexExpr:
 		return HumanType(t.X)
+	case *ast.IndexListExpr:
+		return HumanType(t.X)
 	case *ast.FuncType:
 		return "anon_func_title"
 	case *ast.ChanType:

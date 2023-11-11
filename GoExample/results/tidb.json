@@ -2,8 +2,8 @@
  "Source": "tidb",
  "SkippedFiles": 0,
  "SkippedPerCent": 0.0,
- "Fail": 49,
- "Ok": 31344,
- "Accuracy": 99.8,
+ "Fail": 36,
+ "Ok": 31357,
+ "Accuracy": 99.9,
  "ArgsCover": 94.4
 }
