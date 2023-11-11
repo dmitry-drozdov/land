@@ -13,7 +13,7 @@ func main() {
 	}
 	fmt.Println("reading results DONE")
 
-	sname := "tidb"
+	sname := "docker-ce"
 	source := fmt.Sprintf(`e:\phd\my\%s\`, sname)
 
 	fmt.Println("parsing files with go ast...")

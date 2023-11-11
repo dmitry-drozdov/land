@@ -859,7 +859,8 @@ namespace Land.GUI
                                                 if (res.ArgsCnt == 0)
                                                     break;
 
-                                                var onlyTypes = args.All(a => a.Children.Count() == 1);
+                                                var onlyTypes = args.All(a => a.Children.Count(x => x.ToString().StartsWith("ID: ")
+                                                                                                || x.ToString().StartsWith("go_type")) == 1);
 
                                                 foreach (var arg in args)
                                                 {
