@@ -61,6 +61,7 @@ sub_generic = ID '~'? go_type?
 
 f_args = '(' ')'
 		|'(' (f_arg ',')* f_arg ','? ')'
+		
 f_arg = ID
 		|ID SPREAD? (go_type generic?)
 		|SPREAD? (go_type generic?)
@@ -114,6 +115,7 @@ chan = 	'chan' go_type
 		| '<-chan' go_type
 
 go_type			= ID | arr_ptr* (ID | anon | map | chan)
+go_type_func	= ID | anon | map | chan
 
 arr_ptr			= '*'* ('[' DEC? SPREAD? ']' '*'*)*
 

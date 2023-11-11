@@ -13,7 +13,7 @@ func main() {
 	}
 	fmt.Println("reading results DONE")
 
-	sname := "docker-ce"
+	sname := "tidb"
 	source := fmt.Sprintf(`e:\phd\my\%s\`, sname)
 
 	fmt.Println("parsing files with go ast...")
@@ -47,8 +47,8 @@ func main() {
 			}
 
 			if !v.EqualTo(funcs) {
-				// fmt.Println()
-				// fmt.Println(kf, v, funcs)
+				fmt.Println()
+				fmt.Println(kf, v, funcs)
 				a.mismatch++
 				continue
 			}

@@ -856,17 +856,26 @@ namespace Land.GUI
                                             case "f_args":
                                                 var args = pcc.Children.Where(x => x.ToString() == "f_arg");
                                                 res.ArgsCnt = args.Count();
+                                                if (res.ArgsCnt == 0)
+                                                    break;
+
+                                                var onlyTypes = args.All(a => a.Children.Count() == 1);
+
                                                 foreach (var arg in args)
                                                 {
-                                                    var types = arg.Children.FirstOrDefault(x => x.ToString() == "go_type");
+                                                    var types = arg.Children.FirstOrDefault(x => x.ToString().StartsWith("go_type"));
+                                                    Node type;
                                                     if (types != null)
                                                     {
-                                                        var type = types.Children.First(x => x.ToString() != "arr_ptr").ToString().Replace("ID: ", "");
-                                                        res.Args.Add(type);
+                                                        type = types.Children.First(x => x.ToString() != "arr_ptr");
                                                     }
                                                     else
                                                     {
-                                                        //Console.WriteLine(string.Join(" ",arg.Children.Select(x=>x.ToString())));
+                                                        type = arg.Children.FirstOrDefault(x => x.ToString().StartsWith("ID: ") && onlyTypes);
+                                                    }
+                                                    if (type != null)
+                                                    {
+                                                        res.Args.Add(type.ToString().Replace("ID: ", ""));
                                                     }
                                                 }
                                                 break;
