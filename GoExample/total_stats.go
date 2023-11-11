@@ -41,7 +41,14 @@ func GetTotalStats(root string) error {
 		return nil
 	})
 
-	fmt.Printf("total files: [%v], skipped files: [%v], accuracy: [%v], args cover: [%v]", ts.TotalFiles, ts.SkippedFiles, ts.Accuracy/RoundedFloat(cnt), ts.ArgsCover/RoundedFloat(cnt))
+	fmt.Printf("total files: [%v], skipped files: [%v], ok methods: [%v], fail mathods: [%v], accuracy: [%.3f%%], args cover: [%v]",
+		ts.TotalFiles,
+		ts.SkippedFiles,
+		ts.Ok,
+		ts.Fail,
+		float64(ts.Ok)/float64(ts.Ok+ts.Fail)*100,
+		ts.ArgsCover/RoundedFloat(cnt),
+	)
 
 	return err
 }
