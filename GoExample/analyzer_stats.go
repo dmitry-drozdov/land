@@ -14,6 +14,7 @@ type AnalyzerStats struct {
 	lnLight    int
 
 	Source         string
+	TotalFiles     int
 	SkippedFiles   int
 	SkippedPerCent RoundedFloat
 	Fail           int
@@ -26,6 +27,7 @@ func (a *AnalyzerStats) init() {
 	total := a.mismatch + a.match
 	skipped := a.lnFull - a.lnLight
 
+	a.TotalFiles = a.lnFull
 	a.SkippedFiles = skipped
 	a.SkippedPerCent = ratio(skipped, a.lnFull)
 	a.Fail = a.mismatch
