@@ -57,6 +57,17 @@ func (a *AnalyzerStats) Dump() error {
 	return ioutil.WriteFile(fmt.Sprintf("results/%s.json", a.Source), bytes, 0644)
 }
 
+func (a *AnalyzerStats) Add(b AnalyzerStats) {
+	a.Source = ""
+	a.TotalFiles += b.TotalFiles
+	a.SkippedFiles += b.SkippedFiles
+	a.SkippedPerCent += b.SkippedPerCent
+	a.Fail += b.Fail
+	a.Ok += b.Ok
+	a.Accuracy += b.Accuracy
+	a.ArgsCover += b.ArgsCover
+}
+
 func ratio(part, total int) RoundedFloat {
 	return RoundedFloat(float64(part) / float64(total) * 100)
 }

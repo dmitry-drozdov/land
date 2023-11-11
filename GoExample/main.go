@@ -61,4 +61,9 @@ func main() {
 		panic(err)
 	}
 
+	err = GetTotalStats("results")
+	if err != nil {
+		panic(err)
+	}
+
 }
