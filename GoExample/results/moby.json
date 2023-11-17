@@ -3,8 +3,8 @@
  "TotalFiles": 7513,
  "SkippedFiles": 0,
  "SkippedPerCent": 0.0,
- "Fail": 36,
- "Ok": 57615,
+ "Fail": 35,
+ "Ok": 57616,
  "Accuracy": 99.9,
  "ArgsCover": 100.0
 }

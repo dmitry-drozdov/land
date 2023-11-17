@@ -13,7 +13,11 @@ func main() {
 	}
 	fmt.Println("reading results DONE")
 
-	sname := "moby"
+	//sname := "kubernetes"
+	//sname := "moby"
+	//sname := "go-redis"
+	//sname := "docker-ce"
+	sname := "tidb"
 	source := fmt.Sprintf(`e:\phd\my\%s\`, sname)
 
 	fmt.Println("parsing files with go ast...")
