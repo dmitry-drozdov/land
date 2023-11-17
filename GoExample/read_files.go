@@ -6,12 +6,13 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 func ReadResults(root string) (map[string]map[string]*FuncStat, error) {
 	res := make(map[string]map[string]*FuncStat, 10000)
 	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
-		if info.IsDir() {
+		if info == nil || info.IsDir() {
 			return nil
 		}
 		if err != nil {
@@ -27,9 +28,13 @@ func ReadResults(root string) (map[string]map[string]*FuncStat, error) {
 		fileScanner := bufio.NewScanner(readFile)
 		fileScanner.Split(bufio.ScanLines)
 
-		_, ok := res[info.Name()]
+		pathBk := path
+		pathBk = strings.ReplaceAll(pathBk, root, "")
+		pathBk = strings.ReplaceAll(pathBk, `\`, "")
+
+		_, ok := res[pathBk]
 		if !ok {
-			res[info.Name()] = make(map[string]*FuncStat, 10)
+			res[pathBk] = make(map[string]*FuncStat, 10)
 		}
 
 		for fileScanner.Scan() {
@@ -39,7 +44,7 @@ func ReadResults(root string) (map[string]map[string]*FuncStat, error) {
 				return err
 			}
 
-			res[info.Name()][ln.Name] = ln
+			res[pathBk][ln.Name] = ln
 		}
 
 		return nil

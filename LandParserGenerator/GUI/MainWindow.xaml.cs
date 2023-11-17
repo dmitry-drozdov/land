@@ -827,10 +827,14 @@ namespace Land.GUI
                             new List<string> { "name" }
                         );
 
-                        var pth = @"E:\phd\my\results\";
+                        var oldPath = @"E:\phd\my";
+                        var newPath = @"E:\phd\my\results";
+                        var path = argument.Files[counter].Replace(oldPath, newPath);
 
+                        FileInfo file = new FileInfo(path);
+                        file.Directory.Create();
 
-                        using (StreamWriter sw = File.CreateText(pth + argument.Files[counter].Replace(PackageSource, "").Replace(@"\", "").Replace(@"\", "").Replace(":", "")))
+                        using (StreamWriter sw = File.CreateText(path))
                         {
                             foreach (var r in root.Children)
                             {
