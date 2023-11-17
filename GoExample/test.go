@@ -278,9 +278,9 @@ func ReturnSeveral(n int, s struct{ p bool }, i interface{}) (struct{}, interfac
 	return struct{}{}, nil
 }
 
-/* pure comment
-
- */
+/*
+pure comment
+*/
 func ReturnSeveral3(n int, s struct{ p bool }, i interface{ Action() struct{} }) (*[]int, [][10]*bool, func(int, bool) []int) {
 	return &[]int{}, nil, nil
 }
@@ -309,6 +309,14 @@ func Chan(<-chan int) chan<- map[chan<- int]struct{} {
 func Chan2(chan map[chan int]chan string) chan map[chan interface{}]func() {
 	close(ch2)
 	close(ch3)
+	return nil
+}
+
+func ReturnFunc(func()) func(int) map[struct{}]func() (int, error) {
+	return func(i int) map[struct{}]func() (int, error) { return nil }
+}
+
+func ReturnFunc2(j int) func(i int) FMp {
 	return nil
 }
 
