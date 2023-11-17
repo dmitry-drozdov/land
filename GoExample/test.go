@@ -316,7 +316,11 @@ func ReturnFunc(func()) func(int) map[struct{}]func() (int, error) {
 	return func(i int) map[struct{}]func() (int, error) { return nil }
 }
 
-func ReturnFunc2(j int) func(i int) FMp {
+func ReturnFunc2(j int) func(c *int) FMp {
+	return nil // our case!
+}
+
+func ReturnFunc3(j *int) FMp {
 	return nil
 }
 
