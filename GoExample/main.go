@@ -6,6 +6,7 @@ import (
 )
 
 var folders = []string{
+	"backend",
 	"azure-service-operator",
 	"kubernetes",
 	"go-redis",

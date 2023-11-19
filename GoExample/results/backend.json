@@ -1,0 +1,12 @@
+{
+ "Source": "backend",
+ "TotalFiles": 11318,
+ "SkippedFiles": 0,
+ "SkippedPerCent": 0,
+ "Fail": 133,
+ "Ok": 129600,
+ "Accuracy": 99.9,
+ "ArgsCover": 100,
+ "VendorFuncs": 133,
+ "VendorFuncsPerCent": 100
+}
