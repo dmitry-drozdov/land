@@ -1,0 +1,12 @@
+{
+ "Source": "azure-service-operator",
+ "TotalFiles": 3433,
+ "SkippedFiles": 0,
+ "SkippedPerCent": 0,
+ "Fail": 18,
+ "Ok": 77425,
+ "Accuracy": 99.98,
+ "ArgsCover": 100,
+ "VendorFuncs": 0,
+ "VendorFuncsPerCent": 0
+}
