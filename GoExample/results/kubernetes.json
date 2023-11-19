@@ -6,5 +6,7 @@
  "Fail": 93,
  "Ok": 127511,
  "Accuracy": 99.9,
- "ArgsCover": 100.0
+ "ArgsCover": 100.0,
+ "VendorFuncs": 59,
+ "VendorFuncsPerCent": 63.4
 }

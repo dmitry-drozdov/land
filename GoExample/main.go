@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 )
 
 var folders = []string{
@@ -57,9 +58,18 @@ func doWork(sname string) error {
 		}
 
 		for k, v := range vf {
+			countMismatch := func() {
+				// fmt.Println()
+				// fmt.Println(kf, v)
+				if strings.Contains(kf, "vendor") {
+					a.cntVendor++
+				}
+				a.mismatch++
+			}
+
 			funcs, ok := kl[k]
 			if !ok {
-				a.mismatch++
+				countMismatch()
 				continue
 			}
 
@@ -68,9 +78,7 @@ func doWork(sname string) error {
 			}
 
 			if !v.EqualTo(funcs) {
-				//fmt.Println()
-				//fmt.Println(kf, v, funcs)
-				a.mismatch++
+				countMismatch()
 				continue
 			}
 

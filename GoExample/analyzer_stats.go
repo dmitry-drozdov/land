@@ -12,15 +12,18 @@ type AnalyzerStats struct {
 	match      int
 	lnFull     int
 	lnLight    int
+	cntVendor  int
 
-	Source         string
-	TotalFiles     int
-	SkippedFiles   int
-	SkippedPerCent RoundedFloat
-	Fail           int
-	Ok             int
-	Accuracy       RoundedFloat
-	ArgsCover      RoundedFloat
+	Source             string
+	TotalFiles         int
+	SkippedFiles       int
+	SkippedPerCent     RoundedFloat
+	Fail               int
+	Ok                 int
+	Accuracy           RoundedFloat
+	ArgsCover          RoundedFloat
+	VendorFuncs        int
+	VendorFuncsPerCent RoundedFloat
 }
 
 func (a *AnalyzerStats) init() {
@@ -34,6 +37,9 @@ func (a *AnalyzerStats) init() {
 	a.Ok = a.match
 	a.Accuracy = ratio(a.match, total)
 	a.ArgsCover = ratio(total-a.notAllArgs, total)
+
+	a.VendorFuncs = a.cntVendor
+	a.VendorFuncsPerCent = ratio(a.cntVendor, a.mismatch)
 }
 
 func (a *AnalyzerStats) marshal() ([]byte, error) {
@@ -66,8 +72,13 @@ func (a *AnalyzerStats) Add(b AnalyzerStats) {
 	a.Ok += b.Ok
 	a.Accuracy += b.Accuracy
 	a.ArgsCover += b.ArgsCover
+	a.VendorFuncs += b.VendorFuncs
+	a.VendorFuncsPerCent += b.VendorFuncsPerCent
 }
 
 func ratio(part, total int) RoundedFloat {
+	if total == 0 {
+		return 0
+	}
 	return RoundedFloat(float64(part) / float64(total) * 100)
 }
