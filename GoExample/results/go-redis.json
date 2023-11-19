@@ -2,11 +2,11 @@
  "Source": "go-redis",
  "TotalFiles": 118,
  "SkippedFiles": 0,
- "SkippedPerCent": 0.0,
+ "SkippedPerCent": 0,
  "Fail": 0,
  "Ok": 1414,
- "Accuracy": 100.0,
- "ArgsCover": 100.0,
+ "Accuracy": 100,
+ "ArgsCover": 100,
  "VendorFuncs": 0,
- "VendorFuncsPerCent": 0.0
+ "VendorFuncsPerCent": 0
 }

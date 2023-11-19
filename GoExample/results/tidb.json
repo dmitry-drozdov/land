@@ -2,11 +2,11 @@
  "Source": "tidb",
  "TotalFiles": 2962,
  "SkippedFiles": 0,
- "SkippedPerCent": 0.0,
+ "SkippedPerCent": 0,
  "Fail": 31,
  "Ok": 31362,
  "Accuracy": 99.9,
- "ArgsCover": 100.0,
+ "ArgsCover": 100,
  "VendorFuncs": 0,
- "VendorFuncsPerCent": 0.0
+ "VendorFuncsPerCent": 0
 }

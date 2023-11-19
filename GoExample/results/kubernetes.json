@@ -2,11 +2,11 @@
  "Source": "kubernetes",
  "TotalFiles": 15711,
  "SkippedFiles": 0,
- "SkippedPerCent": 0.0,
+ "SkippedPerCent": 0,
  "Fail": 93,
  "Ok": 127511,
- "Accuracy": 99.9,
- "ArgsCover": 100.0,
+ "Accuracy": 99.93,
+ "ArgsCover": 100,
  "VendorFuncs": 59,
- "VendorFuncsPerCent": 63.4
+ "VendorFuncsPerCent": 63.44
 }

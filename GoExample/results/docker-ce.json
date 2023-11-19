@@ -2,11 +2,11 @@
  "Source": "docker-ce",
  "TotalFiles": 9331,
  "SkippedFiles": 0,
- "SkippedPerCent": 0.0,
+ "SkippedPerCent": 0,
  "Fail": 73,
  "Ok": 75027,
  "Accuracy": 99.9,
- "ArgsCover": 100.0,
+ "ArgsCover": 100,
  "VendorFuncs": 72,
- "VendorFuncsPerCent": 98.6
+ "VendorFuncsPerCent": 98.63
 }

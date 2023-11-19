@@ -2,11 +2,11 @@
  "Source": "moby",
  "TotalFiles": 7513,
  "SkippedFiles": 0,
- "SkippedPerCent": 0.0,
+ "SkippedPerCent": 0,
  "Fail": 35,
  "Ok": 57616,
- "Accuracy": 99.9,
- "ArgsCover": 100.0,
+ "Accuracy": 99.94,
+ "ArgsCover": 100,
  "VendorFuncs": 34,
- "VendorFuncsPerCent": 97.1
+ "VendorFuncsPerCent": 97.14
 }
