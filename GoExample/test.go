@@ -252,11 +252,11 @@ var (
 	I6 *map[struct{}]interface{} = new(map[struct{}]interface{})
 )
 
-func ReturnInterface() interface{ Action(int) struct{} } {
+func ReturnInterface(func() struct{}, map[chan<- int]<-chan struct{ f interface{} }) interface{ Action(int) struct{} } {
 	return nil
 }
 
-func ReturnInterface2() (**[]*[10][]interface{ Action(int) struct{} }, error, bool) {
+func ReturnInterface2(i int, j, k, l func() (int, float64)) (**[]*[10][]interface{ Action(int) struct{} }, error, bool) {
 	return nil, nil, false
 }
 

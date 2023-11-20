@@ -50,6 +50,7 @@ func ParseFiles(root string) (map[string]map[string]*FuncStat, error) {
 
 		return nil
 	})
+	g.Wait()
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +59,7 @@ func ParseFiles(root string) (map[string]map[string]*FuncStat, error) {
 		return nil, fmt.Errorf("empty output")
 	}
 
-	return res, g.Wait()
+	return res, nil
 }
 
 func ParseFile(path string) (map[string]*FuncStat, error) {

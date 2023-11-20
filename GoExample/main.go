@@ -6,6 +6,7 @@ import (
 )
 
 var folders = []string{
+	"test",
 	"backend",
 	"azure-service-operator",
 	"kubernetes",
@@ -56,6 +57,7 @@ func doWork(sname string) error {
 	for kf, vf := range full {
 		kl, ok := light[kf]
 		if !ok {
+			a.mismatch++
 			continue
 		}
 

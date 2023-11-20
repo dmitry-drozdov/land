@@ -1,0 +1,12 @@
+{
+ "Source": "test",
+ "TotalFiles": 2,
+ "SkippedFiles": 0,
+ "SkippedPerCent": 0,
+ "Fail": 2,
+ "Ok": 32,
+ "Accuracy": 94.12,
+ "ArgsCover": 100,
+ "VendorFuncs": 0,
+ "VendorFuncsPerCent": 0
+}
