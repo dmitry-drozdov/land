@@ -17,24 +17,22 @@ import (
 func ParseFiles(root string) (map[string]map[string]*FuncStat, error) {
 	res := make(map[string]map[string]*FuncStat, 10000)
 	g := errgroup.Group{}
-	g.SetLimit(runtime.NumCPU() * 2)
+	g.SetLimit(runtime.NumCPU() * 5)
 	l := sync.Mutex{}
-	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+	err := filepath.Walk(root, func(path string, info os.FileInfo, _ error) error {
 		if info.IsDir() || filepath.Ext(info.Name()) != ".go" {
 			return nil
 		}
-		if err != nil {
-			return err
-		}
-
-		readFile, err := os.Open(path)
-		if err != nil {
-			return err
-		}
-		defer readFile.Close()
 
 		pathBk := path
+
 		g.Go(func() error {
+			readFile, err := os.Open(path)
+			if err != nil {
+				return err
+			}
+			defer readFile.Close()
+
 			data, err := ParseFile(pathBk)
 			if err != nil {
 				return err
