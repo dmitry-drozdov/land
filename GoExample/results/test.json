@@ -3,9 +3,9 @@
  "TotalFiles": 2,
  "SkippedFiles": 0,
  "SkippedPerCent": 0,
- "Fail": 2,
- "Ok": 32,
- "Accuracy": 94.12,
+ "Fail": 0,
+ "Ok": 34,
+ "Accuracy": 100,
  "ArgsCover": 100,
  "VendorFuncs": 0,
  "VendorFuncsPerCent": 0

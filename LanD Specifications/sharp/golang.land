@@ -28,6 +28,7 @@ SQUARE_BRACKETED : %left ('['|GENERAL_ATTRIBUTE_START) %right ']'
 HEX 		: '0x'[0-9a-fA-F]+
 DEC			: '-'?[0-9]+
 
+NL			: '\n'
  
 package_content	=	entity*
 package			=	'package' package_name  import*  package_content
@@ -46,7 +47,9 @@ alias = 'type' t_name generic? '='? go_type
 anon_struct = 'struct' '{' Any '}'
 anon_interface = 'interface' '{' Any '}'
 
-func = 'func' f_reciever? f_name generic? f_args f_returns ('{' Any '}')?
+func = 'func' f_reciever? f_name generic? f_args f_returns ('{' Any '}')
+	| 'func' f_reciever? f_name generic? f_args f_returns NL
+	| 'func' f_reciever? f_name generic? f_args NL
 anon_func = 'func' f_args f_returns '{' Any '}'
 anon_func_title = 'func' f_args f_returns
 
@@ -127,7 +130,7 @@ operand			= ITALIC_QUOTE | STRING | CHAR | HEX | DEC | ID
 	recovery entity 
 	fragment STRING_INT_CODE
 	start package
-	skip COMMENT STRING DIRECTIVE
+	skip COMMENT STRING DIRECTIVE NL
 }
 
 %nodes {
