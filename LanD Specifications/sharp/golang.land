@@ -17,7 +17,7 @@ STRING_INT_CODE : '{' (STRING|CHAR|.)*? '}'
 
 CHAR		: '\'' ('\\\''|'\\\\'|.)*? '\''
 CLASS_STRUCT_INTERFACE : 'struct'|'interface'
-ID			: '@'?[_a-zA-Z\u0430-\u044F\u0410-\u042F\u0192][_0-9a-zA-Z\u0430-\u044F\u0410-\u042F.\u0192]*
+ID			: '@'?[_a-zA-Z\u0430-\u044F\u0410-\u042F\u0192\u06F0][_0-9a-zA-Z\u0430-\u044F\u0410-\u042F.\u0192]*
 
 GENERAL_ATTRIBUTE_START	:	'[' [ \t\r\f\n]*? ('assembly'|'module')
  
@@ -47,17 +47,17 @@ alias = 'type' t_name generic? '='? go_type
 anon_struct = 'struct' '{' Any '}'
 anon_interface = 'interface' '{' Any '}'
 
-func = 'func' f_reciever? f_name generic? f_args f_returns ('{' Any '}')
-	| 'func' f_reciever? f_name generic? f_args f_returns NL
-	| 'func' f_reciever? f_name generic? f_args NL
+func = 'func' f_reciever? f_name generic2? f_args f_returns ('{' Any '}')
+	| 'func' f_reciever? f_name generic2? f_args f_returns NL
+	| 'func' f_reciever? f_name generic2? f_args NL
 anon_func = 'func' f_args f_returns '{' Any '}'
 anon_func_title = 'func' f_args f_returns
 
 
 
-f_reciever = '(' param '*'? f_type generic? ')' 
-			|'(' '*'? f_type generic?')'
-			|'(' f_type generic?')'  // ???
+f_reciever = '(' param '*'? f_type generic2? ')' 
+			|'(' '*'? f_type generic2?')'
+			|'(' f_type generic2?')'  // ???
 
 generic = '[' (sub_generic ',')* sub_generic ']'
 sub_generic = '*'? ID '~'? go_type? 
@@ -67,14 +67,14 @@ f_args = '(' ')'
 		|'(' (f_arg ',')* f_arg ','? ')'
 		
 f_arg = ID
-		|ID SPREAD? (go_type generic?)
-		|SPREAD? (go_type generic?)
+		|ID SPREAD? (go_type )
+		|SPREAD? (go_type )
 
 f_returns = Any 
-		| go_type generic?
+		| go_type 
 		|'(' (f_return ',')* f_return ','? ')' 
 f_return = ID
-		|ID? (go_type generic?)
+		|ID? (go_type )
 
 		
 
@@ -119,10 +119,12 @@ chan = 	'chan' go_type
 		| 'chan<-' go_type
 		| '<-chan' go_type
 
-go_type			= ID | arr_ptr* (ID | anon | map | chan)
+go_type			= (ID | arr_ptr* (ID | anon | map | chan)) generic2?
 go_type_func	= ID | anon | map | chan
 
 arr_ptr			= '*'* ('[' DEC? SPREAD? ID? ']' '*'*)*
+
+generic2		= '[' Any ']'
 
 operand			= ITALIC_QUOTE | STRING | CHAR | HEX | DEC | ID
 
