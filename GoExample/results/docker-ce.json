@@ -3,10 +3,10 @@
  "TotalFiles": 9331,
  "SkippedFiles": 0,
  "SkippedPerCent": 0,
- "Fail": 13,
- "Ok": 75087,
- "Accuracy": 99.98,
+ "Fail": 11,
+ "Ok": 75089,
+ "Accuracy": 99.99,
  "ArgsCover": 100,
- "VendorFuncs": 12,
- "VendorFuncsPerCent": 92.31
+ "VendorFuncs": 10,
+ "VendorFuncsPerCent": 90.91
 }
