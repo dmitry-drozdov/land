@@ -17,7 +17,7 @@ import (
 func ParseFiles(root string) (map[string]map[string]*FuncStat, error) {
 	res := make(map[string]map[string]*FuncStat, 10000)
 	g := errgroup.Group{}
-	g.SetLimit(runtime.NumCPU() * 5)
+	g.SetLimit(runtime.NumCPU() * 8)
 	l := sync.Mutex{}
 	err := filepath.Walk(root, func(path string, info os.FileInfo, _ error) error {
 		if info.IsDir() || filepath.Ext(info.Name()) != ".go" {
