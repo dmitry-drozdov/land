@@ -36,13 +36,8 @@ package			=	'package' package_name  import*  package_content
 import = 'import' AnyInclude(QUOTE) | import_list
 import_list = 'import' '(' Any ')'
 
-entity	= water_entity |  func
+entity	= water_entity | func
 
-struct = 'type' t_name 'struct' '{' Any '}'
-interface = 'type' t_name 'interface' '{' Any '}'
-alias = 'type' t_name generic? '='? go_type
-		|'type' t_name '[' operand? ']' go_type
-		|'type' '(' Any ')'
 
 anon_struct = 'struct' '{' Any '}'
 anon_interface = 'interface' '{' Any '}'
@@ -50,18 +45,14 @@ anon_interface = 'interface' '{' Any '}'
 func = 'func' f_reciever? f_name generic2? f_args f_returns ('{' Any '}')
 	| 'func' f_reciever? f_name generic2? f_args f_returns NL
 	| 'func' f_reciever? f_name generic2? f_args NL
+
 anon_func = 'func' f_args f_returns '{' Any '}'
 anon_func_title = 'func' f_args f_returns
-
 
 
 f_reciever = '(' param '*'? f_type generic2? ')' 
 			|'(' '*'? f_type generic2?')'
 			|'(' f_type generic2?')'  // ???
-
-generic = '[' (sub_generic ',')* sub_generic ']'
-sub_generic = '*'? ID '~'? go_type? 
-			| anon
 
 f_args = '(' ')'
 		|'(' (f_arg ',')* f_arg ','? ')'
@@ -76,29 +67,7 @@ f_returns = Any
 f_return = go_type | go_type go_type
 
 		
-
 anon = anon_func_title | anon_struct | anon_interface
-
-func_var = 'func' f_args f_returns '{' Any '}'
-struct_var = 'struct' '{' Any '}' '{' Any '}'
-
-var = 'var' sub_var
-	| 'var' '(' Any ')'
-	
-	
-sub_var = params go_type
-		| param go_type
-		| param go_type? '=' '&'? (operand | (operand '(' Any ')') | (go_type '{' Any '}') | (Any | func_var | struct_var))
-		| params go_type? '=' (right_var ',')* right_var
-		
-right_var = operand | (operand '(' Any ')') | (go_type '{' Any '}') | (Any | func_var | struct_var)		
-
-const = 'const' param go_type? '=' Any
-	| 'const' '(' Any ')'
-	
-sub_const = param go_type
-		| param go_type? '=' operand
-
 
 
 water_entity	=	Any 
@@ -110,7 +79,6 @@ f_type		 =	ID | '(' ID ')'
 f_name		 =	ID
 t_name		 =	ID
 
-params =  param (',' param)+ 
 
 map = 'map' '[' go_type ']' go_type
 	| 'map' '[' go_type ']' '(' go_type ')'
@@ -123,13 +91,10 @@ go_type			= (ID
 					| arr_ptr* '(' (ID | anon | map | chan) ')'  
 				) generic2?
 
-go_type_func	= ID | anon | map | chan
-
 arr_ptr			= '*'* ('[' DEC? SPREAD? ID? ']' '*'*)*
 
 generic2		= '[' Any ']'
 
-operand			= ITALIC_QUOTE | STRING | CHAR | HEX | DEC | ID
 
 %%
 
