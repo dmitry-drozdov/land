@@ -17,7 +17,7 @@ STRING_INT_CODE : '{' (STRING|CHAR|.)*? '}'
 
 CHAR		: '\'' ('\\\''|'\\\\'|.)*? '\''
 CLASS_STRUCT_INTERFACE : 'struct'|'interface'
-ID			: '@'?[_a-zA-Z\u0430-\u044F\u0410-\u042F\u0192\u06F0][_0-9a-zA-Z\u0430-\u044F\u0410-\u042F.\u0192]*
+ID			: '@'?[_a-zA-Z\u0430-\u044F\u0410-\u042F\u0192\u06F0][_0-9a-zA-Z\u0430-\u044F\u0410-\u042F.\u0192\u06F0]*
 
 GENERAL_ATTRIBUTE_START	:	'[' [ \t\r\f\n]*? ('assembly'|'module')
  
@@ -73,8 +73,7 @@ f_arg = ID
 f_returns = Any 
 		| go_type 
 		|'(' (f_return ',')* f_return ','? ')' 
-f_return = ID
-		|ID? (go_type )
+f_return = go_type | go_type go_type
 
 		
 
@@ -119,7 +118,11 @@ chan = 	'chan' go_type
 		| 'chan<-' go_type
 		| '<-chan' go_type
 
-go_type			= (ID | arr_ptr* (ID | anon | map | chan)) generic2?
+go_type			= (ID 
+					| arr_ptr* (ID | anon | map | chan) 
+					| arr_ptr* '(' (ID | anon | map | chan) ')'  
+				) generic2?
+
 go_type_func	= ID | anon | map | chan
 
 arr_ptr			= '*'* ('[' DEC? SPREAD? ID? ']' '*'*)*

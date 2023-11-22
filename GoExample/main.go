@@ -63,8 +63,8 @@ func doWork(sname string) error {
 
 		for k, v := range vf {
 			countMismatch := func() {
-				// fmt.Println()
-				// fmt.Println(kf, v)
+				fmt.Println()
+				fmt.Println(kf, v)
 				if strings.Contains(kf, "vendor") {
 					a.cntVendor++
 				}
