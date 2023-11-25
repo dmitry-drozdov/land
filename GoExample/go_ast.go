@@ -27,12 +27,6 @@ func ParseFiles(root string) (map[string]map[string]*FuncStat, error) {
 		pathBk := path
 
 		g.Go(func() error {
-			readFile, err := os.Open(path)
-			if err != nil {
-				return err
-			}
-			defer readFile.Close()
-
 			data, err := ParseFile(pathBk)
 			if err != nil {
 				return err
