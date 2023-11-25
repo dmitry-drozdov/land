@@ -19,7 +19,6 @@ CHAR		: '\'' ('\\\''|'\\\\'|.)*? '\''
 CLASS_STRUCT_INTERFACE : 'struct'|'interface'
 ID			: '@'?[_a-zA-Z\u0430-\u044F\u0410-\u042F\u0192\u06F0\u03A9][_0-9a-zA-Z\u0430-\u044F\u0410-\u042F.\u0192\u06F0\u03A9]*
 
-GENERAL_ATTRIBUTE_START	:	'[' [ \t\r\f\n]*? ('assembly'|'module')
  
 CURVE_BRACKETED : %left '{' %right '}'
 ROUND_BRACKETED : %left '(' %right ')'
