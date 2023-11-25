@@ -94,7 +94,7 @@ go_type			= (ID
 					| arr_ptr* LB (ID | anon | map | chan) RB
 				) generic2?
 
-arr_ptr			= '*'* ('[' DEC? SPREAD? ID? ']' '*'*)*
+arr_ptr			= '*'* ('[' Any ']' '*'*)*
 
 generic2		= '[' Any ']'
 

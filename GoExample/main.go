@@ -6,6 +6,7 @@ import (
 )
 
 var folders = []string{
+	"gvisor",
 	"test",
 	"backend",
 	"azure-service-operator",

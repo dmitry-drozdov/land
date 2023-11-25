@@ -1,0 +1,12 @@
+{
+ "Source": "gvisor",
+ "TotalFiles": 1912,
+ "SkippedFiles": 0,
+ "SkippedPerCent": 0,
+ "Fail": 0,
+ "Ok": 16962,
+ "Accuracy": 100,
+ "ArgsCover": 100,
+ "VendorFuncs": 0,
+ "VendorFuncsPerCent": 0
+}
