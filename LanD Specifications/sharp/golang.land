@@ -19,6 +19,9 @@ CHAR		: '\'' ('\\\''|'\\\\'|.)*? '\''
 CLASS_STRUCT_INTERFACE : 'struct'|'interface'
 ID			: '@'?[_a-zA-Z\u0430-\u044F\u0410-\u042F\u0192\u06F0\u03A9][_0-9a-zA-Z\u0430-\u044F\u0410-\u042F.\u0192\u06F0\u03A9]*
 
+
+LB			: '('
+RB			: ')'
  
 CURVE_BRACKETED : %left '{' %right '}'
 ROUND_BRACKETED : %left '(' %right ')'
@@ -28,12 +31,13 @@ HEX 		: '0x'[0-9a-fA-F]+
 DEC			: '-'?[0-9]+
 
 NL			: '\n'
+
  
 package_content	=	entity*
 package			=	'package' package_name  import*  package_content
 
 import = 'import' AnyInclude(QUOTE) | import_list
-import_list = 'import' '(' Any ')'
+import_list = 'import' LB Any RB
 
 entity	= water_entity | func
 
@@ -45,16 +49,16 @@ func = 'func' f_reciever? f_name generic2? f_args f_returns ('{' Any '}')
 	| 'func' f_reciever? f_name generic2? f_args f_returns NL
 	| 'func' f_reciever? f_name generic2? f_args NL
 
-anon_func = 'func' f_args f_returns '{' Any '}'
+
 anon_func_title = 'func' f_args f_returns
 
 
-f_reciever = '(' param '*'? f_type generic2? ')' 
-			|'(' '*'? f_type generic2?')'
-			|'(' f_type generic2?')'  // ???
+f_reciever = LB param '*'? f_type generic2? RB 
+			|LB '*'? f_type generic2? RB
+			|LB f_type generic2? RB  // ???
 
-f_args = '(' ')'
-		|'(' (f_arg ',')* f_arg ','? ')'
+f_args = LB RB
+		|LB (f_arg ',')* f_arg ','? RB
 		
 f_arg = ID
 		|ID SPREAD? (go_type )
@@ -62,7 +66,7 @@ f_arg = ID
 
 f_returns = Any 
 		| go_type 
-		|'(' (f_return ',')* f_return ','? ')' 
+		|LB (f_return ',')* f_return ','? RB 
 f_return = go_type | go_type go_type
 
 		
@@ -74,20 +78,20 @@ water_entity	=	Any
 package_name =	ID
 import_name	 =	ID
 param 		 =	ID
-f_type		 =	ID | '(' ID ')'
+f_type		 =	ID | LB ID RB
 f_name		 =	ID
 t_name		 =	ID
 
 
 map = 'map' '[' go_type ']' go_type
-	| 'map' '[' go_type ']' '(' go_type ')'
+	| 'map' '[' go_type ']' LB go_type RB
 chan = 	'chan' go_type
 		| 'chan<-' go_type
 		| '<-chan' go_type
 
 go_type			= (ID 
 					| arr_ptr* (ID | anon | map | chan) 
-					| arr_ptr* '(' (ID | anon | map | chan) ')'  
+					| arr_ptr* LB (ID | anon | map | chan) RB
 				) generic2?
 
 arr_ptr			= '*'* ('[' DEC? SPREAD? ID? ']' '*'*)*
@@ -107,6 +111,7 @@ generic2		= '[' Any ']'
 %nodes {
 	ghost entity anon
 	leaf 
+	void LB RB
 }
 
 %customblock {
