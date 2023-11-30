@@ -6,6 +6,8 @@ import (
 )
 
 var folders = []string{
+	"go-ethereum",
+	"grafana",
 	"gvisor",
 	"test",
 	"backend",
