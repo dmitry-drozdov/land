@@ -60,9 +60,7 @@ f_reciever = LB param '*'? f_type generic2? RB
 f_args = LB RB
 		|LB (f_arg ',')* f_arg ','? RB
 		
-f_arg = ID
-		|ID SPREAD? (go_type )
-		|SPREAD? (go_type )
+f_arg = SPREAD go_type | go_type | go_type SPREAD? go_type
 
 f_returns = Any 
 		| go_type 

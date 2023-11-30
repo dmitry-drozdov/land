@@ -870,7 +870,7 @@ namespace Land.GUI
                                                 string lastType = null;
                                                 foreach (var arg in args)
                                                 {
-                                                    var types = arg.Children.FirstOrDefault(x => x.ToString().StartsWith("go_type"));
+                                                    var types = arg.Children.LastOrDefault(x => x.ToString().StartsWith("go_type"));
                                                     Node type;
                                                     if (types != null)
                                                     {
@@ -879,6 +879,10 @@ namespace Land.GUI
                                                     else
                                                     {
                                                         type = arg.Children.FirstOrDefault(x => x.ToString().StartsWith("ID: ") && onlyTypes);
+                                                    }
+                                                    if (arg.Children.Count(x => x.ToString().StartsWith("go_type")) == 1 && !onlyTypes)
+                                                    {
+                                                        type = null; // nullify type because it is ID 
                                                     }
                                                     if (type != null)
                                                     {
