@@ -858,40 +858,14 @@ namespace Land.GUI
                                                 res.Name = pcc.Children[0].ToString().Replace("ID: ", "");
                                                 break;
                                             case "f_args":
-                                                var args = pcc.Children.Where(x => x.ToString() == "f_arg");
+                                                var args = pcc.Children.Where(x => x.ToString().StartsWith("f_arg"));
                                                 res.ArgsCnt = args.Count();
                                                 if (res.ArgsCnt == 0)
                                                     break;
-
-                                                var onlyTypes = args.All(a => a.Children.Count(x => x.ToString().StartsWith("ID: ")
-                                                                                                || x.ToString().StartsWith("go_type")) == 1);
-
-                                                args = args.Reverse();
-                                                string lastType = null;
                                                 foreach (var arg in args)
                                                 {
-                                                    var types = arg.Children.LastOrDefault(x => x.ToString().StartsWith("go_type"));
-                                                    Node type;
-                                                    if (types != null)
-                                                    {
-                                                        type = types.Children.First(x => x.ToString() != "arr_ptr");
-                                                    }
-                                                    else
-                                                    {
-                                                        type = arg.Children.FirstOrDefault(x => x.ToString().StartsWith("ID: ") && onlyTypes);
-                                                    }
-                                                    if (arg.Children.Count(x => x.ToString().StartsWith("go_type")) == 1 && !onlyTypes)
-                                                    {
-                                                        type = null; // nullify type because it is ID 
-                                                    }
-                                                    if (type != null)
-                                                    {
-                                                        lastType = type.ToString().Replace("ID: ", "");
-                                                    }
-                                                    if (lastType != null)
-                                                        res.Args.Add(lastType);
-                                                }
-                                                res.Reverse();
+                                                    res.Args.Add(arg.ToString().Replace("f_arg: ", ""));
+                                                }                                              
                                                 break;
                                             case "f_returns":
                                                 res.Return = pcc.Children.Count(x => x.ToString() == "f_return" || x.ToString().StartsWith("go_type"));

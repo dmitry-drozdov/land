@@ -21,6 +21,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PascalPostprocessor", "Prep
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Preprocessor.Core", "Preprocessor.Core\Preprocessor.Core.csproj", "{CCB3A7C5-989C-4431-89D5-9909ADA6F765}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GoPreprocessor", "Preprocessors\Conditional compilation\GoPreprocessor\GoPreprocessor.csproj", "{BC013148-FAF4-4BBE-8B12-FA9D840C643B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +53,10 @@ Global
 		{CCB3A7C5-989C-4431-89D5-9909ADA6F765}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CCB3A7C5-989C-4431-89D5-9909ADA6F765}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CCB3A7C5-989C-4431-89D5-9909ADA6F765}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BC013148-FAF4-4BBE-8B12-FA9D840C643B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BC013148-FAF4-4BBE-8B12-FA9D840C643B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BC013148-FAF4-4BBE-8B12-FA9D840C643B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BC013148-FAF4-4BBE-8B12-FA9D840C643B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -62,6 +68,7 @@ Global
 		{2BBDC627-AFB5-44D0-BB15-F48D5FA699EF} = {373EC8C3-5355-4019-B833-E46A111B2E41}
 		{5BB7C445-36C4-4686-B17A-A163385848A5} = {2BBDC627-AFB5-44D0-BB15-F48D5FA699EF}
 		{CCB3A7C5-989C-4431-89D5-9909ADA6F765} = {373EC8C3-5355-4019-B833-E46A111B2E41}
+		{BC013148-FAF4-4BBE-8B12-FA9D840C643B} = {86500D9B-BDA6-4A54-B821-159F513B20EA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CD7950FE-7FC3-4DA2-9B6B-4B3E76CBD3C2}
