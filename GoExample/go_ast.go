@@ -5,6 +5,8 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"io"
+	"math"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -14,17 +16,47 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-func ParseFiles(root string) (map[string]map[string]*FuncStat, error) {
+func ParseFiles(root string) (map[string]map[string]*FuncStat, int, error) {
 	res := make(map[string]map[string]*FuncStat, 10000)
 	g := errgroup.Group{}
 	g.SetLimit(runtime.NumCPU() * 8)
 	l := sync.Mutex{}
+
+	alreadyDone := make(map[uint64]struct{}, 10000)
+	duplicates := 0
+	m := sync.Mutex{}
+
 	err := filepath.Walk(root, func(path string, info os.FileInfo, _ error) error {
 		if info.IsDir() || filepath.Ext(info.Name()) != ".go" {
 			return nil
 		}
 
 		pathBk := path
+
+		g.Go(func() error {
+			file, err := os.Open(pathBk)
+			if err != nil {
+				return err
+			}
+			defer file.Close()
+
+			content, err := io.ReadAll(file)
+			if err != nil {
+				return err
+			}
+			key := Sum(content)
+
+			m.Lock()
+			defer m.Unlock()
+			_, ok := alreadyDone[key]
+			if ok {
+				duplicates++
+				return nil
+			}
+			alreadyDone[key] = struct{}{}
+
+			return nil
+		})
 
 		g.Go(func() error {
 			data, err := ParseFile(pathBk)
@@ -44,14 +76,14 @@ func ParseFiles(root string) (map[string]map[string]*FuncStat, error) {
 	})
 	g.Wait()
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	if len(res) == 0 {
-		return nil, fmt.Errorf("empty output")
+		return nil, 0, fmt.Errorf("empty output")
 	}
 
-	return res, nil
+	return res, duplicates, nil
 }
 
 func ParseFile(path string) (map[string]*FuncStat, error) {
@@ -129,4 +161,16 @@ func HumanType(tp ast.Expr) string {
 		return HumanType(t.Elt)
 	}
 	return fmt.Sprintf("%T", tp)
+}
+
+func Sum(bytes []byte) uint64 {
+	res := uint64(0)
+	for _, b := range bytes {
+		add := uint64(b)
+		if res > math.MaxUint64-add {
+			panic("calc overflow")
+		}
+		res += uint64(b)
+	}
+	return res
 }

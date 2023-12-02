@@ -45,16 +45,17 @@ func doWork(sname string) error {
 
 	source := fmt.Sprintf(`e:\phd\my\%s\`, sname)
 	fmt.Println("parsing files with go ast...")
-	full, err := ParseFiles(source)
+	full, duplicates, err := ParseFiles(source)
 	if err != nil {
 		return err
 	}
 	fmt.Println("parsing files with go ast DONE")
 
 	a := &AnalyzerStats{
-		Source:  sname,
-		lnFull:  len(full),
-		lnLight: len(light),
+		Source:     sname,
+		Duplicates: duplicates,
+		lnFull:     len(full),
+		lnLight:    len(light),
 	}
 
 	for kf, vf := range full {

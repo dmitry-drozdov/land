@@ -14,6 +14,7 @@ type AnalyzerStats struct {
 	lnLight    int
 	cntVendor  int
 
+	Duplicates         int
 	Source             string
 	TotalFiles         int
 	SkippedFiles       int
@@ -74,6 +75,7 @@ func (a *AnalyzerStats) Add(b AnalyzerStats) {
 	a.ArgsCover += b.ArgsCover
 	a.VendorFuncs += b.VendorFuncs
 	a.VendorFuncsPerCent += b.VendorFuncsPerCent
+	a.Duplicates += b.Duplicates
 }
 
 func ratio(part, total int) RoundedFloat {
