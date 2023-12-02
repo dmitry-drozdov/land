@@ -1,0 +1,1 @@
+total files: [56287], skipped files: [0], ok methods: [543517], fail mathods: [0], accuracy: [100.000%], args cover: [100.00%], vendors ratio: [0.00%]
