@@ -117,3 +117,8 @@ generic2		= '[' Any ']'
 	end("//@")
 	basetoken COMMENT
 }
+
+%markup {
+	land func
+	headercore(name) func
+}
