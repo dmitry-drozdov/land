@@ -5,8 +5,8 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"hash/fnv"
 	"io"
-	"math"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -44,7 +44,7 @@ func ParseFiles(root string) (map[string]map[string]*FuncStat, int, error) {
 			if err != nil {
 				return err
 			}
-			key := Sum(content)
+			key := HashFile(content)
 
 			m.Lock()
 			defer m.Unlock()
@@ -163,14 +163,8 @@ func HumanType(tp ast.Expr) string {
 	return fmt.Sprintf("%T", tp)
 }
 
-func Sum(bytes []byte) uint64 {
-	res := uint64(0)
-	for _, b := range bytes {
-		add := uint64(b)
-		if res > math.MaxUint64-add {
-			panic("calc overflow")
-		}
-		res += uint64(b)
-	}
-	return res
+func HashFile(bytes []byte) uint64 {
+	h := fnv.New64a()
+	h.Write([]byte(bytes))
+	return h.Sum64()
 }

@@ -827,8 +827,8 @@ namespace Land.GUI
                             new List<string> { "name" }
                         );
 
-                        var oldPath = @"E:\phd\my";
-                        var newPath = @"E:\phd\my\results";
+                        var oldPath = @"E:\phd\test_repos";
+                        var newPath = @"E:\phd\test_repos\results";
                         var path = argument.Files[counter].Replace(oldPath, newPath);
 
                         FileInfo file = new FileInfo(path);

@@ -20,13 +20,19 @@ var folders = []string{
 }
 
 func main() {
+	cnt, err := deleteDups(`e:\phd\test_repos`)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("deleted %v duplicates", cnt)
+
 	for _, f := range folders {
 		if err := doWork(f); err != nil {
 			fmt.Printf("[%v] <ERROR>: [%v]\n", f, err)
 		}
 	}
 
-	err := GetTotalStats("results")
+	err = GetTotalStats("results")
 	if err != nil {
 		panic(err)
 	}
@@ -37,13 +43,13 @@ func doWork(sname string) error {
 	defer fmt.Printf("===== %s END =====\n", sname)
 
 	fmt.Println("reading results...")
-	light, err := ReadResults(fmt.Sprintf(`e:\phd\my\results\%s`, sname))
+	light, err := ReadResults(fmt.Sprintf(`e:\phd\test_repos\results\%s`, sname))
 	if err != nil {
 		return err
 	}
 	fmt.Println("reading results DONE")
 
-	source := fmt.Sprintf(`e:\phd\my\%s\`, sname)
+	source := fmt.Sprintf(`e:\phd\test_repos\%s\`, sname)
 	fmt.Println("parsing files with go ast...")
 	full, duplicates, err := ParseFiles(source)
 	if err != nil {
