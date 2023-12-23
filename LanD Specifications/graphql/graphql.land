@@ -1,0 +1,84 @@
+DIRECTIVE	: '#' ~[\n\r]*
+
+COMMENT		: COMMENT_L|COMMENT_ML
+COMMENT_L	: '#' ~[\n\r]*
+COMMENT_ML	: '""""' .*? '"""'
+
+ITALIC_QUOTE : '`' .*? '`'
+
+QUOTE		: '"'
+SPREAD 		: '...'
+
+STRING		: STRING_STD|STRING_VERB|STRING_INT
+STRING_STD	: '"' ('\\"'|'\\\\'|.)*? '"'
+STRING_VERB	: '@'('"' (~["]|'""')* '"')+
+STRING_INT	: '$"' ('\\"'|'\\\\'|'{{'|STRING_INT_CODE|.)*? '"' | '$@' ('"' ('""'|'{{'|STRING_INT_CODE|.)*? '"')+
+STRING_INT_CODE : '{' (STRING|CHAR|.)*? '}'
+
+CHAR		: '\'' ('\\\''|'\\\\'|.)*? '\''
+CLASS_STRUCT_INTERFACE : 'struct'|'interface'
+ID			: '@'?[_a-zA-Z\u0430-\u044F\u0410-\u042F\u0192\u06F0\u03A9][_0-9a-zA-Z\u0430-\u044F\u0410-\u042F.\u0192\u06F0\u03A9]*
+
+
+LB			: '('
+RB			: ')'
+ 
+CURVE_BRACKETED : %left '{' %right '}'
+ROUND_BRACKETED : %left '(' %right ')'
+SQUARE_BRACKETED : %left ('['|GENERAL_ATTRIBUTE_START) %right ']'
+
+HEX 		: '0x'[0-9a-fA-F]+
+DEC			: '-'?[0-9]+
+
+COMMA 		: ','
+
+
+
+content = entity*
+
+entity	= water_entity | type_def | enum_def  | schema_def | scalar_def
+
+schema_def = 'schema' '{' type_line* '}'
+
+scalar_def = 'scalar' id 
+
+enum_def = 'enum' id '{' enum_line* '}'
+enum_line = id ','?
+
+type_def = ('type'|'input') id '{' (type_line|func_line)* '}'
+type_line = id ':' type ','?
+type = id '!'? | '[' type ']' '!'?
+
+func_line = id '(' func_arg* ')' ':' type
+func_arg = type_line
+
+id = ID | 'type' | 'input' // to allow considering "input" and "type" as a var name 
+
+water_entity	=	Any 'PANIC' 
+
+
+%%
+
+%parsing {
+	recovery entity 
+	fragment STRING_INT_CODE
+	start content
+	skip COMMENT STRING DIRECTIVE
+}
+
+%nodes {
+	ghost entity
+	leaf 
+	void LB RB COMMA
+}
+
+%customblock {
+	start("//+")
+	end("//@")
+	basetoken COMMENT
+}
+
+%markup {
+	land func
+	headercore(name) func
+}
