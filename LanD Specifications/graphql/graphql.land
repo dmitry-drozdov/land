@@ -2,22 +2,16 @@ DIRECTIVE	: '#' ~[\n\r]*
 
 COMMENT		: COMMENT_L|COMMENT_ML
 COMMENT_L	: '#' ~[\n\r]*
-COMMENT_ML	: '""""' .*? '"""'
+COMMENT_ML	: '"""' .*? '"""'
 
 ITALIC_QUOTE : '`' .*? '`'
 
 QUOTE		: '"'
 SPREAD 		: '...'
 
-STRING		: STRING_STD|STRING_VERB|STRING_INT
-STRING_STD	: '"' ('\\"'|'\\\\'|.)*? '"'
-STRING_VERB	: '@'('"' (~["]|'""')* '"')+
-STRING_INT	: '$"' ('\\"'|'\\\\'|'{{'|STRING_INT_CODE|.)*? '"' | '$@' ('"' ('""'|'{{'|STRING_INT_CODE|.)*? '"')+
-STRING_INT_CODE : '{' (STRING|CHAR|.)*? '}'
+STRING		: '"' (~["]|'""')* '"'
 
-CHAR		: '\'' ('\\\''|'\\\\'|.)*? '\''
-CLASS_STRUCT_INTERFACE : 'struct'|'interface'
-ID			: '@'?[_a-zA-Z\u0430-\u044F\u0410-\u042F\u0192\u06F0\u03A9][_0-9a-zA-Z\u0430-\u044F\u0410-\u042F.\u0192\u06F0\u03A9]*
+ID			: [_a-zA-Z\u0430-\u044F\u0410-\u042F\u0192\u06F0\u03A9][_0-9a-zA-Z\u0430-\u044F\u0410-\u042F.\u0192\u06F0\u03A9]*
 
 
 LB			: '('
@@ -36,23 +30,32 @@ COMMA 		: ','
 
 content = entity*
 
-entity	= water_entity | type_def | enum_def  | schema_def | scalar_def
+entity	= water_entity | type_def | enum_def  | schema_def | scalar_def | union_def | directive_def
 
-schema_def = 'schema' '{' type_line* '}'
+directive_def = 'directive' tag* 'repeatable'? 'on' combine_types
+
+schema_def = 'schema' tag* '{' type_line* '}'
 
 scalar_def = 'scalar' id 
 
+union_def = 'union' id '=' combine_types
+combine_types = id | (id ('|' | '&') combine_types)
+
 enum_def = 'enum' id '{' enum_line* '}'
-enum_line = id ','?
+enum_line = id tag* ','?
 
-type_def = ('type'|'input') id '{' (type_line|func_line)* '}'
-type_line = id ':' type ','?
-type = id '!'? | '[' type ']' '!'?
+type_def = ('type'|'input'|'interface') id ('implements' combine_types)? tag* '{' (type_line|func_line)* '}'
+type_line = id ':' type default_value? tag* ','? 
+type = id '!'? | '[' type? ']' '!'?
+default_value = '=' (type | DEC | STRING)
 
-func_line = id '(' func_arg* ')' ':' type
+func_line = id '(' func_arg* ')' ':' type tag* ','? 
 func_arg = type_line
 
-id = ID | 'type' | 'input' // to allow considering "input" and "type" as a var name 
+tag = '@' id ('(' Any ')')? ','?
+
+
+id = ID | 'type' | 'input' | 'interface' | 'schema' // to allow considering keywords as a var name 
 
 water_entity	=	Any 'PANIC' 
 
@@ -63,13 +66,13 @@ water_entity	=	Any 'PANIC'
 	recovery entity 
 	fragment STRING_INT_CODE
 	start content
-	skip COMMENT STRING DIRECTIVE
+	skip COMMENT DIRECTIVE STRING
 }
 
 %nodes {
 	ghost entity
 	leaf 
-	void LB RB COMMA
+	void LB RB COMMA tag
 }
 
 %customblock {
