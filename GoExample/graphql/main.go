@@ -82,7 +82,7 @@ func parse(folder string) (*Result, error) {
 	funcs := make([]Func, 0, len(insp.Types())/3+1)
 
 	for _, f := range insp.Types() {
-		if f.InputFields() != nil {
+		if f.InputFields() != nil { // it's an input only
 			defs := make([]Def, 0, len(*f.InputFields()))
 			for _, iff := range *f.InputFields() {
 				defs = append(defs, Def{Name: iff.Name(), Type: getType(iff.Type())})
@@ -90,7 +90,7 @@ func parse(folder string) (*Result, error) {
 			inputs = append(inputs, Input{Name: *f.Name(), Defs: defs})
 		}
 
-		if f.Fields(includeDepricated) != nil {
+		if f.Fields(includeDepricated) != nil { // type or func
 			tp := Type{
 				Name: *f.Name(),
 				Defs: make([]Def, 0, len(*f.Fields(includeDepricated))),
