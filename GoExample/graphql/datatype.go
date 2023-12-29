@@ -12,27 +12,40 @@ type Result struct {
 	Funcs  []Func
 }
 
+var f = func(d Def) string {
+	return d.Name
+}
+
 func (r *Result) Sort() {
-	sort.Slice(r.Inputs, func(i, j int) bool {
-		return r.Inputs[i].Name > r.Inputs[j].Name
-	})
 	for _, input := range r.Inputs {
 		sortDefs(input.Defs)
 	}
-
-	sort.Slice(r.Types, func(i, j int) bool {
-		return r.Types[i].Name > r.Types[j].Name
+	sort.Slice(r.Inputs, func(i, j int) bool {
+		if r.Inputs[i].Name == r.Inputs[j].Name {
+			return sliceHash(r.Inputs[i].Defs, f) > sliceHash(r.Inputs[j].Defs, f)
+		}
+		return r.Inputs[i].Name > r.Inputs[j].Name
 	})
+
 	for _, tp := range r.Types {
 		sortDefs(tp.Defs)
 	}
-
-	sort.Slice(r.Funcs, func(i, j int) bool {
-		return r.Funcs[i].Name > r.Funcs[j].Name
+	sort.Slice(r.Types, func(i, j int) bool {
+		if r.Types[i].Name == r.Types[j].Name {
+			return sliceHash(r.Types[i].Defs, f) > sliceHash(r.Types[j].Defs, f)
+		}
+		return r.Types[i].Name > r.Types[j].Name
 	})
+
 	for _, fun := range r.Funcs {
 		sortDefs(fun.Args)
 	}
+	sort.Slice(r.Funcs, func(i, j int) bool {
+		if r.Funcs[i].Name == r.Funcs[j].Name {
+			return sliceHash(r.Funcs[i].Args, f) > sliceHash(r.Funcs[j].Args, f)
+		}
+		return r.Funcs[i].Name > r.Funcs[j].Name
+	})
 }
 
 func sortDefs(s []Def) {
@@ -47,9 +60,9 @@ func (r *Result) Empty() bool {
 
 func (r *Result) EqualTo(o *Result) error {
 	if len(r.Funcs) != len(o.Funcs) {
-		if len(r.Funcs) == 12 {
-			fmt.Println(r.Funcs, "***", o.Funcs)
-		}
+		// if len(r.Funcs) == 4 {
+		// 	fmt.Println(r.Funcs, "***", o.Funcs)
+		// }
 		return fmt.Errorf("len func mismatch [%+v] [%+v]", len(r.Funcs), len(o.Funcs))
 	}
 	if len(r.Types) != len(o.Types) {
