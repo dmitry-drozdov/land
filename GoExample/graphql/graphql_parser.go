@@ -13,9 +13,9 @@ import (
 var includeDepricated = &struct{ IncludeDeprecated bool }{IncludeDeprecated: true}
 
 func parseFolders() (map[string]Result, error) {
-	res := make(map[string]Result, len(mp))
+	res := make(map[string]Result, len(source))
 
-	for name, path := range mp {
+	for name, path := range source {
 		r, err := parse(path)
 		if err != nil {
 			return nil, err
@@ -72,6 +72,10 @@ func parse(folder string) (*Result, error) {
 	funcs := make([]Func, 0, len(insp.Types())/3+1)
 
 	for _, f := range insp.Types() {
+		if ignore(*f.Name()) {
+			continue
+		}
+
 		if f.InputFields() != nil { // it's an input only
 			defs := make([]Def, 0, len(*f.InputFields()))
 			for _, iff := range *f.InputFields() {
