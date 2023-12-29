@@ -828,12 +828,22 @@ namespace Land.GUI
                             new List<string> { "name" }
                         );
 
-                        var oldPath = @"E:\phd\test_repos";
-                        var newPath = @"E:\phd\test_repos\results";
-                        var path = argument.Files[counter].Replace(oldPath, newPath);
+                        
 
-                        if (path.EndsWith(".go")) GoSerializer.Serialize(path, root);
-                        if (path.EndsWith(".graphql")) GraphqlSerializer.Serialize(path, root);
+                        if (argument.Files[counter].EndsWith(".go"))
+                        {
+                            var oldPath = @"E:\phd\test_repos";
+                            var newPath = @"E:\phd\test_repos\results";
+                            var path = argument.Files[counter].Replace(oldPath, newPath);
+                            GoSerializer.Serialize(path, root);
+                        }
+                        if (argument.Files[counter].EndsWith(".graphql"))
+                        {
+                            var oldPath = @"E:\phd\test_repos_graphql";
+                            var newPath = @"E:\phd\test_repos_graphql\results";
+                            var path = argument.Files[counter].Replace(oldPath, newPath);
+                            GraphqlSerializer.Serialize(path, root);
+                        }
 
                         root.Accept(visitor);
 
