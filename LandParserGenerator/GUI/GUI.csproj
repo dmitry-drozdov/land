@@ -93,7 +93,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="ParseResult.cs" />
+    <Compile Include="ParseResults\GraphqlParseResult.cs" />
+    <Compile Include="ParseResults\GoParseResult.cs" />
+    <Compile Include="Serializers\GraphqlSerializer.cs" />
+    <Compile Include="Serializers\GoSerializer.cs" />
     <Compile Include="VisualHelpers\ColumnSettingsAttribute.cs" />
     <Compile Include="ConsoleWriter.cs" />
     <Compile Include="CountEntitiesVisitor.cs" />

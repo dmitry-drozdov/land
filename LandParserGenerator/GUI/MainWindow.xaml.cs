@@ -20,6 +20,7 @@ using Land.Core.Parsing.Preprocessing;
 using Land.Core.Parsing.Tree;
 using System.ComponentModel;
 using System.Text.Json;
+using Land.GUI.Serializers;
 //using System.Windows.Shapes;
 
 namespace Land.GUI
@@ -831,56 +832,8 @@ namespace Land.GUI
                         var newPath = @"E:\phd\test_repos\results";
                         var path = argument.Files[counter].Replace(oldPath, newPath);
 
-                        FileInfo file = new FileInfo(path);
-                        file.Directory.Create();
-
-                        using (StreamWriter sw = File.CreateText(path))
-                        {
-                            foreach (var r in root.Children)
-                            {
-                                if (r.ToString() != "package_content")
-                                    continue;
-
-                                foreach (var pc in r.Children)
-                                {
-                                    if (pc.ToString() != "func")
-                                        continue;
-
-                                    var res = new ParseResult();
-
-                                    foreach (var pcc in pc.Children)
-                                    {
-                                        var opt = pcc.ToString();
-
-                                        switch (opt)
-                                        {
-                                            case "f_name":
-                                                res.Name = pcc.Children[0].ToString().Replace("ID: ", "");
-                                                break;
-                                            case "f_args":
-                                                var args = pcc.Children.Where(x => x.ToString().StartsWith("f_arg"));
-                                                res.ArgsCnt = args.Count();
-                                                if (res.ArgsCnt == 0)
-                                                    break;
-                                                foreach (var arg in args)
-                                                {
-                                                    res.Args.Add(arg.ToString().Replace("f_arg: ", ""));
-                                                }                                              
-                                                break;
-                                            case "f_returns":
-                                                res.Return = pcc.Children.Count(x => x.ToString() == "f_return" || x.ToString().StartsWith("go_type"));
-                                                break;
-                                        }
-                                    }
-
-                                    if (!res.Empty)
-                                    {
-                                        sw.WriteLine(JsonSerializer.Serialize(res));
-                                    }
-                                }
-                            }
-                        }
-
+                        if (path.EndsWith(".go")) GoSerializer.Serialize(path, root);
+                        if (path.EndsWith(".graphql")) GraphqlSerializer.Serialize(path, root);
 
                         root.Accept(visitor);
 

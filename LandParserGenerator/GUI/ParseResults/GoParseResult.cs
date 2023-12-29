@@ -7,7 +7,7 @@ using System.Windows.Media.Media3D;
 
 namespace Land.GUI
 {
-    internal class ParseResult
+    internal class GoParseResult
     {
         public string Name { get; set; } = "";
         public List<string> Args { get; set; } = new List<string>();
