@@ -12,7 +12,7 @@ type Result struct {
 	Funcs  []Func
 }
 
-var f = func(d Def) string {
+var getName = func(d Def) string {
 	return d.Name
 }
 
@@ -22,7 +22,7 @@ func (r *Result) Sort() {
 	}
 	sort.Slice(r.Inputs, func(i, j int) bool {
 		if r.Inputs[i].Name == r.Inputs[j].Name {
-			return sliceHash(r.Inputs[i].Defs, f) > sliceHash(r.Inputs[j].Defs, f)
+			return sliceHash(r.Inputs[i].Defs, getName) > sliceHash(r.Inputs[j].Defs, getName)
 		}
 		return r.Inputs[i].Name > r.Inputs[j].Name
 	})
@@ -32,7 +32,7 @@ func (r *Result) Sort() {
 	}
 	sort.Slice(r.Types, func(i, j int) bool {
 		if r.Types[i].Name == r.Types[j].Name {
-			return sliceHash(r.Types[i].Defs, f) > sliceHash(r.Types[j].Defs, f)
+			return sliceHash(r.Types[i].Defs, getName) > sliceHash(r.Types[j].Defs, getName)
 		}
 		return r.Types[i].Name > r.Types[j].Name
 	})
@@ -42,7 +42,12 @@ func (r *Result) Sort() {
 	}
 	sort.Slice(r.Funcs, func(i, j int) bool {
 		if r.Funcs[i].Name == r.Funcs[j].Name {
-			return sliceHash(r.Funcs[i].Args, f) > sliceHash(r.Funcs[j].Args, f)
+			sh1 := sliceHash(r.Funcs[i].Args, getName)
+			sh2 := sliceHash(r.Funcs[j].Args, getName)
+			if sh1 == sh2 {
+				return r.Funcs[i].Return > r.Funcs[j].Return
+			}
+			return sh1 > sh2
 		}
 		return r.Funcs[i].Name > r.Funcs[j].Name
 	})
