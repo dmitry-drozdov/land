@@ -35,10 +35,10 @@ namespace Land.GUI
                 var existType = Types[idx];
                 if (existType == type)
                 {
-                    Console.WriteLine("identical duplicated");
+                    //Console.WriteLine("identical duplicated");
                     return;
                 }
-                Console.WriteLine("extension");
+                //Console.WriteLine("extension");
 
                 existType.Defs.AddRange(type.Defs);
                 return;

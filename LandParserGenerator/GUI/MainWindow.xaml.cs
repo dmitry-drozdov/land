@@ -797,22 +797,24 @@ namespace Land.GUI
             var landCounts = new Dictionary<string, int>();
             var landLists = new List<FileLandPair>();
 
+            var graphqlSerializers = new Dictionary<string, GraphqlSerializer>();
+
             for (; counter < argument.Files.Count; ++counter)
             {
+                var file = argument.Files[counter];
                 try
                 {
                     Node root = null;
                     FrontendUpdateDispatcher.Invoke((Action)(() =>
                     {
-                        root = File_Parse(argument.Files[counter],
-                            File.ReadAllText(argument.Files[counter], GetEncoding(argument.Files[counter])));
+                        root = File_Parse(file, File.ReadAllText(file, GetEncoding(file)));
                     }));
 
                     timeSpent += Parser.Statistics.GeneralTimeSpent;
 
                     if (Parser.Log.Any(l => l.Type == MessageType.Error))
                     {
-                        FrontendUpdateDispatcher.Invoke(OnPackageFileParsingError, argument.Files[counter]);
+                        FrontendUpdateDispatcher.Invoke(OnPackageFileParsingError, file);
                         foreach (var error in Parser.Log.Where(l => l.Type != MessageType.Trace))
                             FrontendUpdateDispatcher.Invoke(OnPackageFileParsingError, $"\t{error}");
 
@@ -820,7 +822,7 @@ namespace Land.GUI
                     }
                     else
                     {
-                        statsPerFile[argument.Files[counter]] = Parser.Statistics;
+                        statsPerFile[file] = Parser.Statistics;
 
                         var visitor = new CountEntitiesVisitor(
                             true,
@@ -828,21 +830,28 @@ namespace Land.GUI
                             new List<string> { "name" }
                         );
 
-                        
 
-                        if (argument.Files[counter].EndsWith(".go"))
+
+                        if (file.EndsWith(".go"))
                         {
                             var oldPath = @"E:\phd\test_repos";
                             var newPath = @"E:\phd\test_repos\results";
-                            var path = argument.Files[counter].Replace(oldPath, newPath);
+                            var path = file.Replace(oldPath, newPath);
                             GoSerializer.Serialize(path, root);
                         }
-                        if (argument.Files[counter].EndsWith(".graphql"))
+                        if (file.EndsWith(".graphql"))
                         {
-                            var oldPath = @"E:\phd\test_repos_graphql";
-                            var newPath = @"E:\phd\test_repos_graphql\results";
-                            var path = argument.Files[counter].Replace(oldPath, newPath);
-                            GraphqlSerializer.Serialize(path, root);
+                            var words = file.Replace(@"E:\phd\test_repos_graphql", "").Split('\\');
+                            var repo = words[1];
+                            if (repo == "git") // files from git are in the separate subfolder
+                            {
+                                repo += $@"\{words[2]}";
+                            }
+                            if (!graphqlSerializers.ContainsKey(repo))
+                            {
+                                graphqlSerializers.Add(repo, new GraphqlSerializer());
+                            }
+                            graphqlSerializers[repo].Serialize(root);
                         }
 
                         root.Accept(visitor);
@@ -882,6 +891,12 @@ namespace Land.GUI
                     return;
                 }
             }
+
+            foreach (var pair in graphqlSerializers)
+            {
+                pair.Value.Dump($@"E:\phd\test_repos_graphql\results\{pair.Key}\dump.json");
+            }
+
 
             if (statsPerFile.Count > 0)
             {

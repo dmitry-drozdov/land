@@ -7,13 +7,16 @@ using System.Security.Policy;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using System.Windows.Shapes;
 
 namespace Land.GUI.Serializers
 {
     internal class GraphqlSerializer
     {
+        GraphqlParseResult res = new GraphqlParseResult();
+
         //Parse this -> [[[[AgreementInput]!]!]]
-        static string ParseType(Node root)
+        string ParseType(Node root)
         {
             var children = root.Children;
             if (children.Count == 0) return "";
@@ -37,7 +40,7 @@ namespace Land.GUI.Serializers
             return result;
         }
         // Parse this -> agreements: [[[[AgreementInput]!]!]]
-        static GraphqlDef ParseTypeLine(Node root)
+        GraphqlDef ParseTypeLine(Node root)
         {
             var result = new GraphqlDef();
             foreach (var pcc in root.Children)
@@ -56,17 +59,12 @@ namespace Land.GUI.Serializers
             }
             return result;
         }
-        static string DecodeID(Node node)
+        string DecodeID(Node node)
         {
             return node.ToString().Split(new string[] { ": " }, StringSplitOptions.None)[1];
         }
-        internal static void Serialize(string path, Node root)
+        internal void Serialize(Node root)
         {
-            FileInfo file = new FileInfo(path);
-            file.Directory.Create();
-
-            var res = new GraphqlParseResult();
-
             foreach (var r in root.Children)
             {
                 if (r.ToString() != "type_def")
@@ -123,8 +121,12 @@ namespace Land.GUI.Serializers
                     res.AddType(typeDef);
                 }
             }
+        }
 
-            if (res.Empty) return;
+        internal void Dump(string path)
+        {
+            FileInfo file = new FileInfo(path);
+            file.Directory.Create();
 
             using (StreamWriter sw = File.CreateText(path))
             {

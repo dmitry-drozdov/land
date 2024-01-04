@@ -18,7 +18,7 @@ func parseLandFolders() (map[string]Result, error) {
 	for name, path := range results {
 		r, err := readResults(path)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("path: [%v], err: [%w]", path, err)
 		}
 		if r != nil {
 			res[name] = *r
@@ -34,7 +34,7 @@ func readResults(root string) (*Result, error) {
 	g.SetLimit(runtime.NumCPU() * 8)
 	mx := sync.Mutex{}
 	err := filepath.Walk(root, func(path string, info os.FileInfo, _ error) error {
-		if info == nil || info.IsDir() || filepath.Ext(info.Name()) != ".graphql" {
+		if info == nil || info.IsDir() || filepath.Ext(info.Name()) != ".json" {
 			return nil
 		}
 
