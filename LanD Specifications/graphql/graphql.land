@@ -37,20 +37,22 @@ entity	= water_entity | type_def | enum_def  | schema_def | scalar_def | union_d
 
 directive_def = 'directive' tag* 'repeatable'? 'on' combine_types
 
-schema_def = 'schema' tag* '{' type_line* '}'
+schema_def = extend 'schema' tag* '{' type_line* '}'
 
-scalar_def = 'scalar' id 
+scalar_def = extend 'scalar' id tag*
 
-union_def = 'union' id '=' combine_types
+union_def = extend 'union' id tag* ('=' combine_types)?
 combine_types = id | (id ('|' | '&') combine_types)
 
-enum_def = 'enum' id '{' enum_line* '}'
+enum_def = extend 'enum' id tag* ('{' enum_line* '}')?
 enum_line = id tag* ','?
 
-type_def = ('type'|'input'|'interface') id ('implements' combine_types)? tag* '{' (type_line|func_line)* '}'
+type_def =  extend ('type'|'input'|'interface') id ('implements' combine_types)? tag* ('{' (type_line|func_line)* '}')?
 type_line = id ':' type default_value? tag* ','? 
 type = id '!'? | '[' type? ']' '!'?
-default_value = '=' (type | DEC | STRING)
+
+value = id | DEC | STRING | '[' value? ']' | '{' (id ':' value ','?)* '}'
+default_value = '=' value
 
 func_line = id '(' func_arg* ')' ':' type tag* ','? 
 func_arg = type_line
@@ -58,7 +60,10 @@ func_arg = type_line
 tag = '@' id ('(' Any ')')? ','?
 
 
-id = ID | 'type' | 'input' | 'interface' | 'schema' // to allow considering keywords as a var name 
+id = ID | 'type' | 'input' | 'interface' | 'schema' | 'enum' // to allow considering keywords as a var name 
+
+
+extend = 'extend'?
 
 water_entity	=	Any 'PANIC' 
 
@@ -75,7 +80,7 @@ water_entity	=	Any 'PANIC'
 %nodes {
 	ghost entity
 	leaf 
-	void LB RB COMMA tag
+	void LB RB COMMA tag extend directive_def
 }
 
 %customblock {
