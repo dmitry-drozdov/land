@@ -26,6 +26,7 @@ func (r *Result) Sort() {
 		}
 		return r.Inputs[i].Name > r.Inputs[j].Name
 	})
+	r.Inputs = removeDuplicates(r.Inputs)
 
 	for _, tp := range r.Types {
 		sortDefs(tp.Defs)
@@ -36,6 +37,7 @@ func (r *Result) Sort() {
 		}
 		return r.Types[i].Name > r.Types[j].Name
 	})
+	r.Types = removeDuplicates(r.Types)
 
 	for _, fun := range r.Funcs {
 		sortDefs(fun.Args)
@@ -51,6 +53,7 @@ func (r *Result) Sort() {
 		}
 		return r.Funcs[i].Name > r.Funcs[j].Name
 	})
+	r.Funcs = removeDuplicates(r.Funcs)
 }
 
 func sortDefs(s []Def) {
@@ -59,15 +62,28 @@ func sortDefs(s []Def) {
 	})
 }
 
+func removeDuplicates[T Hash](sl []T) []T {
+	result := make([]T, 0, len(sl))
+	last := *new(T)
+	for _, v := range sl {
+		if v.Hash() == last.Hash() {
+			continue
+		}
+		result = append(result, v)
+		last = v
+	}
+	return result
+}
+
 func (r *Result) Empty() bool {
 	return r == nil || (len(r.Inputs) == 0 && len(r.Types) == 0 && len(r.Funcs) == 0)
 }
 
 func (r *Result) EqualTo(o *Result) error {
+	r.Sort()
+	o.Sort()
+
 	if len(r.Funcs) != len(o.Funcs) {
-		// if len(r.Funcs) == 4 {
-		// 	fmt.Println(r.Funcs, "***", o.Funcs)
-		// }
 		return fmt.Errorf("len func mismatch [%+v] [%+v]", len(r.Funcs), len(o.Funcs))
 	}
 	if len(r.Types) != len(o.Types) {
@@ -76,9 +92,6 @@ func (r *Result) EqualTo(o *Result) error {
 	if len(r.Inputs) != len(o.Inputs) {
 		return fmt.Errorf("len inputs mismatch [%+v] [%+v]", len(r.Inputs), len(o.Inputs))
 	}
-
-	r.Sort()
-	o.Sort()
 
 	for i := range r.Funcs {
 		if !reflect.DeepEqual(r.Funcs[i], o.Funcs[i]) {

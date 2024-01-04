@@ -43,6 +43,8 @@ func main() {
 		}
 		if err := schema.EqualTo(&schemaLand); err != nil {
 			fmt.Println(fmt.Errorf("repo: [%s], err: [%w]", repoName, err))
+		} else {
+			fmt.Println(fmt.Errorf("repo: [%s] OK", repoName))
 		}
 	}
 
