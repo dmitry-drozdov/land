@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -63,6 +64,10 @@ func parse(folder string) (*Result, error) {
 	schemaStr := content.String()
 	schema, err := graphql.ParseSchema(schemaStr, nil)
 	if err != nil {
+		fErr := os.WriteFile("schema.graphql", []byte(schemaStr), 0)
+		if fErr != nil {
+			fmt.Println(fErr)
+		}
 		return nil, err
 	}
 
