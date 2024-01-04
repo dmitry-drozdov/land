@@ -34,7 +34,7 @@ func readResults(root string) (*Result, error) {
 	g.SetLimit(runtime.NumCPU() * 8)
 	mx := sync.Mutex{}
 	err := filepath.Walk(root, func(path string, info os.FileInfo, _ error) error {
-		if info == nil || info.IsDir() {
+		if info == nil || info.IsDir() || filepath.Ext(info.Name()) != ".graphql" {
 			return nil
 		}
 

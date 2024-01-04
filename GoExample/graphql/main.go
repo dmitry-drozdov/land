@@ -9,6 +9,7 @@ var source = map[string]string{
 	"apollographql": `E:\phd\test_repos_graphql\git\apollographql`,
 	"dgraph-io":     `E:\phd\test_repos_graphql\git\dgraph-io`,
 	"wasmerio":      `E:\phd\test_repos_graphql\git\wasmerio`,
+	"wiki":          `E:\phd\test_repos_graphql\git\wiki`,
 	"qmd":           `E:\phd\test_repos_graphql\qmd\`,
 	"mts":           `E:\phd\test_repos_graphql\mts\`,
 }
@@ -17,6 +18,7 @@ var results = map[string]string{
 	"apollographql": `E:\phd\test_repos_graphql\results\git\apollographql`,
 	"dgraph-io":     `E:\phd\test_repos_graphql\results\git\dgraph-io`,
 	"wasmerio":      `E:\phd\test_repos_graphql\results\git\wasmerio`,
+	"wiki":          `E:\phd\test_repos_graphql\results\git\wiki`,
 	"qmd":           `E:\phd\test_repos_graphql\results\qmd\`,
 	"mts":           `E:\phd\test_repos_graphql\results\mts\`,
 }
