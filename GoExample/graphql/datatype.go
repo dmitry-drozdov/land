@@ -53,7 +53,13 @@ func (r *Result) Sort() {
 	})
 }
 
-func (r *Result) CheclDuplicates() error {
+func sortDefs(s []Def) {
+	sort.Slice(s, func(i, j int) bool {
+		return s[i].Name > s[j].Name
+	})
+}
+
+func (r *Result) CheckDuplicates() error {
 	if err := checkDuplicates(r.Inputs); err != nil {
 		return fmt.Errorf("inputs: [%w]", err)
 	}
@@ -64,12 +70,6 @@ func (r *Result) CheclDuplicates() error {
 		return fmt.Errorf("types: [%w]", err)
 	}
 	return nil
-}
-
-func sortDefs(s []Def) {
-	sort.Slice(s, func(i, j int) bool {
-		return s[i].Name > s[j].Name
-	})
 }
 
 func checkDuplicates[T Hash](sl []T) error {
@@ -91,10 +91,10 @@ func (r *Result) EqualTo(o *Result) error {
 	r.Sort()
 	o.Sort()
 
-	if err := r.CheclDuplicates(); err != nil {
+	if err := r.CheckDuplicates(); err != nil {
 		return err
 	}
-	if err := o.CheclDuplicates(); err != nil {
+	if err := o.CheckDuplicates(); err != nil {
 		return err
 	}
 
