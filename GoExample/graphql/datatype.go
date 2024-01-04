@@ -26,7 +26,7 @@ func (r *Result) Sort() {
 		}
 		return r.Inputs[i].Name > r.Inputs[j].Name
 	})
-	r.Inputs = removeDuplicates(r.Inputs)
+	//r.Inputs = removeDuplicates(r.Inputs)
 
 	for _, tp := range r.Types {
 		sortDefs(tp.Defs)
@@ -53,7 +53,7 @@ func (r *Result) Sort() {
 		}
 		return r.Funcs[i].Name > r.Funcs[j].Name
 	})
-	r.Funcs = removeDuplicates(r.Funcs)
+	//r.Funcs = removeDuplicates(r.Funcs)
 }
 
 func sortDefs(s []Def) {
