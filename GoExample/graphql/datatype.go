@@ -10,6 +10,7 @@ type Result struct {
 	Inputs []Input
 	Types  []Type
 	Funcs  []Func
+	LOC    uint
 }
 
 var getName = func(d Def) string {

@@ -143,6 +143,7 @@ func parse(folder string) (*Result, error) {
 		Inputs: inputs,
 		Types:  types,
 		Funcs:  funcs,
+		LOC:    getLOC(schemaStr),
 	}, nil
 }
 
@@ -162,4 +163,15 @@ func getType(t *introspection.Type) string {
 
 func ignore(name string) bool {
 	return strings.HasPrefix(name, "_")
+}
+
+func getLOC(code string) uint {
+	res := uint(0)
+	words := strings.Split(code, "\n")
+	for _, w := range words {
+		if strings.TrimSpace(w) != "" {
+			res++
+		}
+	}
+	return res
 }
