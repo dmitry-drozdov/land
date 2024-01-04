@@ -82,17 +82,17 @@ func (r *Result) EqualTo(o *Result) error {
 
 	for i := range r.Funcs {
 		if !reflect.DeepEqual(r.Funcs[i], o.Funcs[i]) {
-			return fmt.Errorf("[%+v] != [%+v]", r.Funcs[i], o.Funcs[i])
+			return fmt.Errorf("func [%+v] != [%+v]", r.Funcs[i], o.Funcs[i])
 		}
 	}
 	for i := range r.Types {
 		if !reflect.DeepEqual(r.Types[i], o.Types[i]) {
-			return fmt.Errorf("[%+v] != [%+v]", r.Types[i], o.Types[i])
+			return fmt.Errorf("type [%+v] != [%+v]", r.Types[i], o.Types[i])
 		}
 	}
 	for i := range r.Inputs {
 		if !reflect.DeepEqual(r.Inputs[i], o.Inputs[i]) {
-			return fmt.Errorf("[%+v] != [%+v]", r.Inputs[i], o.Inputs[i])
+			return fmt.Errorf("input [%+v] != [%+v]", r.Inputs[i], o.Inputs[i])
 		}
 	}
 	return nil

@@ -60,9 +60,14 @@ func parse(folder string) (*Result, error) {
 		return nil, err
 	}
 
-	schema, err := graphql.ParseSchema(content.String(), nil)
+	schemaStr := content.String()
+	schema, err := graphql.ParseSchema(schemaStr, nil)
 	if err != nil {
 		return nil, err
+	}
+
+	funcWithoutArgs := func(fname string) bool {
+		return strings.Contains(schemaStr, fname+"():")
 	}
 
 	insp := schema.Inspect()
@@ -94,8 +99,11 @@ func parse(folder string) (*Result, error) {
 				if ignore(getType(ff.Type())) || ignore(ff.Name()) {
 					continue
 				}
-				if len(ff.Args()) > 0 { // => it's function
-					args := make([]Def, 0, len(ff.Args()))
+
+				cntArgs := len(ff.Args())
+				// => it's function
+				if cntArgs > 0 || cntArgs == 0 && funcWithoutArgs(ff.Name()) {
+					args := make([]Def, 0, cntArgs)
 					for _, arg := range ff.Args() {
 						if ignore(arg.Name()) {
 							panic("unreached")
@@ -110,12 +118,14 @@ func parse(folder string) (*Result, error) {
 						Args:   args,
 						Return: getType(ff.Type()),
 					})
-				} else { // => it's variable
-					tp.Defs = append(tp.Defs, Def{
-						Name: ff.Name(),
-						Type: getType(ff.Type()),
-					})
+					continue
 				}
+
+				// => it's variable
+				tp.Defs = append(tp.Defs, Def{
+					Name: ff.Name(),
+					Type: getType(ff.Type()),
+				})
 			}
 			if len(tp.Defs) > 0 {
 				types = append(types, tp)
@@ -146,5 +156,5 @@ func getType(t *introspection.Type) string {
 }
 
 func ignore(name string) bool {
-	return strings.Contains(name, "_")
+	return strings.HasPrefix(name, "_")
 }
