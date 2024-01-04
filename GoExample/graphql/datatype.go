@@ -26,7 +26,6 @@ func (r *Result) Sort() {
 		}
 		return r.Inputs[i].Name > r.Inputs[j].Name
 	})
-	//r.Inputs = removeDuplicates(r.Inputs)
 
 	for _, tp := range r.Types {
 		sortDefs(tp.Defs)
@@ -37,7 +36,6 @@ func (r *Result) Sort() {
 		}
 		return r.Types[i].Name > r.Types[j].Name
 	})
-	r.Types = removeDuplicates(r.Types)
 
 	for _, fun := range r.Funcs {
 		sortDefs(fun.Args)
@@ -53,7 +51,19 @@ func (r *Result) Sort() {
 		}
 		return r.Funcs[i].Name > r.Funcs[j].Name
 	})
-	//r.Funcs = removeDuplicates(r.Funcs)
+}
+
+func (r *Result) CheclDuplicates() error {
+	if err := checkDuplicates(r.Inputs); err != nil {
+		return fmt.Errorf("inputs: [%w]", err)
+	}
+	if err := checkDuplicates(r.Funcs); err != nil {
+		return fmt.Errorf("funcs: [%w]", err)
+	}
+	if err := checkDuplicates(r.Types); err != nil {
+		return fmt.Errorf("types: [%w]", err)
+	}
+	return nil
 }
 
 func sortDefs(s []Def) {
@@ -62,17 +72,15 @@ func sortDefs(s []Def) {
 	})
 }
 
-func removeDuplicates[T Hash](sl []T) []T {
-	result := make([]T, 0, len(sl))
+func checkDuplicates[T Hash](sl []T) error {
 	last := *new(T)
 	for _, v := range sl {
 		if v.Hash() == last.Hash() {
-			continue
+			return fmt.Errorf("duplicates: [%+v]", v)
 		}
-		result = append(result, v)
 		last = v
 	}
-	return result
+	return nil
 }
 
 func (r *Result) Empty() bool {
@@ -82,6 +90,13 @@ func (r *Result) Empty() bool {
 func (r *Result) EqualTo(o *Result) error {
 	r.Sort()
 	o.Sort()
+
+	if err := r.CheclDuplicates(); err != nil {
+		return err
+	}
+	if err := o.CheclDuplicates(); err != nil {
+		return err
+	}
 
 	if len(r.Funcs) != len(o.Funcs) {
 		return fmt.Errorf("len func mismatch [%+v] [%+v]", len(r.Funcs), len(o.Funcs))

@@ -102,7 +102,7 @@ namespace Land.GUI.Serializers
                                     break;
                             }
                         }
-                        res.Funcs.Add(func);
+                        res.AddFunc(func);
                     }
 
                     if (pc.ToString() == "type_line")
@@ -116,11 +116,11 @@ namespace Land.GUI.Serializers
                 if (r.Children[0].ToString().Contains("input"))
                 {
                     GraphqlInput inputDef = new GraphqlInput(typeDef);
-                    res.Inputs.Add(inputDef);
+                    res.AddInput(inputDef);
                 }
                 else
                 {
-                    res.Types.Add(typeDef);
+                    res.AddType(typeDef);
                 }
             }
 
