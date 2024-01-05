@@ -6,21 +6,23 @@ import (
 )
 
 var source = map[string]string{
-	"apollo": `E:\phd\test_repos_graphql\git\apollographql`,
-	"dgraph": `E:\phd\test_repos_graphql\git\dgraph-io`,
-	"wasmer": `E:\phd\test_repos_graphql\git\wasmerio`,
-	"wiki":   `E:\phd\test_repos_graphql\git\wiki`,
-	"qmd":    `E:\phd\test_repos_graphql\qmd\`,
-	"mts":    `E:\phd\test_repos_graphql\mts\`,
+	"sourcegraph": `E:\phd\test_repos_graphql\git\sourcegraph`,
+	"apollo":      `E:\phd\test_repos_graphql\git\apollographql`,
+	"dgraph":      `E:\phd\test_repos_graphql\git\dgraph-io`,
+	"wasmer":      `E:\phd\test_repos_graphql\git\wasmerio`,
+	"wiki":        `E:\phd\test_repos_graphql\git\wiki`,
+	"qmd":         `E:\phd\test_repos_graphql\qmd\`,
+	"mts":         `E:\phd\test_repos_graphql\mts\`,
 }
 
 var results = map[string]string{
-	"apollo": `E:\phd\test_repos_graphql\results\git\apollographql`,
-	"dgraph": `E:\phd\test_repos_graphql\results\git\dgraph-io`,
-	"wasmer": `E:\phd\test_repos_graphql\results\git\wasmerio`,
-	"wiki":   `E:\phd\test_repos_graphql\results\git\wiki`,
-	"qmd":    `E:\phd\test_repos_graphql\results\qmd\`,
-	"mts":    `E:\phd\test_repos_graphql\results\mts\`,
+	"sourcegraph": `E:\phd\test_repos_graphql\results\git\sourcegraph`,
+	"apollo":      `E:\phd\test_repos_graphql\results\git\apollographql`,
+	"dgraph":      `E:\phd\test_repos_graphql\results\git\dgraph-io`,
+	"wasmer":      `E:\phd\test_repos_graphql\results\git\wasmerio`,
+	"wiki":        `E:\phd\test_repos_graphql\results\git\wiki`,
+	"qmd":         `E:\phd\test_repos_graphql\results\qmd\`,
+	"mts":         `E:\phd\test_repos_graphql\results\mts\`,
 }
 
 func main() {

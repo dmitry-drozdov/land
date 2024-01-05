@@ -13,19 +13,32 @@ type Result struct {
 	LOC    uint
 }
 
-var getName = func(d Def) string {
-	return d.Name
-}
-
 func (r *Result) Sort() {
+	for _, input := range r.Inputs {
+		sortDefs(input.Defs)
+	}
 	sort.Slice(r.Inputs, func(i, j int) bool {
 		return r.Inputs[i].Hash() > r.Inputs[j].Hash()
 	})
+
+	for _, tp := range r.Types {
+		sortDefs(tp.Defs)
+	}
 	sort.Slice(r.Types, func(i, j int) bool {
 		return r.Types[i].Hash() > r.Types[j].Hash()
 	})
+
+	for _, fun := range r.Funcs {
+		sortDefs(fun.Args)
+	}
 	sort.Slice(r.Funcs, func(i, j int) bool {
 		return r.Funcs[i].Hash() > r.Funcs[j].Hash()
+	})
+}
+
+func sortDefs(s []Def) {
+	sort.Slice(s, func(i, j int) bool {
+		return s[i].Name > s[j].Name
 	})
 }
 
