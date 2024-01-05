@@ -87,6 +87,7 @@ namespace Land.GUI
 
     internal class GraphqlFunc
     {
+        public string Parent { get; set; } = "";
         public string Name { get; set; } = "";
         public List<GraphqlDef> Args { get; set; } = new List<GraphqlDef>();
         public string Return { get; set; } = "";

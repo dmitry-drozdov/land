@@ -24,6 +24,8 @@ var results = map[string]string{
 }
 
 func main() {
+	fmt.Println("===============START===============")
+	defer fmt.Println("================END================")
 	res, err := parseFolders()
 	if err != nil {
 		log.Fatal(err)

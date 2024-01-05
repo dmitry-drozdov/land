@@ -119,6 +119,7 @@ func parse(folder string) (*Result, error) {
 						})
 					}
 					fn = append(fn, Func{
+						Parent: tp.Name,
 						Name:   ff.Name(),
 						Args:   args,
 						Return: getType(ff.Type()),

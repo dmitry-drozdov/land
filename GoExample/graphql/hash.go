@@ -13,5 +13,5 @@ func (t Type) Hash() uint64 {
 }
 
 func (f Func) Hash() uint64 {
-	return 3*hash(f.Name) ^ 7*sliceHash(f.Args, getName) ^ 31*hash(f.Return)
+	return hash(f.Parent) ^ 3*hash(f.Name) ^ 7*sliceHash(f.Args, getName) ^ 31*hash(f.Return)
 }

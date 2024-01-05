@@ -18,45 +18,14 @@ var getName = func(d Def) string {
 }
 
 func (r *Result) Sort() {
-	for _, input := range r.Inputs {
-		sortDefs(input.Defs)
-	}
 	sort.Slice(r.Inputs, func(i, j int) bool {
-		if r.Inputs[i].Name == r.Inputs[j].Name {
-			return sliceHash(r.Inputs[i].Defs, getName) > sliceHash(r.Inputs[j].Defs, getName)
-		}
-		return r.Inputs[i].Name > r.Inputs[j].Name
+		return r.Inputs[i].Hash() > r.Inputs[j].Hash()
 	})
-
-	for _, tp := range r.Types {
-		sortDefs(tp.Defs)
-	}
 	sort.Slice(r.Types, func(i, j int) bool {
-		if r.Types[i].Name == r.Types[j].Name {
-			return sliceHash(r.Types[i].Defs, getName) > sliceHash(r.Types[j].Defs, getName)
-		}
-		return r.Types[i].Name > r.Types[j].Name
+		return r.Types[i].Hash() > r.Types[j].Hash()
 	})
-
-	for _, fun := range r.Funcs {
-		sortDefs(fun.Args)
-	}
 	sort.Slice(r.Funcs, func(i, j int) bool {
-		if r.Funcs[i].Name == r.Funcs[j].Name {
-			sh1 := sliceHash(r.Funcs[i].Args, getName)
-			sh2 := sliceHash(r.Funcs[j].Args, getName)
-			if sh1 == sh2 {
-				return r.Funcs[i].Return > r.Funcs[j].Return
-			}
-			return sh1 > sh2
-		}
-		return r.Funcs[i].Name > r.Funcs[j].Name
-	})
-}
-
-func sortDefs(s []Def) {
-	sort.Slice(s, func(i, j int) bool {
-		return s[i].Name > s[j].Name
+		return r.Funcs[i].Hash() > r.Funcs[j].Hash()
 	})
 }
 
@@ -138,6 +107,7 @@ type Type struct {
 }
 
 type Func struct {
+	Parent string
 	Name   string
 	Args   []Def
 	Return string

@@ -81,7 +81,10 @@ namespace Land.GUI.Serializers
 
                     if (pc.ToString() == "func_line")
                     {
-                        var func = new GraphqlFunc();
+                        var func = new GraphqlFunc
+                        {
+                            Parent = typeDef.Name // must be already filled 
+                        };
                         foreach (var pcc in pc.Children)
                         {
                             var opt = pcc.ToString();
