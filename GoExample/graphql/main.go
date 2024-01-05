@@ -6,6 +6,7 @@ import (
 )
 
 var source = map[string]string{
+	"dagger":      `E:\phd\test_repos_graphql\git\dagger`,
 	"sourcegraph": `E:\phd\test_repos_graphql\git\sourcegraph`,
 	"apollo":      `E:\phd\test_repos_graphql\git\apollographql`,
 	"dgraph":      `E:\phd\test_repos_graphql\git\dgraph-io`,
@@ -16,6 +17,7 @@ var source = map[string]string{
 }
 
 var results = map[string]string{
+	"dagger":      `E:\phd\test_repos_graphql\results\git\dagger`,
 	"sourcegraph": `E:\phd\test_repos_graphql\results\git\sourcegraph`,
 	"apollo":      `E:\phd\test_repos_graphql\results\git\apollographql`,
 	"dgraph":      `E:\phd\test_repos_graphql\results\git\dgraph-io`,
