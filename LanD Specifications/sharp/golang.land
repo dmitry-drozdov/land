@@ -41,8 +41,12 @@ import_list = 'import' LB Any RB
 
 entity	= water_entity | func
 
+anon_struct = 'struct' '{' struct_content? '}'
+struct_content = (struct_line struct_delim)* struct_line struct_delim?
+struct_delim = (NL | ',')
+struct_line = go_type go_type? tag? 
+tag = ITALIC_QUOTE
 
-anon_struct = 'struct' '{' Any '}'
 anon_interface = 'interface' '{' Any '}'
 
 func = 'func' f_reciever? f_name generic2? f_args f_returns ('{' Any '}')
