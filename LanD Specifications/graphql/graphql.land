@@ -79,7 +79,7 @@ water_entity	=	Any 'PANIC'
 
 %nodes {
 	ghost entity
-	leaf 
+	leaf id
 	void LB RB COMMA tag extend directive_def
 }
 
@@ -90,6 +90,6 @@ water_entity	=	Any 'PANIC'
 }
 
 %markup {
-	land func
-	headercore(name) func
+	land func_line type_def
+	headercore(id) func_line type_def
 }
