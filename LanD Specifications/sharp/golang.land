@@ -107,8 +107,8 @@ generic2		= '[' Any ']'
 }
 
 %nodes {
-	ghost entity anon
-	leaf 
+	ghost entity anon 
+	leaf
 	void LB RB
 }
 

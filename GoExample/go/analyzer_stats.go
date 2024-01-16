@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"os"
 )
 
 type AnalyzerStats struct {
@@ -61,7 +61,7 @@ func (a *AnalyzerStats) Dump() error {
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile(fmt.Sprintf("results/%s.json", a.Source), bytes, 0644)
+	return os.WriteFile(fmt.Sprintf("results/%s.json", a.Source), bytes, 0644)
 }
 
 func (a *AnalyzerStats) Add(b AnalyzerStats) {

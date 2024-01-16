@@ -836,7 +836,7 @@ namespace Land.GUI
                         {
                             var oldPath = @"E:\phd\test_repos";
                             var newPath = @"E:\phd\test_repos\results";
-                            var path = file.Replace(oldPath, newPath);
+                            var path = file.Replace(oldPath, newPath).Replace(".go", ".json");
                             GoSerializer.Serialize(path, root);
                         }
                         if (file.EndsWith(".graphql"))

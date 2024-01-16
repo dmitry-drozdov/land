@@ -37,6 +37,7 @@ func ReadResults(root string) (map[string]map[string]*FuncStat, error) {
 
 			pathBk = strings.ReplaceAll(pathBk, root, "")
 			pathBk = strings.ReplaceAll(pathBk, `\`, "")
+			pathBk = strings.ReplaceAll(pathBk, ".json", ".go")
 
 			mx.Lock()
 			_, ok := res[pathBk]
