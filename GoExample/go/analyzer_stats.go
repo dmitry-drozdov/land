@@ -13,6 +13,10 @@ type AnalyzerStructStats struct {
 	Ratio              RoundedFloat
 }
 
+func (a *AnalyzerStructStats) Total() int {
+	return a.FailIncorrectTypes + a.FailNotFound + a.Ok
+}
+
 type AnalyzerFuncStats struct {
 	notAllArgs int
 	mismatch   int
@@ -51,7 +55,7 @@ func (a *AnalyzerFuncStats) init() {
 	a.VendorFuncs = a.cntVendor
 	a.VendorFuncsPerCent = ratio(a.cntVendor, a.mismatch)
 
-	a.StructStats.Ratio = ratio(a.StructStats.Ok, a.StructStats.FailNotFound+a.StructStats.FailIncorrectTypes)
+	a.StructStats.Ratio = ratio(a.StructStats.Ok, a.StructStats.Total())
 }
 
 func (a *AnalyzerFuncStats) marshal() ([]byte, error) {

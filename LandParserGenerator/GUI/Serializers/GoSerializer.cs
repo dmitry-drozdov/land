@@ -18,14 +18,23 @@ namespace Land.GUI.Serializers
                 Name = pc.Children[1].ToString().Replace("ID: ", "")
             };
 
-            var root = pc.Children.First(x => x.ToString() == "anon_struct");
+            var root = pc.Children.First(x => x.ToString() == "anon_struct")
+                .Children.FirstOrDefault(x => x.ToString() == "struct_content");
 
-            foreach (var item in root.Children.FirstOrDefault(x=>x.ToString()=="struct_content"))
+            if (root == null) // empty struct
+            {
+                sw.WriteLine(JsonSerializer.Serialize(res));
+                return;
+            }
+
+            foreach (var item in root.Children)
             {
                 if (item.ToString() != "struct_line")
                     continue;
 
-                var type = item.Children.Last().ToString();
+                var type = item.Children.Last(x => x.ToString() == "go_type").
+                    Children.First(x => x.ToString() != "arr_ptr").ToString().Replace("ID: ", "");
+                //Console.WriteLine(type);
                 res.Types.Add(type);
             }
 
