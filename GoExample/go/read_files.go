@@ -13,11 +13,13 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-func ReadResults(root string) (map[string]map[string]*FuncStat, error) {
-	res := make(map[string]map[string]*FuncStat, 10000)
+func ReadResults(root string) (map[string]map[string]*FuncStat, map[string]map[string]*StructStat, error) {
+	resFun := make(map[string]map[string]*FuncStat, 10000)
+	resStruct := make(map[string]map[string]*StructStat, 10000)
 	g := errgroup.Group{}
 	g.SetLimit(runtime.NumCPU() * 8)
 	mx := sync.Mutex{}
+
 	err := filepath.Walk(root, func(path string, info os.FileInfo, _ error) error {
 		if info == nil || info.IsDir() {
 			return nil
@@ -40,21 +42,31 @@ func ReadResults(root string) (map[string]map[string]*FuncStat, error) {
 			pathBk = strings.ReplaceAll(pathBk, ".json", ".go")
 
 			mx.Lock()
-			_, ok := res[pathBk]
-			if !ok {
-				res[pathBk] = make(map[string]*FuncStat, 10)
+			if _, ok := resFun[pathBk]; !ok {
+				resFun[pathBk] = make(map[string]*FuncStat, 10)
+			}
+			if _, ok := resStruct[pathBk]; !ok {
+				resStruct[pathBk] = make(map[string]*StructStat, 10)
 			}
 			mx.Unlock()
 
 			for fileScanner.Scan() {
 				line := fileScanner.Text()
-				ln := &FuncStat{}
-				if err := json.Unmarshal([]byte(line), ln); err != nil {
-					return err
-				}
 
 				mx.Lock()
-				res[pathBk][ln.Name] = ln
+				if strings.Contains(line, "ArgsCnt") { // func
+					ln := &FuncStat{}
+					if err := json.Unmarshal([]byte(line), ln); err != nil {
+						return err
+					}
+					resFun[pathBk][ln.Name] = ln
+				} else { // struct
+					ln := &StructStat{}
+					if err := json.Unmarshal([]byte(line), ln); err != nil {
+						return err
+					}
+					resStruct[pathBk][ln.Name] = ln
+				}
 				mx.Unlock()
 			}
 			return nil
@@ -64,11 +76,11 @@ func ReadResults(root string) (map[string]map[string]*FuncStat, error) {
 	})
 
 	if err := g.Wait(); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	if len(res) == 0 {
-		return nil, fmt.Errorf("empty output")
+	if len(resFun) == 0 {
+		return nil, nil, fmt.Errorf("empty output")
 	}
-	return res, err
+	return resFun, resStruct, err
 }

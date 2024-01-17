@@ -12,6 +12,11 @@ type FuncStat struct {
 	Return  int
 }
 
+type StructStat struct {
+	Name  string
+	Types []string
+}
+
 func (f *FuncStat) EqualTo(g *FuncStat) bool {
 	if f == nil && g == nil {
 		return true

@@ -7,7 +7,7 @@ using System.Windows.Media.Media3D;
 
 namespace Land.GUI
 {
-    internal class GoParseResult
+    internal class GoFunc
     {
         public string Name { get; set; } = "";
         public List<string> Args { get; set; } = new List<string>();
@@ -21,12 +21,20 @@ namespace Land.GUI
                 return Name == "" && Args.Count == 0 && Return == 0 && ArgsCnt == 0;
             }
         }
-
-        public void Reverse()
-        {
-            Args.Reverse();
-        }
     }
 
+    internal class GoStruct
+    {
+        public string Name { get; set; } = "";
+        public List<string> Types { get; set; } = new List<string>();
+
+        public bool Empty
+        {
+            get
+            {
+                return Name == "" && Types.Count == 0;
+            }
+        }
+    }
 
 }

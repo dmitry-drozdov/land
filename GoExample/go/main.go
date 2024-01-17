@@ -43,10 +43,11 @@ func doWork(sname string) error {
 	defer fmt.Printf("===== %s END =====\n", sname)
 
 	fmt.Println("reading results...")
-	light, err := ReadResults(fmt.Sprintf(`e:\phd\test_repos\results\%s`, sname))
+	lightFunc, lightStruct, err := ReadResults(fmt.Sprintf(`e:\phd\test_repos\results\%s`, sname))
 	if err != nil {
 		return err
 	}
+	fmt.Println(len(lightStruct))
 	fmt.Println("reading results DONE")
 
 	source := fmt.Sprintf(`e:\phd\test_repos\%s\`, sname)
@@ -61,11 +62,11 @@ func doWork(sname string) error {
 		Source:     sname,
 		Duplicates: duplicates,
 		lnFull:     len(full),
-		lnLight:    len(light),
+		lnLight:    len(lightFunc),
 	}
 
 	for kf, vf := range full {
-		kl, ok := light[kf]
+		kl, ok := lightFunc[kf]
 		if !ok {
 			a.mismatch++
 			continue

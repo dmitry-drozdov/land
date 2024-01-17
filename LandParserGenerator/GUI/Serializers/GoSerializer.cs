@@ -11,6 +11,60 @@ namespace Land.GUI.Serializers
 {
     internal class GoSerializer
     {
+        static void ParseStruct(Node pc, StreamWriter sw)
+        {
+            var res = new GoStruct
+            {
+                Name = pc.Children[1].ToString().Replace("ID: ", "")
+            };
+
+            var root = pc.Children.First(x => x.ToString() == "anon_struct");
+
+            foreach (var item in root.Children.FirstOrDefault(x=>x.ToString()=="struct_content"))
+            {
+                if (item.ToString() != "struct_line")
+                    continue;
+
+                var type = item.Children.Last().ToString();
+                res.Types.Add(type);
+            }
+
+            sw.WriteLine(JsonSerializer.Serialize(res));
+        }
+        static void ParseFunc(Node pc, StreamWriter sw)
+        {
+            var res = new GoFunc();
+
+            foreach (var pcc in pc.Children)
+            {
+                var opt = pcc.ToString();
+
+                switch (opt)
+                {
+                    case "f_name":
+                        res.Name = pcc.Children[0].ToString().Replace("ID: ", "");
+                        break;
+                    case "f_args":
+                        var args = pcc.Children.Where(x => x.ToString().StartsWith("f_arg"));
+                        res.ArgsCnt = args.Count();
+                        if (res.ArgsCnt == 0)
+                            break;
+                        foreach (var arg in args)
+                        {
+                            res.Args.Add(arg.ToString().Replace("f_arg: ", ""));
+                        }
+                        break;
+                    case "f_returns":
+                        res.Return = pcc.Children.Count(x => x.ToString() == "f_return" || x.ToString().StartsWith("go_type"));
+                        break;
+                }
+            }
+
+            if (!res.Empty)
+            {
+                sw.WriteLine(JsonSerializer.Serialize(res));
+            }
+        }
         internal static void Serialize(string path, Node root)
         {
             FileInfo file = new FileInfo(path);
@@ -25,40 +79,10 @@ namespace Land.GUI.Serializers
 
                     foreach (var pc in r.Children)
                     {
-                        if (pc.ToString() != "func")
-                            continue;
-
-                        var res = new GoParseResult();
-
-                        foreach (var pcc in pc.Children)
-                        {
-                            var opt = pcc.ToString();
-
-                            switch (opt)
-                            {
-                                case "f_name":
-                                    res.Name = pcc.Children[0].ToString().Replace("ID: ", "");
-                                    break;
-                                case "f_args":
-                                    var args = pcc.Children.Where(x => x.ToString().StartsWith("f_arg"));
-                                    res.ArgsCnt = args.Count();
-                                    if (res.ArgsCnt == 0)
-                                        break;
-                                    foreach (var arg in args)
-                                    {
-                                        res.Args.Add(arg.ToString().Replace("f_arg: ", ""));
-                                    }
-                                    break;
-                                case "f_returns":
-                                    res.Return = pcc.Children.Count(x => x.ToString() == "f_return" || x.ToString().StartsWith("go_type"));
-                                    break;
-                            }
-                        }
-
-                        if (!res.Empty)
-                        {
-                            sw.WriteLine(JsonSerializer.Serialize(res));
-                        }
+                        if (pc.ToString() == "func")
+                            ParseFunc(pc, sw);
+                        if (pc.ToString() == "struct_type")
+                            ParseStruct(pc, sw);
                     }
                 }
             }
