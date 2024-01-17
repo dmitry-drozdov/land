@@ -154,6 +154,9 @@ func ParseFile(path string) (map[string]*FuncStat, map[string]*StructStat, error
 			}
 
 			funcPos = append(funcPos, pair{x.Pos(), x.End()})
+
+		case *ast.FuncLit:
+			funcPos = append(funcPos, pair{x.Pos(), x.End()})
 		}
 		return true
 	})
