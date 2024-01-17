@@ -12,8 +12,8 @@
  "VendorFuncsPerCent": 0,
  "StructStats": {
   "Ok": 6105,
-  "FailNotFound": 8,
+  "FailNotFound": 0,
   "FailIncorrectTypes": 4870,
-  "Ratio": 55.59
+  "Ratio": 55.63
  }
 }

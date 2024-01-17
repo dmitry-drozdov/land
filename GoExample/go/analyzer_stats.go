@@ -79,6 +79,12 @@ func (a *AnalyzerFuncStats) Dump() error {
 	return os.WriteFile(fmt.Sprintf("results/%s.json", a.Source), bytes, 0644)
 }
 
+func (a *AnalyzerStructStats) Add(b AnalyzerStructStats) {
+	a.Ok += b.Ok
+	a.FailIncorrectTypes += b.FailIncorrectTypes
+	a.FailNotFound = b.FailNotFound
+}
+
 func (a *AnalyzerFuncStats) Add(b AnalyzerFuncStats) {
 	a.Source = ""
 	a.TotalFiles += b.TotalFiles
@@ -91,6 +97,7 @@ func (a *AnalyzerFuncStats) Add(b AnalyzerFuncStats) {
 	a.VendorFuncs += b.VendorFuncs
 	a.VendorFuncsPerCent += b.VendorFuncsPerCent
 	a.Duplicates += b.Duplicates
+	a.StructStats.Add(b.StructStats)
 }
 
 func ratio(part, total int) RoundedFloat {

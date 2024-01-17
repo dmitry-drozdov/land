@@ -98,7 +98,23 @@ func ParseFile(path string) (map[string]*FuncStat, map[string]*StructStat, error
 		return nil, nil, err
 	}
 
+	type pair struct{ start, end token.Pos }
+	funcPos := []pair{} // to filter type declared inside functions
+
+	checkInside := func(start, end token.Pos) bool {
+		for _, pos := range funcPos {
+			if start > pos.start && end < pos.end {
+				return true
+			}
+		}
+		return false
+	}
+
 	ast.Inspect(f, func(n ast.Node) bool {
+		if n != nil && checkInside(n.Pos(), n.End()) {
+			return true
+		}
+
 		switch x := n.(type) {
 		case *ast.TypeSpec:
 			switch y := x.Type.(type) {
@@ -136,6 +152,8 @@ func ParseFile(path string) (map[string]*FuncStat, map[string]*StructStat, error
 					add(HumanType(y.Type))
 				}
 			}
+
+			funcPos = append(funcPos, pair{x.Pos(), x.End()})
 		}
 		return true
 	})
