@@ -15,7 +15,7 @@ namespace Land.GUI.Serializers
         {
             var res = new GoStruct
             {
-                Name = pc.Children[1].ToString().Replace("ID: ", "")
+                Name = pc.Children[0].ToString().Replace("ID: ", "")
             };
 
             var root = pc.Children.First(x => x.ToString() == "anon_struct")
@@ -27,6 +27,15 @@ namespace Land.GUI.Serializers
                 return;
             }
 
+            ParseStructHelp(root, res);
+
+            //Console.WriteLine(JsonSerializer.Serialize(res));
+
+            sw.WriteLine(JsonSerializer.Serialize(res));
+        }
+
+        static void ParseStructHelp(Node root, GoStruct res)
+        {
             foreach (var item in root.Children)
             {
                 if (item.ToString() != "struct_line")
@@ -37,9 +46,28 @@ namespace Land.GUI.Serializers
                 //Console.WriteLine(type);
                 res.Types.Add(type);
             }
-
-            sw.WriteLine(JsonSerializer.Serialize(res));
         }
+
+        static void ParseMultilineType(Node pc, StreamWriter sw)
+        {
+            foreach (var pcc in pc.Children) // pcc -- line_type
+            {
+                var pccc = pcc.Children.FirstOrDefault(x => x.ToString() == "anon_struct");
+                if (pccc == null)
+                    continue;
+
+                var res = new GoStruct
+                {
+                    Name = pcc.Children[0].ToString().Replace("ID: ", "")
+                };
+
+                ParseStructHelp(pccc, res);
+                //Console.WriteLine(JsonSerializer.Serialize(res));
+                sw.WriteLine(JsonSerializer.Serialize(res));
+            }
+        }
+
+
         static void ParseFunc(Node pc, StreamWriter sw)
         {
             var res = new GoFunc();
@@ -90,8 +118,23 @@ namespace Land.GUI.Serializers
                     {
                         if (pc.ToString() == "func")
                             ParseFunc(pc, sw);
-                        if (pc.ToString() == "struct_type")
-                            ParseStruct(pc, sw);
+
+                        if (pc.ToString() == "type_def")
+                        {
+                            var pcc = pc.Children[1];
+                            var c = pcc.ToString();
+
+                            switch (c)
+                            {
+                                case "struct_type":
+                                    ParseStruct(pcc, sw);
+                                    break;
+                                case "multiline_type":
+                                    ParseMultilineType(pcc, sw);
+                                    break;
+                            }
+                        }
+
                     }
                 }
             }

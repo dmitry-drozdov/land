@@ -39,9 +39,14 @@ package			=	'package' package_name  import*  package_content
 import = 'import' AnyInclude(QUOTE) | import_list
 import_list = 'import' LB Any RB
 
-entity	= water_entity | func | struct_type
+entity	= water_entity | func | type_def
 
-struct_type = 'type' ID anon_struct
+type_def = 'type' (struct_type | multiline_type)
+
+multiline_type = '(' line_type* ')'
+line_type = ID (anon_struct | Any) NL
+
+struct_type = ID anon_struct
 
 anon_struct = 'struct' '{' struct_content? '}'
 struct_content = (struct_line struct_delim)* struct_line struct_delim?
