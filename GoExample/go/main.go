@@ -76,12 +76,10 @@ func doWork(sname string) error {
 		for k, v := range vf {
 			sl, ok := lk[k]
 			if !ok {
-				// fmt.Println(*v)
-				// return nil
 				s.FailNotFound++
 				continue
 			}
-			if !compareSlice(v.Types, sl.Types) {
+			if !compareSlice(v.Types, sl.Types, trimSpace) {
 				s.FailIncorrectTypes++
 				continue
 			}

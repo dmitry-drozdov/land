@@ -2,11 +2,14 @@ package main
 
 import (
 	"sort"
+	"strings"
 
 	"golang.org/x/exp/constraints"
 )
 
-func compareSlice[T constraints.Ordered](a []T, b []T) bool {
+var trimSpace = func(s string) string { return strings.TrimSpace(s) }
+
+func compareSlice[T constraints.Ordered](a []T, b []T, f func(T) T) bool {
 	if len(a) != len(b) {
 		return false
 	}
@@ -22,7 +25,7 @@ func compareSlice[T constraints.Ordered](a []T, b []T) bool {
 	})
 
 	for i := range a {
-		if a[i] != b[i] {
+		if f(a[i]) != f(b[i]) {
 			return false
 		}
 	}
