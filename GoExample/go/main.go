@@ -52,20 +52,42 @@ func doWork(sname string) error {
 
 	source := fmt.Sprintf(`e:\phd\test_repos\%s\`, sname)
 	fmt.Println("parsing files with go ast...")
-	full, duplicates, err := ParseFiles(source)
+	fullFunc, fullStruct, duplicates, err := ParseFiles(source)
 	if err != nil {
 		return err
 	}
 	fmt.Println("parsing files with go ast DONE")
 
-	a := &AnalyzerStats{
+	a := &AnalyzerFuncStats{
 		Source:     sname,
 		Duplicates: duplicates,
-		lnFull:     len(full),
+		lnFull:     len(fullFunc),
 		lnLight:    len(lightFunc),
 	}
 
-	for kf, vf := range full {
+	s := &a.StructStats
+
+	for kf, vf := range fullStruct {
+		lk, ok := lightStruct[kf]
+		if !ok {
+			return fmt.Errorf("info for %s not found", kf)
+		}
+
+		for k, v := range vf {
+			sl, ok := lk[k]
+			if !ok {
+				s.FailNotFound++
+				continue
+			}
+			if !compareSlice(v.Types, sl.Types) {
+				s.FailIncorrectTypes++
+				continue
+			}
+			s.Ok++
+		}
+	}
+
+	for kf, vf := range fullFunc {
 		kl, ok := lightFunc[kf]
 		if !ok {
 			a.mismatch++

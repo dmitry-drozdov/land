@@ -6,7 +6,14 @@ import (
 	"os"
 )
 
-type AnalyzerStats struct {
+type AnalyzerStructStats struct {
+	Ok                 int
+	FailNotFound       int
+	FailIncorrectTypes int
+	Ratio              RoundedFloat
+}
+
+type AnalyzerFuncStats struct {
 	notAllArgs int
 	mismatch   int
 	match      int
@@ -25,9 +32,11 @@ type AnalyzerStats struct {
 	ArgsCover          RoundedFloat
 	VendorFuncs        int
 	VendorFuncsPerCent RoundedFloat
+
+	StructStats AnalyzerStructStats
 }
 
-func (a *AnalyzerStats) init() {
+func (a *AnalyzerFuncStats) init() {
 	total := a.mismatch + a.match
 	skipped := a.lnFull - a.lnLight
 
@@ -41,13 +50,15 @@ func (a *AnalyzerStats) init() {
 
 	a.VendorFuncs = a.cntVendor
 	a.VendorFuncsPerCent = ratio(a.cntVendor, a.mismatch)
+
+	a.StructStats.Ratio = ratio(a.StructStats.Ok, a.StructStats.FailNotFound+a.StructStats.FailIncorrectTypes)
 }
 
-func (a *AnalyzerStats) marshal() ([]byte, error) {
+func (a *AnalyzerFuncStats) marshal() ([]byte, error) {
 	return json.MarshalIndent(a, "", " ")
 }
 
-func (a *AnalyzerStats) String() string {
+func (a *AnalyzerFuncStats) String() string {
 	bytes, err := a.marshal()
 	if err != nil {
 		return err.Error()
@@ -55,7 +66,7 @@ func (a *AnalyzerStats) String() string {
 	return string(bytes)
 }
 
-func (a *AnalyzerStats) Dump() error {
+func (a *AnalyzerFuncStats) Dump() error {
 	a.init()
 	bytes, err := a.marshal()
 	if err != nil {
@@ -64,7 +75,7 @@ func (a *AnalyzerStats) Dump() error {
 	return os.WriteFile(fmt.Sprintf("results/%s.json", a.Source), bytes, 0644)
 }
 
-func (a *AnalyzerStats) Add(b AnalyzerStats) {
+func (a *AnalyzerFuncStats) Add(b AnalyzerFuncStats) {
 	a.Source = ""
 	a.TotalFiles += b.TotalFiles
 	a.SkippedFiles += b.SkippedFiles

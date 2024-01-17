@@ -10,7 +10,7 @@ import (
 
 func GetTotalStats(root string) error {
 	cnt := 0
-	ts := AnalyzerStats{}
+	ts := AnalyzerFuncStats{}
 	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 		if info.IsDir() || filepath.Ext(info.Name()) != ".json" {
 			return nil
@@ -30,7 +30,7 @@ func GetTotalStats(root string) error {
 			return err
 		}
 
-		var stats AnalyzerStats
+		var stats AnalyzerFuncStats
 		if err := json.Unmarshal(bytes, &stats); err != nil {
 			return err
 		}

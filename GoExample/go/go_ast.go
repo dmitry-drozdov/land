@@ -16,8 +16,9 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-func ParseFiles(root string) (map[string]map[string]*FuncStat, int, error) {
-	res := make(map[string]map[string]*FuncStat, 10000)
+func ParseFiles(root string) (map[string]map[string]*FuncStat, map[string]map[string]*StructStat, int, error) {
+	resFun := make(map[string]map[string]*FuncStat, 10000)
+	resStruct := make(map[string]map[string]*StructStat, 10000)
 	g := errgroup.Group{}
 	g.SetLimit(runtime.NumCPU() * 8)
 	l := sync.Mutex{}
@@ -59,7 +60,7 @@ func ParseFiles(root string) (map[string]map[string]*FuncStat, int, error) {
 		})
 
 		g.Go(func() error {
-			data, err := ParseFile(pathBk)
+			dataFunc, dataStruct, err := ParseFile(pathBk)
 			if err != nil {
 				return err
 			}
@@ -67,7 +68,8 @@ func ParseFiles(root string) (map[string]map[string]*FuncStat, int, error) {
 			pathBk = strings.ReplaceAll(pathBk, root, "")
 			pathBk = strings.ReplaceAll(pathBk, `\`, "")
 			l.Lock()
-			res[pathBk] = data
+			resFun[pathBk] = dataFunc
+			resStruct[pathBk] = dataStruct
 			l.Unlock()
 			return nil
 		})
@@ -76,27 +78,37 @@ func ParseFiles(root string) (map[string]map[string]*FuncStat, int, error) {
 	})
 	g.Wait()
 	if err != nil {
-		return nil, 0, err
+		return nil, nil, 0, err
 	}
 
-	if len(res) == 0 {
-		return nil, 0, fmt.Errorf("empty output")
+	if len(resFun) == 0 {
+		return nil, nil, 0, fmt.Errorf("empty output")
 	}
 
-	return res, duplicates, nil
+	return resFun, resStruct, duplicates, nil
 }
 
-func ParseFile(path string) (map[string]*FuncStat, error) {
-	res := make(map[string]*FuncStat, 10000)
+func ParseFile(path string) (map[string]*FuncStat, map[string]*StructStat, error) {
+	resFun := make(map[string]*FuncStat, 10000)
+	resStruct := make(map[string]*StructStat, 10000)
 
 	fset := token.NewFileSet()
 	f, err := parser.ParseFile(fset, path, nil, 0)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	ast.Inspect(f, func(n ast.Node) bool {
 		switch x := n.(type) {
+		case *ast.TypeSpec:
+			switch y := x.Type.(type) {
+			case *ast.StructType:
+				resStruct[x.Name.Name] = &StructStat{Name: x.Name.Name, Types: []string{}}
+				for _, f := range y.Fields.List {
+					resStruct[x.Name.Name].Types = append(resStruct[x.Name.Name].Types, HumanType(f.Type))
+				}
+			}
+
 		case *ast.FuncDecl:
 			ret := 0
 			if x.Type.Results != nil {
@@ -108,7 +120,7 @@ func ParseFile(path string) (map[string]*FuncStat, error) {
 				ArgsCnt: x.Type.Params.NumFields(),
 				Return:  ret,
 			}
-			res[x.Name.Name] = ptr
+			resFun[x.Name.Name] = ptr
 
 			add := func(a string) {
 				ptr.Args = append(ptr.Args, a)
@@ -128,7 +140,7 @@ func ParseFile(path string) (map[string]*FuncStat, error) {
 		return true
 	})
 
-	return res, nil
+	return resFun, resStruct, nil
 }
 
 func HumanType(tp ast.Expr) string {

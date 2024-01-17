@@ -9,5 +9,11 @@
  "Accuracy": 100,
  "ArgsCover": 100,
  "VendorFuncs": 0,
- "VendorFuncsPerCent": 0
+ "VendorFuncsPerCent": 0,
+ "StructStats": {
+  "Ok": 5,
+  "FailNotFound": 12,
+  "FailIncorrectTypes": 232,
+  "Ratio": 2.05
+ }
 }
