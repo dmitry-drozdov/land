@@ -46,7 +46,7 @@ type_def = 'type' (struct_type | multiline_type)
 multiline_type = '(' line_type* ')'
 line_type = ID (anon_struct | Any) NL
 
-struct_type = ID generic2? anon_struct
+struct_type = ID '='? generic2? anon_struct
 
 anon_struct = 'struct' '{' struct_content? '}'
 struct_content = (struct_line struct_delim)* struct_line struct_delim?
