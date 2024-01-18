@@ -72,7 +72,7 @@ namespace Land.GUI.Serializers
                     Name = pcc.Children[0].ToString().Replace("ID: ", "")
                 };
 
-                ParseStructHelp(pccc, res);
+                ParseStructHelp(pccc.Children[1], res);
                 //Console.WriteLine(JsonSerializer.Serialize(res));
                 sw.WriteLine(JsonSerializer.Serialize(res));
             }
