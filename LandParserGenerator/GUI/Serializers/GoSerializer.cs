@@ -36,15 +36,26 @@ namespace Land.GUI.Serializers
 
         static void ParseStructHelp(Node root, GoStruct res)
         {
+            string lastType = "";
+            string lastDelim = "";
+            root.Children.Reverse();
             foreach (var item in root.Children)
             {
-                if (item.ToString() != "struct_line")
+                if (item.ToString() == "struct_delim")
+                {
+                    lastDelim = item.Children[0].ToString().Contains("NL") ? "\n" : ",";
                     continue;
+                }
 
-                var type = item.Children.Last(x => x.ToString() == "go_type").
-                    Children.First(x => x.ToString() != "arr_ptr").ToString().Replace("ID: ", "");
-                //Console.WriteLine(type);
-                res.Types.Add(type);
+
+                var goTypes = item.Children.Where(x => x.ToString() == "go_type");
+                if (goTypes.Count() > 1 || lastDelim == "\n") // embeded structs
+                {
+                    lastType = goTypes.Last().Children.First(x => x.ToString() != "arr_ptr").ToString().Replace("ID: ", "");
+                }
+
+
+                res.Types.Add(lastType);
             }
         }
 

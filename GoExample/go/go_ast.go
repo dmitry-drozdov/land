@@ -121,7 +121,12 @@ func ParseFile(path string) (map[string]*FuncStat, map[string]*StructStat, error
 			case *ast.StructType:
 				resStruct[x.Name.Name] = &StructStat{Name: x.Name.Name, Types: []string{}}
 				for _, f := range y.Fields.List {
-					resStruct[x.Name.Name].Types = append(resStruct[x.Name.Name].Types, HumanType(f.Type))
+					for i := 0; i < len(f.Names); i++ { // a, b, c int => append 3 int
+						resStruct[x.Name.Name].Types = append(resStruct[x.Name.Name].Types, HumanType(f.Type))
+					}
+					if len(f.Names) == 0 { // embedded type
+						resStruct[x.Name.Name].Types = append(resStruct[x.Name.Name].Types, HumanType(f.Type))
+					}
 				}
 			}
 
