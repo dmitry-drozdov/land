@@ -13,6 +13,7 @@
  "StructStats": {
   "Ok": 34730,
   "FailNotFound": 154,
+  "FailNotFoundHasFunc": 129,
   "FailIncorrectTypes": 76,
   "Ratio": 99.34
  }

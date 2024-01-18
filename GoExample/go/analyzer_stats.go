@@ -7,10 +7,11 @@ import (
 )
 
 type AnalyzerStructStats struct {
-	Ok                 int
-	FailNotFound       int
-	FailIncorrectTypes int
-	Ratio              RoundedFloat
+	Ok                  int
+	FailNotFound        int
+	FailNotFoundHasFunc int // subtype of FailNotFound
+	FailIncorrectTypes  int
+	Ratio               RoundedFloat
 }
 
 func (a *AnalyzerStructStats) Total() int {
@@ -83,6 +84,7 @@ func (a *AnalyzerStructStats) Add(b AnalyzerStructStats) {
 	a.Ok += b.Ok
 	a.FailIncorrectTypes += b.FailIncorrectTypes
 	a.FailNotFound = b.FailNotFound
+	a.FailNotFoundHasFunc = b.FailNotFoundHasFunc
 }
 
 func (a *AnalyzerFuncStats) Add(b AnalyzerFuncStats) {

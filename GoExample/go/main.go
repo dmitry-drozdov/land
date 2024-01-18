@@ -77,6 +77,12 @@ func doWork(sname string) error {
 			sl, ok := lk[k]
 			if !ok {
 				s.FailNotFound++
+				for _, t := range v.Types {
+					if t == "anon_func_title" {
+						s.FailNotFoundHasFunc++
+						break
+					}
+				}
 				continue
 			}
 			if !compareSlice(v.Types, sl.Types, trimSpace) {
