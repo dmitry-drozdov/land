@@ -21,11 +21,6 @@ namespace Land.GUI.Serializers
             var root = pc.Children.First(x => x.ToString() == "anon_struct")
                 .Children.FirstOrDefault(x => x.ToString() == "struct_content");
 
-            if (root == null) // empty struct
-            {
-                sw.WriteLine(JsonSerializer.Serialize(res));
-                return;
-            }
 
             ParseStructHelp(root, res);
 
@@ -36,6 +31,10 @@ namespace Land.GUI.Serializers
 
         static void ParseStructHelp(Node root, GoStruct res)
         {
+            if (root == null) // empty struct
+                return;
+
+            bool onlyOneField = root.Children.Count <= 2;
             string lastType = "";
             string lastDelim = "";
             root.Children.Reverse();
@@ -49,7 +48,7 @@ namespace Land.GUI.Serializers
 
 
                 var goTypes = item.Children.Where(x => x.ToString() == "go_type");
-                if (goTypes.Count() > 1 || lastDelim == "\n") // embeded structs
+                if (goTypes.Count() > 1 || lastDelim == "\n" || onlyOneField) // embeded structs
                 {
                     lastType = goTypes.Last().Children.First(x => x.ToString() != "arr_ptr").ToString().Replace("ID: ", "");
                 }
@@ -72,7 +71,7 @@ namespace Land.GUI.Serializers
                     Name = pcc.Children[0].ToString().Replace("ID: ", "")
                 };
 
-                ParseStructHelp(pccc.Children[1], res);
+                ParseStructHelp(pccc.Children.FirstOrDefault(x => x.ToString() == "struct_content"), res);
                 //Console.WriteLine(JsonSerializer.Serialize(res));
                 sw.WriteLine(JsonSerializer.Serialize(res));
             }
