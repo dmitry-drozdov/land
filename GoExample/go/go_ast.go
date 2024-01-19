@@ -9,6 +9,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"strings"
 	"sync"
@@ -202,7 +203,12 @@ func HumanType(tp ast.Expr) string {
 }
 
 func HashFile(bytes []byte) uint64 {
+	str := string(bytes)
+
+	re := regexp.MustCompile(`[\s]`) // to unify files formatting
+	str = re.ReplaceAllString(str, "")
+
 	h := fnv.New64a()
-	h.Write([]byte(bytes))
+	h.Write([]byte(str))
 	return h.Sum64()
 }
