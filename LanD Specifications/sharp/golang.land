@@ -44,7 +44,7 @@ entity	= water_entity | func | type_def
 type_def = 'type' (struct_type | multiline_type)
 
 multiline_type = '(' line_type* ')'
-line_type = ID (anon_struct | Any) NL
+line_type = ID '='? (anon_struct | Any) NL
 
 struct_type = ID '='? generic2? anon_struct
 
