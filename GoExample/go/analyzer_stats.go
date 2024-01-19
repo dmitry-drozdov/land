@@ -83,8 +83,8 @@ func (a *AnalyzerFuncStats) Dump() error {
 func (a *AnalyzerStructStats) Add(b AnalyzerStructStats) {
 	a.Ok += b.Ok
 	a.FailIncorrectTypes += b.FailIncorrectTypes
-	a.FailNotFound = b.FailNotFound
-	a.FailNotFoundHasFunc = b.FailNotFoundHasFunc
+	a.FailNotFound += b.FailNotFound
+	a.FailNotFoundHasFunc += b.FailNotFoundHasFunc
 }
 
 func (a *AnalyzerFuncStats) Add(b AnalyzerFuncStats) {

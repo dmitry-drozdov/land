@@ -50,7 +50,7 @@ struct_type = ID '='? generic2? anon_struct
 
 anon_struct = 'struct' '{' struct_content? '}'
 struct_content = (struct_line struct_delim)* struct_line struct_delim?
-struct_delim = (NL | ',')
+struct_delim = (NL | ',' | Any)
 struct_line = go_type go_type? tag? 
 tag = ITALIC_QUOTE
 
@@ -61,7 +61,7 @@ func = 'func' f_reciever? f_name generic2? f_args f_returns ('{' Any '}')
 	| 'func' f_reciever? f_name generic2? f_args NL
 
 
-anon_func_title = 'func' f_args f_returns
+anon_func_title = 'func' f_args NL | 'func' f_args f_returns
 
 
 f_reciever = LB param '*'? f_type generic2? RB 

@@ -11,10 +11,10 @@
  "VendorFuncs": 0,
  "VendorFuncsPerCent": 0,
  "StructStats": {
-  "Ok": 4862,
-  "FailNotFound": 37,
-  "FailNotFoundHasFunc": 36,
-  "FailIncorrectTypes": 2,
-  "Ratio": 99.2
+  "Ok": 4901,
+  "FailNotFound": 0,
+  "FailNotFoundHasFunc": 0,
+  "FailIncorrectTypes": 0,
+  "Ratio": 100
  }
 }

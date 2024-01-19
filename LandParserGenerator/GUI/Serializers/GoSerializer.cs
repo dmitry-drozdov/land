@@ -42,7 +42,7 @@ namespace Land.GUI.Serializers
             {
                 if (item.ToString() == "struct_delim")
                 {
-                    lastDelim = item.Children[0].ToString().Contains("NL") ? "\n" : ",";
+                    lastDelim = item.Children[0].ToString().Contains(",") ? "," : "\n";
                     continue;
                 }
 
