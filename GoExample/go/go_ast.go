@@ -6,7 +6,6 @@ import (
 	"go/parser"
 	"go/token"
 	"hash/fnv"
-	"io"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -24,9 +23,10 @@ func ParseFiles(root string) (map[string]map[string]*FuncStat, map[string]map[st
 	g.SetLimit(runtime.NumCPU() * 8)
 	l := sync.Mutex{}
 
-	alreadyDone := make(map[uint64]struct{}, 10000)
 	duplicates := 0
-	m := sync.Mutex{}
+
+	// alreadyDone := make(map[uint64]struct{}, 10000)
+	// m := sync.Mutex{}
 
 	err := filepath.Walk(root, func(path string, info os.FileInfo, _ error) error {
 		if info.IsDir() || filepath.Ext(info.Name()) != ".go" {
@@ -35,30 +35,31 @@ func ParseFiles(root string) (map[string]map[string]*FuncStat, map[string]map[st
 
 		pathBk := path
 
-		g.Go(func() error {
-			file, err := os.Open(pathBk)
-			if err != nil {
-				return err
-			}
-			defer file.Close()
+		// uncomment when need to check duplicates
+		// g.Go(func() error {
+		// 	file, err := os.Open(pathBk)
+		// 	if err != nil {
+		// 		return err
+		// 	}
+		// 	defer file.Close()
 
-			content, err := io.ReadAll(file)
-			if err != nil {
-				return err
-			}
-			key := HashFile(content)
+		// 	content, err := io.ReadAll(file)
+		// 	if err != nil {
+		// 		return err
+		// 	}
+		// 	key := HashFile(content)
 
-			m.Lock()
-			defer m.Unlock()
-			_, ok := alreadyDone[key]
-			if ok {
-				duplicates++
-				return nil
-			}
-			alreadyDone[key] = struct{}{}
+		// 	m.Lock()
+		// 	defer m.Unlock()
+		// 	_, ok := alreadyDone[key]
+		// 	if ok {
+		// 		duplicates++
+		// 		return nil
+		// 	}
+		// 	alreadyDone[key] = struct{}{}
 
-			return nil
-		})
+		// 	return nil
+		// })
 
 		g.Go(func() error {
 			defer runtime.GC()
@@ -133,14 +134,14 @@ func ParseFile(path string) (map[string]*FuncStat, map[string]*StructStat, error
 			}
 
 		case *ast.FuncDecl:
-			ret := 0
+			ret := byte(0)
 			if x.Type.Results != nil {
-				ret = x.Type.Results.NumFields()
+				ret = byte(x.Type.Results.NumFields())
 			}
 
 			ptr := &FuncStat{
 				Name:    x.Name.Name,
-				ArgsCnt: x.Type.Params.NumFields(),
+				ArgsCnt: byte(x.Type.Params.NumFields()),
 				Return:  ret,
 				Args:    make([]string, 0, 3),
 			}

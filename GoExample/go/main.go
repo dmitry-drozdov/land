@@ -119,7 +119,7 @@ func doWork(sname string) error {
 				continue
 			}
 
-			if len(v.Args) != len(funcs.Args) || len(funcs.Args) != funcs.ArgsCnt {
+			if len(v.Args) != len(funcs.Args) || byte(len(funcs.Args)) != funcs.ArgsCnt {
 				a.notAllArgs++
 			}
 

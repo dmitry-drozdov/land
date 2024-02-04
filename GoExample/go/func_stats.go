@@ -8,8 +8,8 @@ import (
 type FuncStat struct {
 	Name    string
 	Args    []string
-	ArgsCnt int
-	Return  int
+	ArgsCnt byte
+	Return  byte
 }
 
 type StructStat struct {
