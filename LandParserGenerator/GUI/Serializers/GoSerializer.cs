@@ -88,9 +88,6 @@ namespace Land.GUI.Serializers
 
                 switch (opt)
                 {
-                    case "f_name":
-                        res.Name = pcc.Children[0].ToString().Replace("ID: ", "");
-                        break;
                     case "f_args":
                         var args = pcc.Children.Where(x => x.ToString().StartsWith("f_arg"));
                         res.ArgsCnt = args.Count();
@@ -104,7 +101,10 @@ namespace Land.GUI.Serializers
                     case "f_returns":
                         res.Return = pcc.Children.Count(x => x.ToString() == "f_return" || x.ToString().StartsWith("go_type"));
                         break;
-                }
+                    default:
+                        if (opt.StartsWith("f_name: ")) res.Name = opt.Replace("f_name: ", "");
+                        break;
+		}
             }
 
             if (!res.Empty)

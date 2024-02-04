@@ -91,7 +91,6 @@ f_type		 =	ID | LB ID RB
 f_name		 =	ID
 t_name		 =	ID
 
-
 map = 'map' '[' go_type ']' go_type
 	| 'map' '[' go_type ']' LB go_type RB
 chan = 	'chan' go_type
@@ -119,7 +118,7 @@ generic2		= '[' Any ']'
 
 %nodes {
 	ghost entity anon 
-	leaf
+	leaf f_name
 	void LB RB
 }
 
@@ -131,5 +130,5 @@ generic2		= '[' Any ']'
 
 %markup {
 	land func
-	headercore(name) func
+	headercore(f_name) func
 }
