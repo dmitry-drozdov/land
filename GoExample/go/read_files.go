@@ -2,13 +2,14 @@ package main
 
 import (
 	"bufio"
-	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
 	"sync"
+
+	"github.com/segmentio/encoding/json"
 
 	"golang.org/x/sync/errgroup"
 )

@@ -1,13 +1,14 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 	"runtime"
 	"sync"
+
+	"github.com/segmentio/encoding/json"
 
 	"golang.org/x/sync/errgroup"
 )

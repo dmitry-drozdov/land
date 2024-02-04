@@ -91,8 +91,8 @@ func ParseFiles(root string) (map[string]map[string]*FuncStat, map[string]map[st
 }
 
 func ParseFile(path string) (map[string]*FuncStat, map[string]*StructStat, error) {
-	resFun := make(map[string]*FuncStat, 10000)
-	resStruct := make(map[string]*StructStat, 10000)
+	resFun := make(map[string]*FuncStat, 100)
+	resStruct := make(map[string]*StructStat, 100)
 
 	fset := token.NewFileSet()
 	f, err := parser.ParseFile(fset, path, nil, 0)
@@ -101,7 +101,7 @@ func ParseFile(path string) (map[string]*FuncStat, map[string]*StructStat, error
 	}
 
 	type pair struct{ start, end token.Pos }
-	funcPos := []pair{} // to filter type declared inside functions
+	funcPos := make([]pair, 0, 100) // to filter type declared inside functions
 
 	checkInside := func(start, end token.Pos) bool {
 		for _, pos := range funcPos {
@@ -121,7 +121,7 @@ func ParseFile(path string) (map[string]*FuncStat, map[string]*StructStat, error
 		case *ast.TypeSpec:
 			switch y := x.Type.(type) {
 			case *ast.StructType:
-				resStruct[x.Name.Name] = &StructStat{Name: x.Name.Name, Types: []string{}}
+				resStruct[x.Name.Name] = &StructStat{Name: x.Name.Name, Types: make([]string, 0, 5)}
 				for _, f := range y.Fields.List {
 					for i := 0; i < len(f.Names); i++ { // a, b, c int => append 3 int
 						resStruct[x.Name.Name].Types = append(resStruct[x.Name.Name].Types, HumanType(f.Type))
@@ -142,6 +142,7 @@ func ParseFile(path string) (map[string]*FuncStat, map[string]*StructStat, error
 				Name:    x.Name.Name,
 				ArgsCnt: x.Type.Params.NumFields(),
 				Return:  ret,
+				Args:    make([]string, 0, 3),
 			}
 			resFun[x.Name.Name] = ptr
 
