@@ -6,6 +6,7 @@ import (
 )
 
 var folders = []string{
+	"chainlink",
 	"modules",
 	"go-ethereum",
 	"grafana",
@@ -71,7 +72,8 @@ func doWork(sname string) error {
 	for kf, vf := range fullStruct {
 		lk, ok := lightStruct[kf]
 		if !ok {
-			return fmt.Errorf("info for %s not found", kf)
+			fmt.Printf("info for %s not found", kf)
+			continue
 		}
 
 		for k, v := range vf {
