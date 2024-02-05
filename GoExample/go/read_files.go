@@ -51,10 +51,9 @@ func ReadResults(root string) (map[string]map[string]*FuncStat, map[string]map[s
 			}
 			mx.Unlock()
 
-			for fileScanner.Scan() {
-				line := fileScanner.Text()
-
+			scan := func(line string) error {
 				mx.Lock()
+				defer mx.Unlock()
 				if strings.Contains(line, "ArgsCnt") { // func
 					ln := &FuncStat{}
 					if err := json.Unmarshal([]byte(line), ln); err != nil {
@@ -68,7 +67,14 @@ func ReadResults(root string) (map[string]map[string]*FuncStat, map[string]map[s
 					}
 					resStruct[pathBk][ln.Name] = ln
 				}
-				mx.Unlock()
+				return nil
+			}
+
+			for fileScanner.Scan() {
+				line := fileScanner.Text()
+				if err := scan(line); err != nil {
+					return err
+				}
 			}
 			return nil
 		})

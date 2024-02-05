@@ -6,6 +6,7 @@ import (
 )
 
 var folders = []string{
+	"boost",
 	"chainlink",
 	"modules",
 	"go-ethereum",
