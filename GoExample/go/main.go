@@ -6,6 +6,7 @@ import (
 )
 
 var folders = []string{
+	"delivery-offering",
 	"boost",
 	"chainlink",
 	"modules",

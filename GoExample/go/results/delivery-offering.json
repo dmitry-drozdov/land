@@ -1,0 +1,20 @@
+{
+ "Duplicates": 0,
+ "Source": "delivery-offering",
+ "TotalFiles": 151,
+ "SkippedFiles": 0,
+ "SkippedPerCent": 0,
+ "Fail": 0,
+ "Ok": 1474,
+ "Accuracy": 100,
+ "ArgsCover": 100,
+ "VendorFuncs": 0,
+ "VendorFuncsPerCent": 0,
+ "StructStats": {
+  "Ok": 236,
+  "FailNotFound": 0,
+  "FailNotFoundHasFunc": 0,
+  "FailIncorrectTypes": 0,
+  "Ratio": 100
+ }
+}
