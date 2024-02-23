@@ -7,6 +7,7 @@ import (
 )
 
 var folders = []string{
+	"sourcegraph",
 	"delivery-offering",
 	"boost",
 	"chainlink",
@@ -37,10 +38,23 @@ func main() {
 		}
 	}
 
+	for _, f := range folders {
+		st, err := getCodeStats(f)
+		if err != nil {
+			fmt.Printf("[%v] <ERROR>: [%v]\n", f, err)
+			continue
+		}
+		fmt.Println(f, *st)
+	}
+
 	err = GetTotalStats("results")
 	if err != nil {
 		panic(err)
 	}
+}
+
+func getCodeStats(sname string) (*CodeStats, error) {
+	return codeStats(fmt.Sprintf(`e:\phd\test_repos\%s\`, sname))
 }
 
 func doWork(sname string) error {

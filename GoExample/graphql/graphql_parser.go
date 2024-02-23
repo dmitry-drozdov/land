@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"utils/code"
+
 	"github.com/graph-gophers/graphql-go"
 	"github.com/graph-gophers/graphql-go/introspection"
 )
@@ -144,7 +146,7 @@ func parse(folder string) (*Result, error) {
 		Inputs: inputs,
 		Types:  types,
 		Funcs:  funcs,
-		LOC:    getLOC(schemaStr),
+		LOC:    code.GetLOC(schemaStr),
 	}, nil
 }
 
@@ -164,15 +166,4 @@ func getType(t *introspection.Type) string {
 
 func ignore(name string) bool {
 	return strings.HasPrefix(name, "_")
-}
-
-func getLOC(code string) uint {
-	res := uint(0)
-	words := strings.Split(code, "\n")
-	for _, w := range words {
-		if strings.TrimSpace(w) != "" {
-			res++
-		}
-	}
-	return res
 }

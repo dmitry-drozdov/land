@@ -5,10 +5,8 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
-	"hash/fnv"
 	"os"
 	"path/filepath"
-	"regexp"
 	"runtime"
 	"strings"
 	"sync"
@@ -203,15 +201,4 @@ func HumanType(tp ast.Expr) string {
 		return HumanType(t.Elt)
 	}
 	return fmt.Sprintf("%T", tp)
-}
-
-func HashFile(bytes []byte) uint64 {
-	str := string(bytes)
-
-	re := regexp.MustCompile(`[\s]`) // to unify files formatting
-	str = re.ReplaceAllString(str, "")
-
-	h := fnv.New64a()
-	h.Write([]byte(str))
-	return h.Sum64()
 }

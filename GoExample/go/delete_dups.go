@@ -7,6 +7,7 @@ import (
 	"runtime"
 	"strings"
 	"sync"
+	"utils/hash"
 
 	"golang.org/x/sync/errgroup"
 )
@@ -41,7 +42,7 @@ func deleteDups(root string) (int, error) {
 				return err
 			}
 
-			key := HashFile(content)
+			key := hash.HashFile(content)
 
 			m.Lock()
 			defer m.Unlock()
