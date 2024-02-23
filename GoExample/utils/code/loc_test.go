@@ -84,6 +84,32 @@ func Test_GetLOC(t *testing.T) {
 			  2222
 			  3333333`, 3,
 		},
+		{
+			`11 
+			# kdkdkd
+			222   22
+			3333 #dkdkdkd`, 3,
+		},
+		{
+			`11 
+			""" kdkdkd
+			222   22
+			3333 #dkdkdkd
+			jj
+			"""    
+			222`, 2,
+		},
+		{
+			`11 
+			""" kdkdkd
+			222   22
+			3333 #dkdkdkd
+			jj
+			dd
+			"""    
+			222
+			3333`, 3,
+		},
 	}
 
 	for _, tt := range tests {

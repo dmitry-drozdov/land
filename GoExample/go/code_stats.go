@@ -17,17 +17,26 @@ type CodeStats struct {
 	FilesCnt     uint
 }
 
-func codeStats(root string) (*CodeStats, error) {
+func codeStats(root string) (map[string]*CodeStats, error) {
 	g := errgroup.Group{}
 	g.SetLimit(runtime.NumCPU() * 8)
 
-	res := &CodeStats{}
+	res := make(map[string]*CodeStats, 2)
 	m := sync.Mutex{}
 
 	err := filepath.Walk(root, func(path string, info os.FileInfo, _ error) error {
-		if info.IsDir() || filepath.Ext(info.Name()) != ".go" ||
+		if info.IsDir() ||
 			strings.HasPrefix(path, root+`\results`) ||
 			strings.Contains(path, `\vendor\`) {
+			return nil
+		}
+
+		ext := filepath.Ext(info.Name())
+		if len(ext) < 3 {
+			return nil
+		}
+		ext = ext[1:]
+		if ext != "go" && ext != "graphql" {
 			return nil
 		}
 
@@ -53,8 +62,17 @@ func codeStats(root string) (*CodeStats, error) {
 			m.Lock()
 			defer m.Unlock()
 
-			res.CodeLinesCnt += cnt
-			res.FilesCnt++
+			_, ok := res[ext]
+			if !ok {
+				res[ext] = &CodeStats{
+					CodeLinesCnt: cnt,
+					FilesCnt:     1,
+				}
+				return nil
+			}
+
+			res[ext].CodeLinesCnt += cnt
+			res[ext].FilesCnt++
 
 			return nil
 		})

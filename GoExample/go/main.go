@@ -44,7 +44,7 @@ func main() {
 			fmt.Printf("[%v] <ERROR>: [%v]\n", f, err)
 			continue
 		}
-		fmt.Println(f, *st)
+		fmt.Println(f, st["go"], st["graphql"])
 	}
 
 	err = GetTotalStats("results")
@@ -53,7 +53,7 @@ func main() {
 	}
 }
 
-func getCodeStats(sname string) (*CodeStats, error) {
+func getCodeStats(sname string) (map[string]*CodeStats, error) {
 	return codeStats(fmt.Sprintf(`e:\phd\test_repos\%s\`, sname))
 }
 
