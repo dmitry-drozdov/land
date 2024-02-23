@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"strings"
+	"utils/slice"
 )
 
 var folders = []string{
@@ -90,7 +91,7 @@ func doWork(sname string) error {
 				}
 				continue
 			}
-			if !compareSlice(v.Types, sl.Types, trimSpace) {
+			if !slice.Compare(v.Types, sl.Types, trimSpace) {
 				s.FailIncorrectTypes++
 				continue
 			}
@@ -136,3 +137,5 @@ func doWork(sname string) error {
 
 	return a.Dump()
 }
+
+var trimSpace = func(s string) string { return strings.TrimSpace(s) }

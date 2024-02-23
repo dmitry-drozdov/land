@@ -1,15 +1,12 @@
-package main
+package slice
 
 import (
 	"sort"
-	"strings"
 
 	"golang.org/x/exp/constraints"
 )
 
-var trimSpace = func(s string) string { return strings.TrimSpace(s) }
-
-func compareSlice[T constraints.Ordered](a []T, b []T, f func(T) T) bool {
+func Compare[T constraints.Ordered](a []T, b []T, f func(T) T) bool {
 	if len(a) != len(b) {
 		return false
 	}
