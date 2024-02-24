@@ -63,7 +63,6 @@ func ParseFiles(root string) (map[string]map[string]*FuncStat, map[string]map[st
 		// })
 
 		g.Go(func() error {
-			defer runtime.GC()
 			t0 := time.Now()
 			dataFunc, dataStruct, err := ParseFile(pathBk)
 			if err != nil {
