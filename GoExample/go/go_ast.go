@@ -10,6 +10,7 @@ import (
 	"runtime"
 	"strings"
 	"sync"
+	"time"
 
 	"golang.org/x/sync/errgroup"
 )
@@ -22,6 +23,8 @@ func ParseFiles(root string) (map[string]map[string]*FuncStat, map[string]map[st
 	l := sync.Mutex{}
 
 	duplicates := 0
+
+	timeSpent := int64(0)
 
 	// alreadyDone := make(map[uint64]struct{}, 10000)
 	// m := sync.Mutex{}
@@ -61,6 +64,7 @@ func ParseFiles(root string) (map[string]map[string]*FuncStat, map[string]map[st
 
 		g.Go(func() error {
 			defer runtime.GC()
+			t0 := time.Now()
 			dataFunc, dataStruct, err := ParseFile(pathBk)
 			if err != nil {
 				return err
@@ -71,6 +75,7 @@ func ParseFiles(root string) (map[string]map[string]*FuncStat, map[string]map[st
 			l.Lock()
 			resFun[pathBk] = dataFunc
 			resStruct[pathBk] = dataStruct
+			timeSpent += int64(time.Since(t0))
 			l.Unlock()
 			return nil
 		})
@@ -86,6 +91,8 @@ func ParseFiles(root string) (map[string]map[string]*FuncStat, map[string]map[st
 		return nil, nil, 0, fmt.Errorf("empty output")
 	}
 
+	fmt.Printf("%.2f sec.\n", float64(timeSpent)/(float64(time.Second)))
+
 	return resFun, resStruct, duplicates, nil
 }
 
@@ -94,6 +101,7 @@ func ParseFile(path string) (map[string]*FuncStat, map[string]*StructStat, error
 	resStruct := make(map[string]*StructStat, 100)
 
 	fset := token.NewFileSet()
+
 	f, err := parser.ParseFile(fset, path, nil, 0)
 	if err != nil {
 		return nil, nil, err
