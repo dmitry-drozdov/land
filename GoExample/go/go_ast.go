@@ -15,8 +15,8 @@ import (
 )
 
 func ParseFiles(root string) (map[string]map[string]*FuncStat, map[string]map[string]*StructStat, int, error) {
-	resFun := make(map[string]map[string]*FuncStat, 10000)
-	resStruct := make(map[string]map[string]*StructStat, 10000)
+	resFun := make(map[string]map[string]*FuncStat, 5000)
+	resStruct := make(map[string]map[string]*StructStat, 5000)
 	g := errgroup.Group{}
 	g.SetLimit(runtime.NumCPU() * 8)
 	l := sync.Mutex{}
