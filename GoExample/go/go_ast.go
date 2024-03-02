@@ -25,6 +25,12 @@ func ParseFiles(root string) (map[string]map[string]*FuncStat, map[string]map[st
 	duplicates := 0
 
 	timeSpent := int64(0)
+	maxMemory := uint64(0)
+
+	runtime.GC()
+	files := make([]*ast.File, 0, 1000)
+	var m1, m2 runtime.MemStats
+	runtime.ReadMemStats(&m1)
 
 	// alreadyDone := make(map[uint64]struct{}, 10000)
 	// m := sync.Mutex{}
@@ -64,10 +70,12 @@ func ParseFiles(root string) (map[string]map[string]*FuncStat, map[string]map[st
 
 		g.Go(func() error {
 			t0 := time.Now()
-			dataFunc, dataStruct, err := ParseFile(pathBk)
+			f, dataFunc, dataStruct, err := ParseFile(pathBk)
 			if err != nil {
 				return err
 			}
+
+			files = append(files, f) // do something with f to not be GCollected
 
 			pathBk = strings.ReplaceAll(pathBk, root, "")
 			pathBk = strings.ReplaceAll(pathBk, `\`, "")
@@ -90,12 +98,18 @@ func ParseFiles(root string) (map[string]map[string]*FuncStat, map[string]map[st
 		return nil, nil, 0, fmt.Errorf("empty output")
 	}
 
+	runtime.ReadMemStats(&m2)
+	if diff := m2.TotalAlloc - m1.TotalAlloc; diff > maxMemory {
+		maxMemory = diff // no need mutex run in 1 goroutine
+	}
+
 	fmt.Printf("%.2f sec.\n", float64(timeSpent)/(float64(time.Second)))
+	fmt.Printf("%d Mb \n", maxMemory/(1024*1024))
 
 	return resFun, resStruct, duplicates, nil
 }
 
-func ParseFile(path string) (map[string]*FuncStat, map[string]*StructStat, error) {
+func ParseFile(path string) (*ast.File, map[string]*FuncStat, map[string]*StructStat, error) {
 	resFun := make(map[string]*FuncStat, 100)
 	resStruct := make(map[string]*StructStat, 100)
 
@@ -103,7 +117,7 @@ func ParseFile(path string) (map[string]*FuncStat, map[string]*StructStat, error
 
 	f, err := parser.ParseFile(fset, path, nil, 0)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
 	type pair struct{ start, end token.Pos }
@@ -175,7 +189,7 @@ func ParseFile(path string) (map[string]*FuncStat, map[string]*StructStat, error
 		return true
 	})
 
-	return resFun, resStruct, nil
+	return f, resFun, resStruct, nil
 }
 
 func HumanType(tp ast.Expr) string {
