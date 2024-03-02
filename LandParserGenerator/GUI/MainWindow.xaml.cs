@@ -569,7 +569,7 @@ namespace Land.GUI
 
         private Node File_Parse(string fileName, string text, bool enableTracing = false)
         {
-            return Parser?.Parse(text, enableTracing);
+            return Parser?.Parse(text, enableTracing).Item1;
         }
 
         private void File_ParseButton_Click(object sender, RoutedEventArgs e)
