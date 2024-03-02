@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"strings"
 	"utils/slice"
+
+	"github.com/mohae/shuffle"
+	cp "github.com/otiai10/copy"
 )
 
 var folders = []string{
@@ -15,7 +18,7 @@ var folders = []string{
 	"go-ethereum",
 	"grafana",
 	"gvisor",
-	"test",
+	//"test",
 	"backend",
 	"azure-service-operator",
 	"kubernetes",
@@ -26,11 +29,17 @@ var folders = []string{
 }
 
 func main() {
+	err := makeTestSet(50)
+	if err != nil {
+		panic(err)
+	}
+	return
+
 	cnt, err := deleteDups(`e:\phd\test_repos`)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("deleted %v duplicates", cnt)
+	fmt.Printf("deleted %v duplicates\n", cnt)
 
 	for _, f := range folders {
 		if err := doWork(f); err != nil {
@@ -55,6 +64,47 @@ func main() {
 
 func getCodeStats(sname string) (map[string]*CodeStats, error) {
 	return codeStats(fmt.Sprintf(`e:\phd\test_repos\%s\`, sname))
+}
+
+func makeTestSet(percent int) error {
+	if percent <= 0 || percent > 100 {
+		return fmt.Errorf("incorrect percent")
+	}
+	allFiles := make([]string, 0, 40000)
+	for _, sname := range folders {
+		files, err := getFiles(fmt.Sprintf(`e:\phd\test_repos\%s\`, sname))
+		if err != nil {
+			return err
+		}
+		allFiles = append(allFiles, files...)
+	}
+
+	ln := len(allFiles)
+	if err := shuffle.String(allFiles); err != nil {
+		return err
+	}
+
+	allFiles = allFiles[:(ln * percent / 100)]
+
+	d := make(map[string]int, len(folders))
+	for _, f := range allFiles {
+		for _, folder := range folders {
+			if strings.HasPrefix(f, fmt.Sprintf(`e:\phd\test_repos\%s\`, folder)) {
+				d[folder]++
+			}
+		}
+	}
+
+	fmt.Println(d)
+
+	for _, f := range allFiles {
+		err := cp.Copy(f, strings.Replace(f, `e:\phd\test_repos\`, `e:\phd\test_repos_light\`, 1))
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func doWork(sname string) error {
