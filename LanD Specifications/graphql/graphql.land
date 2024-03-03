@@ -34,30 +34,25 @@ COLON		: ':'
 
 content = entity*
 
-entity	= water_entity | type_def | enum_def  | schema_def | scalar_def | union_def | directive_def
+entity	= water_entity | type_def | enum_def   
 
-directive_def = 'directive' tag* 'repeatable'? 'on' combine_types
-
-schema_def = extend 'schema' tag* '{' type_line* '}'
-
-scalar_def = extend 'scalar' id tag*
-
-union_def = extend 'union' id tag* ('=' combine_types)?
-combine_types = id | (id ('|' | '&') combine_types)
+_directive_def = 'directive' tag* 'repeatable'? 'on' _combine_types
+_schema_def = extend 'schema' tag* '{' type_line* '}'
+_scalar_def = extend 'scalar' id tag*
+_union_def = extend 'union' id tag* ('=' _combine_types)?
+_combine_types = id | (id ('|' | '&') _combine_types)
 
 enum_def = extend 'enum' id tag* ('{' enum_line* '}')?
 enum_line = id tag* ','?
 
-type_def =  extend ('type'|'input'|'interface') id ('implements' combine_types)? tag* ('{' (type_line|func_line)* '}')?
+type_def =  extend ('type'|'input'|'interface') id ('implements' Any)? tag* ('{' (type_line|func_line)* '}')? 
 type_line = id COLON type default_value? tag* ','? 
 type = id '!'? | '[' type? ']' '!'?
-
 value = id | DEC | STRING | '[' value? ']' | '{' (id COLON value ','?)* '}'
 default_value = '=' value
 
 func_line = id '(' func_arg* ')' COLON type tag* ','? 
 func_arg = type_line
-
 tag = '@' id ('(' Any ')')? ','?
 
 
@@ -66,7 +61,7 @@ id = ID | 'type' | 'input' | 'interface' | 'schema' | 'enum' // to allow conside
 
 extend = 'extend'?
 
-water_entity	=	Any 'PANIC' 
+water_entity	=	Any 
 
 
 %%
@@ -81,7 +76,7 @@ water_entity	=	Any 'PANIC'
 %nodes {
 	ghost entity
 	leaf 
-	void LB RB COMMA COLON tag extend directive_def
+	void LB RB COMMA COLON tag extend
 }
 
 %customblock {
