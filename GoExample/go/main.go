@@ -29,11 +29,11 @@ var folders = []string{
 }
 
 func main() {
-	err := makeTestSet(50)
-	if err != nil {
-		panic(err)
-	}
-	return
+	// err := makeTestSet(50)
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// return
 
 	cnt, err := deleteDups(`e:\phd\test_repos`)
 	if err != nil {
@@ -47,6 +47,7 @@ func main() {
 		}
 	}
 
+	var goFiles, goLines, goVendor, goLinesVendor uint
 	for _, f := range folders {
 		st, err := getCodeStats(f)
 		if err != nil {
@@ -54,7 +55,18 @@ func main() {
 			continue
 		}
 		fmt.Println(f, st["go"], st["graphql"])
+		goFiles += st["go"].FilesCnt
+		goLines += st["go"].CodeLinesCnt
+		goVendor += st["go"].FilesVendorCnt
+		goLinesVendor += st["go"].CodeLinesVendorCnt
 	}
+	fmt.Println(
+		"projects", len(folders),
+		"go files", goFiles,
+		"go vendor", (goVendor*100)/goFiles,
+		"go lines", goLines,
+		"go lines vendor", (goLinesVendor*100)/goLines,
+	)
 
 	err = GetTotalStats("results")
 	if err != nil {

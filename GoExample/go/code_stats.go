@@ -13,8 +13,10 @@ import (
 )
 
 type CodeStats struct {
-	CodeLinesCnt uint
-	FilesCnt     uint
+	CodeLinesCnt       uint
+	CodeLinesVendorCnt uint
+	FilesCnt           uint
+	FilesVendorCnt     uint
 }
 
 func codeStats(root string) (map[string]*CodeStats, error) {
@@ -26,9 +28,14 @@ func codeStats(root string) (map[string]*CodeStats, error) {
 
 	err := filepath.Walk(root, func(path string, info os.FileInfo, _ error) error {
 		if info.IsDir() ||
-			strings.HasPrefix(path, root+`\results`) ||
-			strings.Contains(path, `\vendor\`) {
+			strings.HasPrefix(path, root+`\results`) { /*||
+			strings.Contains(path, `\vendor\`)*/
 			return nil
+		}
+
+		var isVendor uint
+		if strings.Contains(path, `\vendor\`) {
+			isVendor = 1
 		}
 
 		ext := filepath.Ext(info.Name())
@@ -65,14 +72,18 @@ func codeStats(root string) (map[string]*CodeStats, error) {
 			_, ok := res[ext]
 			if !ok {
 				res[ext] = &CodeStats{
-					CodeLinesCnt: cnt,
-					FilesCnt:     1,
+					CodeLinesCnt:       cnt,
+					CodeLinesVendorCnt: cnt * isVendor,
+					FilesCnt:           1,
+					FilesVendorCnt:     isVendor,
 				}
 				return nil
 			}
 
+			res[ext].CodeLinesVendorCnt += cnt * isVendor
 			res[ext].CodeLinesCnt += cnt
 			res[ext].FilesCnt++
+			res[ext].FilesVendorCnt += isVendor
 
 			return nil
 		})
