@@ -28,6 +28,7 @@ HEX 		: '0x'[0-9a-fA-F]+
 DEC			: '-'?[0-9]+
 
 COMMA 		: ','
+COLON		: ':'
 
 
 
@@ -48,13 +49,13 @@ enum_def = extend 'enum' id tag* ('{' enum_line* '}')?
 enum_line = id tag* ','?
 
 type_def =  extend ('type'|'input'|'interface') id ('implements' combine_types)? tag* ('{' (type_line|func_line)* '}')?
-type_line = id ':' type default_value? tag* ','? 
+type_line = id COLON type default_value? tag* ','? 
 type = id '!'? | '[' type? ']' '!'?
 
-value = id | DEC | STRING | '[' value? ']' | '{' (id ':' value ','?)* '}'
+value = id | DEC | STRING | '[' value? ']' | '{' (id COLON value ','?)* '}'
 default_value = '=' value
 
-func_line = id '(' func_arg* ')' ':' type tag* ','? 
+func_line = id '(' func_arg* ')' COLON type tag* ','? 
 func_arg = type_line
 
 tag = '@' id ('(' Any ')')? ','?
@@ -79,8 +80,8 @@ water_entity	=	Any 'PANIC'
 
 %nodes {
 	ghost entity
-	leaf id
-	void LB RB COMMA tag extend directive_def
+	leaf 
+	void LB RB COMMA COLON tag extend directive_def
 }
 
 %customblock {
