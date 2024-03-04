@@ -383,7 +383,7 @@ public class Parser: ShiftReduceParser<ValueType, Land.Core.SegmentLocation>
 			
 			if(ValueStack[ValueStack.Depth-2].optQuantVal.HasValue)
 			{
-				if(ValueStack[ValueStack.Depth-4].strVal.StartsWith(Grammar.ANY_TOKEN_NAME))
+				if(ValueStack[ValueStack.Depth-4].strVal.StartsWith(Grammar.ANY_TOKEN_NAME, StringComparison.Ordinal))
 				{
 					Log.Add(Message.Warning(
 							"Использование квантификаторов с символом '" + Grammar.ANY_TOKEN_NAME + "' избыточно и не влияет на процесс разбора",
@@ -402,7 +402,7 @@ public class Parser: ShiftReduceParser<ValueType, Land.Core.SegmentLocation>
 			
 			if(CurrentSemanticValue.entryVal == null)
 			{
-				if(ValueStack[ValueStack.Depth-4].strVal.StartsWith(Grammar.ANY_TOKEN_NAME))
+				if(ValueStack[ValueStack.Depth-4].strVal.StartsWith(Grammar.ANY_TOKEN_NAME, StringComparison.Ordinal))
 				{
 					var args = new SymbolArguments();
 					AnyArgument sugarOption;

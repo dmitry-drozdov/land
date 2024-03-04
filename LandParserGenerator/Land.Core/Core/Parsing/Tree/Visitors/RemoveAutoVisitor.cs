@@ -13,7 +13,7 @@ namespace Land.Core.Parsing.Tree
 		{
 			for (var i = 0; i < node.Children.Count; ++i)
 			{
-				if (node.Children[i].Symbol.StartsWith(Grammar.AUTO_RULE_PREFIX))
+				if (node.Children[i].Symbol.StartsWith(Grammar.AUTO_RULE_PREFIX, StringComparison.Ordinal))
 				{
 					/// Если последний потомок - автонетерминал с установленным псевдонимом
 					if(i == node.Children.Count - 1 && !String.IsNullOrEmpty(node.Children[i].Alias))

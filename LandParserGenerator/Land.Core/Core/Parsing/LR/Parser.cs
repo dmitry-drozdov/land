@@ -426,7 +426,7 @@ namespace Land.Core.Parsing.LR
 				LexingStream.CurrentToken.Location.Start
 			));
 
-			var recoveryStartTime = DateTime.Now;
+			var recoveryStartTime = DateTime.UtcNow;
 
 			// Координаты начала и конца уже сопоставленной последовательности токенов,
 			// которую теперь будем интерпретировать как Any
@@ -556,7 +556,7 @@ namespace Land.Core.Parsing.LR
 				if (token.Name != Grammar.ERROR_TOKEN_NAME)
 				{
 					Statistics.RecoveryTimes += 1;
-					Statistics.RecoveryTimeSpent += DateTime.Now - recoveryStartTime;
+					Statistics.RecoveryTimeSpent += DateTime.UtcNow - recoveryStartTime;
 
 					return token;
 				}

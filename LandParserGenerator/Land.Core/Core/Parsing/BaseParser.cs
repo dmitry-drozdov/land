@@ -59,7 +59,7 @@ namespace Land.Core.Parsing
 
 			var d = new ResourceStats();
 
-			var parsingStarted = DateTime.Now;
+			var parsingStarted = DateTime.UtcNow;
 			Node root = null;
 
 			/// Если парсеру передан препроцессор
@@ -94,7 +94,7 @@ namespace Land.Core.Parsing
 				root = ParsingAlgorithm(text);
 			}
 
-			Statistics.GeneralTimeSpent = DateTime.Now - parsingStarted;
+			Statistics.GeneralTimeSpent = DateTime.UtcNow - parsingStarted;
 			Statistics.TokensCount = LexingStream.Count;
 			Statistics.CharsCount = text.Length;
 

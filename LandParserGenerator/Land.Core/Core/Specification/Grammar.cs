@@ -213,7 +213,7 @@ namespace Land.Core.Specification
 			if (Type == GrammarType.LR)
 			{
 				/// Проверяем, нет ли уже правила с такими альтернативами
-				var generated = Rules.Where(r => r.Key.StartsWith(AUTO_RULE_PREFIX))
+				var generated = Rules.Where(r => r.Key.StartsWith(AUTO_RULE_PREFIX, StringComparison.Ordinal))
 					.Select(r => r.Value).FirstOrDefault(r => r.Alternatives.Intersect(alternatives).Count() == alternatives.Count);
 
 				if (generated != null)
@@ -233,7 +233,7 @@ namespace Land.Core.Specification
 
 			if (Type == GrammarType.LR)
 			{
-				var generated = Rules.Where(r => r.Key.StartsWith(AUTO_RULE_PREFIX))
+				var generated = Rules.Where(r => r.Key.StartsWith(AUTO_RULE_PREFIX, StringComparison.Ordinal))
 				.Select(r => r.Value).FirstOrDefault(r => AutoRuleQuantifier.ContainsKey(r.Name)
 				  && AutoRuleQuantifier[r.Name].Element == elemName
 				  && AutoRuleQuantifier[r.Name].Quantifier == quantifier);
@@ -931,7 +931,7 @@ namespace Land.Core.Specification
 				}
 
 				/// Множество токенов Any, о которых надо предупредить разработчика грамматики
-				var warningTokens = nextTokens.Where(t => t.StartsWith(Grammar.ANY_TOKEN_NAME) 
+				var warningTokens = nextTokens.Where(t => t.StartsWith(Grammar.ANY_TOKEN_NAME, StringComparison.Ordinal) 
 					&& t != pair.Item1[pair.Item2]);
 
 				if (warningTokens.Count() > 0)
@@ -974,13 +974,13 @@ namespace Land.Core.Specification
 		{
 			AutoRuleUserWrittenForm = new Dictionary<string, string>();
 
-			foreach(var smb in Rules.Keys.Where(k=>k.StartsWith(AUTO_RULE_PREFIX)))
+			foreach(var smb in Rules.Keys.Where(k=>k.StartsWith(AUTO_RULE_PREFIX, StringComparison.Ordinal)))
 				AutoRuleUserWrittenForm[smb] = Developerify(smb);
 		}
 
 		public string Developerify(string name)
 		{
-			if(name.StartsWith(AUTO_RULE_PREFIX))
+			if(name.StartsWith(AUTO_RULE_PREFIX, StringComparison.Ordinal))
 			{
 				if (AutoRuleUserWrittenForm.ContainsKey(name))
 					return AutoRuleUserWrittenForm[name];
@@ -1154,7 +1154,7 @@ namespace Land.Core.Specification
 			result += Environment.NewLine;
 
 			/// Выводим правила
-			foreach (var rule in Rules.Where(r => !r.Key.StartsWith(AUTO_RULE_PREFIX)))
+			foreach (var rule in Rules.Where(r => !r.Key.StartsWith(AUTO_RULE_PREFIX, StringComparison.Ordinal)))
 			{
 				result += $"{rule.Key}\t=\t";
 				for(var altIdx = 0; altIdx < rule.Value.Alternatives.Count; ++altIdx)

@@ -431,7 +431,7 @@ namespace Land.Core.Parsing.LL
 				LexingStream.CurrentToken.Location.Start
 			));
 
-			var recoveryStartTime = DateTime.Now;
+			var recoveryStartTime = DateTime.UtcNow;
 
 			// То, что мы хотели разобрать, и не смогли
 			var currentNode = Stack.Pop();
@@ -530,7 +530,7 @@ namespace Land.Core.Parsing.LL
 					));
 
 					Statistics.RecoveryTimes += 1;
-					Statistics.RecoveryTimeSpent += DateTime.Now - recoveryStartTime;
+					Statistics.RecoveryTimeSpent += DateTime.UtcNow - recoveryStartTime;
 
 					return token;
 				}

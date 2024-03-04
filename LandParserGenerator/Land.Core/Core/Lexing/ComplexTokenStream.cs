@@ -37,10 +37,10 @@ namespace Land.Core.Lexing
 		public string BaseToken { get; set; }
 
 		public bool IsStartLexem(string lexem) => 
-			lexem.StartsWith(StartLexemPrefix) && lexem.EndsWith(StartLexemSuffix);
+			lexem.StartsWith(StartLexemPrefix, StringComparison.Ordinal) && lexem.EndsWith(StartLexemSuffix);
 
 		public bool IsEndLexem(string lexem) => 
-			lexem.StartsWith(EndLexemPrefix) && lexem.EndsWith(EndLexemSuffix);
+			lexem.StartsWith(EndLexemPrefix, StringComparison.Ordinal) && lexem.EndsWith(EndLexemSuffix);
 
 		public string GetName(string blockStart) => blockStart
 			.Substring(StartLexemPrefix.Length)

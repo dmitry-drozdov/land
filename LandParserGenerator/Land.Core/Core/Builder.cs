@@ -36,10 +36,10 @@ namespace Land.Core
 			var linesCounter = 2;
 			var tokensForLines = new Dictionary<int, string>();
 
-			foreach (var token in grammar.Tokens.Values.Where(t => t.Name.StartsWith(Grammar.AUTO_TOKEN_PREFIX)))
+			foreach (var token in grammar.Tokens.Values.Where(t => t.Name.StartsWith(Grammar.AUTO_TOKEN_PREFIX, StringComparison.Ordinal)))
 			{
 				grammarOutput.WriteLine($"{token.Name}: {token.Pattern} ;");
-				tokensForLines[++linesCounter] = token.Name.StartsWith(Grammar.AUTO_TOKEN_PREFIX) ? token.Pattern : token.Name;
+				tokensForLines[++linesCounter] = token.Name.StartsWith(Grammar.AUTO_TOKEN_PREFIX, StringComparison.Ordinal) ? token.Pattern : token.Name;
 			}
 
 			foreach (var token in grammar.TokenOrder.Where(t=>!String.IsNullOrEmpty(grammar.Tokens[t].Pattern)))
@@ -435,7 +435,7 @@ namespace " + @namespace + @"
 
 			foreach (var smb in grammar.Rules.Keys)
 			{
-				if(smb.StartsWith(Grammar.AUTO_RULE_PREFIX))
+				if(smb.StartsWith(Grammar.AUTO_RULE_PREFIX, StringComparison.Ordinal))
 					Cache[smb] = Cache[BASE_RULE_TYPE];
 				else
 				{
@@ -446,7 +446,7 @@ namespace " + @namespace + @"
 
 			foreach (var smb in grammar.Tokens.Keys)
 			{
-				if(smb.StartsWith(Grammar.AUTO_TOKEN_PREFIX))
+				if(smb.StartsWith(Grammar.AUTO_TOKEN_PREFIX, StringComparison.Ordinal))
 					Cache[smb] = Cache[BASE_TOKEN_TYPE];
 				else
 				{
@@ -559,7 +559,7 @@ namespace " + @namespace + @"
 	}");
 
 
-			foreach (var name in grammar.Rules.Keys.Where(key=>!key.StartsWith(Grammar.AUTO_RULE_PREFIX)))
+			foreach (var name in grammar.Rules.Keys.Where(key=>!key.StartsWith(Grammar.AUTO_RULE_PREFIX, StringComparison.Ordinal)))
 				nodeClassesSource.AppendLine(@"
 	[Serializable]
 	public class " + name + @"_node : RuleNode 
@@ -588,7 +588,7 @@ namespace " + @namespace + @"
 		}
 	}");
 
-			foreach (var name in grammar.Tokens.Keys.Where(key => !key.StartsWith(Grammar.AUTO_TOKEN_PREFIX)))
+			foreach (var name in grammar.Tokens.Keys.Where(key => !key.StartsWith(Grammar.AUTO_TOKEN_PREFIX, StringComparison.Ordinal)))
 				nodeClassesSource.AppendLine(@"
 	[Serializable]
 	public class " + name + @"_node : TokenNode 
@@ -618,7 +618,7 @@ namespace " + @namespace + @"
 		}
 
 		public virtual void Visit(TokenNode node) {}");
-			foreach (var name in grammar.Rules.Keys.Where(key => !key.StartsWith(Grammar.AUTO_RULE_PREFIX)))
+			foreach (var name in grammar.Rules.Keys.Where(key => !key.StartsWith(Grammar.AUTO_RULE_PREFIX, StringComparison.Ordinal)))
 				nodeClassesSource.AppendLine(@"
 		public virtual void Visit(" + name + @"_node node)
 		{
@@ -635,7 +635,7 @@ namespace " + @namespace + @"
 				child.Accept(this);
 		}");
 
-			foreach (var name in grammar.Tokens.Keys.Where(key => !key.StartsWith(Grammar.AUTO_TOKEN_PREFIX)))
+			foreach (var name in grammar.Tokens.Keys.Where(key => !key.StartsWith(Grammar.AUTO_TOKEN_PREFIX, StringComparison.Ordinal)))
 				nodeClassesSource.AppendLine(@"
 		public virtual void Visit(" + name + @"_node node) {}");
 

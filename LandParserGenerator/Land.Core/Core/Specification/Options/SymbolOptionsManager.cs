@@ -25,8 +25,7 @@ namespace Land.Core.Specification
 		/// </summary>
 		public void Set(string group, string option, List<dynamic> @params)
 		{
-			group = group.ToLower();
-			option = option.ToLower();
+
 
 			EnsureGroupExists(group);
 
@@ -38,8 +37,7 @@ namespace Land.Core.Specification
 		/// </summary>
 		public bool IsSet(string group, string option = null)
 		{
-			group = group.ToLower();
-			option = option?.ToLower();
+
 
 			return Options.ContainsKey(group) && (option == null || Options[group].ContainsKey(option));
 		}
@@ -49,8 +47,7 @@ namespace Land.Core.Specification
 		/// </summary>
 		public List<dynamic> GetParams(string group, string option)
 		{
-			group = group.ToLower();
-			option = option.ToLower();
+
 
 			return IsSet(group, option) ? Options[group][option] : new List<dynamic>();
 		}
@@ -60,8 +57,7 @@ namespace Land.Core.Specification
 		/// </summary>
 		public void Clear(string group, string option)
 		{
-			group = group.ToLower();
-			option = option.ToLower();
+
 
 			if (Options.ContainsKey(group))
 			{
@@ -83,7 +79,6 @@ namespace Land.Core.Specification
 		/// </summary>
 		public List<string> GetOptions(string group)
 		{
-			group = group.ToLower();
 
 			return Options.ContainsKey(group)
 				? Options[group].Select(o => o.Key).ToList() : new List<string>();
