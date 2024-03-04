@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Land.Core.Parsing.LR;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -25,7 +26,8 @@ namespace Land.Core.Specification
 		/// </summary>
 		public void Set(string group, string option, List<dynamic> @params)
 		{
-
+			group = group.ToLower(System.Globalization.CultureInfo.InvariantCulture);
+			option = option.ToLower(System.Globalization.CultureInfo.InvariantCulture);
 
 			EnsureGroupExists(group);
 
@@ -37,7 +39,8 @@ namespace Land.Core.Specification
 		/// </summary>
 		public bool IsSet(string group, string option = null)
 		{
-
+			group = group.ToLower(System.Globalization.CultureInfo.InvariantCulture);
+			option = option.ToLower(System.Globalization.CultureInfo.InvariantCulture);
 
 			return Options.ContainsKey(group) && (option == null || Options[group].ContainsKey(option));
 		}
@@ -47,7 +50,8 @@ namespace Land.Core.Specification
 		/// </summary>
 		public List<dynamic> GetParams(string group, string option)
 		{
-
+			group = group.ToLower(System.Globalization.CultureInfo.InvariantCulture);
+			option = option.ToLower(System.Globalization.CultureInfo.InvariantCulture);
 
 			return IsSet(group, option) ? Options[group][option] : new List<dynamic>();
 		}
@@ -57,7 +61,8 @@ namespace Land.Core.Specification
 		/// </summary>
 		public void Clear(string group, string option)
 		{
-
+			group = group.ToLower(System.Globalization.CultureInfo.InvariantCulture);
+			option = option.ToLower(System.Globalization.CultureInfo.InvariantCulture);
 
 			if (Options.ContainsKey(group))
 			{
@@ -79,6 +84,7 @@ namespace Land.Core.Specification
 		/// </summary>
 		public List<string> GetOptions(string group)
 		{
+			group = group.ToLower(System.Globalization.CultureInfo.InvariantCulture);
 
 			return Options.ContainsKey(group)
 				? Options[group].Select(o => o.Key).ToList() : new List<string>();
