@@ -27,7 +27,7 @@ namespace Land.Core.Lexing
 			/// и последний считанный токен - не признак конца файла
 			if (CurrentIndex + 1 == Tokens.Count)
 			{
-				if (Tokens.Count == 0 || Tokens.Last().Name != Grammar.EOF_TOKEN_NAME)
+				if (Tokens.Count == 0 || Tokens.Last().Type != Grammar.EOF_TOKEN_TYPE)
 				{
 					++CurrentIndex;
 					Tokens.Add(Lexer.NextToken());

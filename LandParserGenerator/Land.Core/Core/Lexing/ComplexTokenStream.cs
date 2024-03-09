@@ -314,8 +314,8 @@ namespace Land.Core.Lexing
 				/// Возвращаем следующий токен, если перешли на искомый уровень
 				/// или готовимся сделать шаг в направлении, отличном от разрешённого
 				if (PairStack.Count == level
-					|| next.Name == Grammar.EOF_TOKEN_NAME
-					|| next.Name == Grammar.ERROR_TOKEN_NAME)
+					|| next.Type == Grammar.EOF_TOKEN_TYPE
+					|| next.Type == Grammar.ERROR_TOKEN_TYPE)
 					return next;
 				else
 					skipped.Add(next);
