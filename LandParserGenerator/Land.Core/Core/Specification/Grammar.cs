@@ -52,6 +52,11 @@ namespace Land.Core.Specification
 		public const string CUSTOM_BLOCK_START_TOKEN_NAME = "CUSTOM_BLOCK_START";
 		public const string CUSTOM_BLOCK_END_TOKEN_NAME = "CUSTOM_BLOCK_END";
 
+		public const int EOF_TOKEN_TYPE = -1;
+		public const int UNDEFINED_TOKEN_TYPE = -2;
+		public const int ERROR_TOKEN_TYPE = -3;
+		public const int ANY_TOKEN_TYPE = -4;
+
 		// Зарезервированные имена специальных нетерминальных символов
 		public const string CUSTOM_BLOCK_RULE_NAME = "custom_block";
 

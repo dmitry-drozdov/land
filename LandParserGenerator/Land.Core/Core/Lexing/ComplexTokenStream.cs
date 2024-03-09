@@ -251,7 +251,7 @@ namespace Land.Core.Lexing
 							}
 						));
 
-						return Lexer.CreateToken(Grammar.ERROR_TOKEN_NAME);
+						return Lexer.CreateToken(Grammar.ERROR_TOKEN_NAME, Grammar.ERROR_TOKEN_TYPE);
 					}
 					else if (PairStack.Peek() != closed.Value)
 					{
@@ -266,7 +266,7 @@ namespace Land.Core.Lexing
 							}
 						));
 
-						return Lexer.CreateToken(Grammar.ERROR_TOKEN_NAME);
+						return Lexer.CreateToken(Grammar.ERROR_TOKEN_NAME, Grammar.ERROR_TOKEN_TYPE);
 					}
 					else
 					{

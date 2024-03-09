@@ -10,7 +10,7 @@ namespace Land.Core.Lexing
 	{
 		IToken NextToken();
 
-        IToken CreateToken(string name);
+		IToken CreateToken(string name, int type);
 
 		void SetSourceFile(string filename);
 

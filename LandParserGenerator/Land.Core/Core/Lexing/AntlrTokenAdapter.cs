@@ -12,13 +12,25 @@ namespace Land.Core.Lexing
 		private Antlr4.Runtime.IToken Token { get; set; }
 
 		public SegmentLocation Location { get; private set; }
-		public string Text => Token.Text;
+		public string Text
+		{
+			get
+			{
+				if (text == null)
+					text = Token.Text;
+				return text;
+			}
+		}
 		public string Name { get; private set; }
+		public int Type { get; private set; }
+
+		private string text = null;
 
 		public AntlrTokenAdapter(Antlr4.Runtime.IToken token, Antlr4.Runtime.Lexer lexer)
 		{
 			Token = token;
 			Name = lexer.Vocabulary.GetSymbolicName(Token.Type);
+			Type = Token.Type;
 
 			Location = new SegmentLocation()
 			{
@@ -26,5 +38,6 @@ namespace Land.Core.Lexing
 				End = new PointLocation(Token.StopIndex)
 			};
 		}
+
 	}
 }

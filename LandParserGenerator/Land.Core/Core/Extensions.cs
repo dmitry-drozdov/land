@@ -17,7 +17,7 @@ namespace Land.Core
 		{
 			var userified = target.GrammarObject.Developerify(token.Name);
 
-			if (userified == token.Name && token.Name != Grammar.ANY_TOKEN_NAME && token.Name != Grammar.EOF_TOKEN_NAME)
+			if (userified == token.Name && token.Type != Grammar.ANY_TOKEN_TYPE && token.Name != Grammar.EOF_TOKEN_NAME)
 			{
 				return $"{token.Name}: '{token.Text}'";
 			}

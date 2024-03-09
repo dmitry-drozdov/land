@@ -29,7 +29,7 @@ var folders = []string{
 }
 
 func main() {
-	// err := makeTestSet(30)
+	// err := makeTestSet(15)
 	// if err != nil {
 	// 	panic(err)
 	// }

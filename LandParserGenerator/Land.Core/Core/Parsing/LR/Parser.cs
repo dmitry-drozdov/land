@@ -47,12 +47,12 @@ namespace Land.Core.Parsing.LR
 
 			while (true)
 			{
-				if (token.Name == Grammar.ERROR_TOKEN_NAME)
+				if (token.Type == Grammar.ERROR_TOKEN_TYPE)
 					break;
 
 				var currentState = Stack.PeekState();
 
-				if(EnableTracing && token.Name != Grammar.ERROR_TOKEN_NAME && token.Name != Grammar.ANY_TOKEN_NAME)
+				if(EnableTracing && token.Type != Grammar.ERROR_TOKEN_TYPE && token.Type != Grammar.ANY_TOKEN_TYPE)
 					Log.Add(Message.Trace(
 						$"Текущий токен: {this.Developerify(token)} | Стек: {Stack.ToString(GrammarObject)}",
 						token.Location.Start
@@ -60,12 +60,12 @@ namespace Land.Core.Parsing.LR
 
 				if (Table[currentState, token.Name].Count > 0)
 				{
-					if (token.Name == Grammar.ANY_TOKEN_NAME)
+					if (token.Type == Grammar.ANY_TOKEN_TYPE)
 					{
 						token = SkipAny(NodeGenerator.Generate(Grammar.ANY_TOKEN_NAME), true);
 
 						/// Если при пропуске текста произошла ошибка, прерываем разбор
-						if (token.Name == Grammar.ERROR_TOKEN_NAME)
+						if (token.Type == Grammar.ERROR_TOKEN_TYPE)
 							break;
 						else
 							continue;
@@ -132,7 +132,7 @@ namespace Land.Core.Parsing.LR
 						break;
 					}
 				}
-				else if (token.Name == Grammar.ANY_TOKEN_NAME)
+				else if (token.Type == Grammar.ANY_TOKEN_TYPE)
 				{
 					Log.Add(PotentialErrorMessage = Message.Trace(
 						$"Неожиданный символ {this.Developerify(LexingStream.CurrentToken)} для состояния{Environment.NewLine}\t\t" + Table.ToString(Stack.PeekState(), null, "\t\t"),
@@ -174,7 +174,7 @@ namespace Land.Core.Parsing.LR
 							));
 						}
 
-						token = Lexer.CreateToken(Grammar.ANY_TOKEN_NAME);
+						token = Lexer.CreateToken(Grammar.ANY_TOKEN_NAME, Grammar.ANY_TOKEN_TYPE);
 					}
 				}
 			}
@@ -278,8 +278,8 @@ namespace Land.Core.Parsing.LR
 			while (!stopTokens.Contains(token.Name)
 				&& (ignorePairs || LexingStream.CurrentTokenDirection != Direction.Up)
 				&& !anyNode.Arguments.Contains(AnyArgument.Avoid, token.Name)
-				&& token.Name != Grammar.EOF_TOKEN_NAME
-				&& token.Name != Grammar.ERROR_TOKEN_NAME)
+				&& token.Type != Grammar.EOF_TOKEN_TYPE
+				&& token.Type != Grammar.ERROR_TOKEN_TYPE)
 			{
 				anyNode.Value.Add(token.Text);
 				endLocation = token.Location.End;
@@ -305,7 +305,7 @@ namespace Land.Core.Parsing.LR
 				anyNode.SetLocation(startLocation, endLocation);
 			}
 
-			if (token.Name == Grammar.ERROR_TOKEN_NAME)
+			if (token.Type == Grammar.ERROR_TOKEN_TYPE)
 			{
 				return token;
 			}
@@ -344,7 +344,7 @@ namespace Land.Core.Parsing.LR
 					else
 					{
 						message.Type = MessageType.Error;
-						return Lexer.CreateToken(Grammar.ERROR_TOKEN_NAME);
+						return Lexer.CreateToken(Grammar.ERROR_TOKEN_NAME, Grammar.ERROR_TOKEN_TYPE);
 					}
 				}
 				else
@@ -361,7 +361,7 @@ namespace Land.Core.Parsing.LR
 					));
 
 					PotentialErrorMessage.Type = MessageType.Error;
-					return Lexer.CreateToken(Grammar.ERROR_TOKEN_NAME);
+					return Lexer.CreateToken(Grammar.ERROR_TOKEN_NAME, Grammar.ERROR_TOKEN_TYPE);
 				}
 			}
 
@@ -405,7 +405,7 @@ namespace Land.Core.Parsing.LR
 			if (!GrammarObject.Options.IsRecoveryEnabled())
 			{
 				PotentialErrorMessage.Type = MessageType.Error;
-				return Lexer.CreateToken(Grammar.ERROR_TOKEN_NAME);
+				return Lexer.CreateToken(Grammar.ERROR_TOKEN_NAME, Grammar.ERROR_TOKEN_TYPE);
 			}
 
 			// Если в текущей позиции уже запускалось восстановление
@@ -418,7 +418,7 @@ namespace Land.Core.Parsing.LR
 					LexingStream.CurrentToken.Location.Start
 				));
 
-				return Lexer.CreateToken(Grammar.ERROR_TOKEN_NAME);
+				return Lexer.CreateToken(Grammar.ERROR_TOKEN_NAME, Grammar.ERROR_TOKEN_TYPE);
 			}
 
 			Log.Add(Message.Trace(
@@ -517,7 +517,7 @@ namespace Land.Core.Parsing.LR
 					// на котором раскрывали нетерминал
 					var nonterminalLevelToken = LexingStream.GetNextToken(NestingStack.Peek(), out skippedBuffer);
 
-					if (nonterminalLevelToken.Name != Grammar.ERROR_TOKEN_NAME)
+					if (nonterminalLevelToken.Type != Grammar.ERROR_TOKEN_TYPE)
 					{
 						skippedBuffer.Insert(0, currentToken);
 
@@ -527,7 +527,7 @@ namespace Land.Core.Parsing.LR
 					else
 					{
 						PotentialErrorMessage.Type = MessageType.Error;
-						return Lexer.CreateToken(Grammar.ERROR_TOKEN_NAME);
+						return Lexer.CreateToken(Grammar.ERROR_TOKEN_NAME, Grammar.ERROR_TOKEN_TYPE);
 					}	
 				}
 
@@ -553,7 +553,7 @@ namespace Land.Core.Parsing.LR
 
 				// Если Any успешно пропустили и возобновили разбор,
 				// возвращаем токен, с которого разбор продолжается
-				if (token.Name != Grammar.ERROR_TOKEN_NAME)
+				if (token.Type != Grammar.ERROR_TOKEN_TYPE)
 				{
 					Statistics.RecoveryTimes += 1;
 					Statistics.RecoveryTimeSpent += DateTime.UtcNow - recoveryStartTime;
@@ -563,7 +563,7 @@ namespace Land.Core.Parsing.LR
 			}
 
 			PotentialErrorMessage.Type = MessageType.Error;
-			return Lexer.CreateToken(Grammar.ERROR_TOKEN_NAME);
+			return Lexer.CreateToken(Grammar.ERROR_TOKEN_NAME, Grammar.ERROR_TOKEN_TYPE);
 		}
 
 		private bool StartsWithAny(Node subtree)
