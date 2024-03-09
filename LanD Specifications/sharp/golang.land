@@ -1,5 +1,3 @@
-DIRECTIVE	: '#' ~[\n\r]*
-
 COMMENT		: COMMENT_L|COMMENT_ML
 COMMENT_L	: '//' ~[\n\r]*
 COMMENT_ML	: '/*' .*? '*/'
@@ -9,11 +7,8 @@ ITALIC_QUOTE : '`' .*? '`'
 QUOTE		: '"'
 SPREAD 		: '...'
 
-STRING		: STRING_STD|STRING_VERB|STRING_INT
+STRING		: STRING_STD
 STRING_STD	: '"' ('\\"'|'\\\\'|.)*? '"'
-STRING_VERB	: '@'('"' (~["]|'""')* '"')+
-STRING_INT	: '$"' ('\\"'|'\\\\'|'{{'|STRING_INT_CODE|.)*? '"' | '$@' ('"' ('""'|'{{'|STRING_INT_CODE|.)*? '"')+
-STRING_INT_CODE : '{' (STRING|CHAR|.)*? '}'
 
 CHAR		: '\'' ('\\\''|'\\\\'|.)*? '\''
 CLASS_STRUCT_INTERFACE : 'struct'|'interface'
@@ -27,8 +22,6 @@ CURVE_BRACKETED : %left '{' %right '}'
 ROUND_BRACKETED : %left '(' %right ')'
 SQUARE_BRACKETED : %left ('['|GENERAL_ATTRIBUTE_START) %right ']'
 
-HEX 		: '0x'[0-9a-fA-F]+
-DEC			: '-'?[0-9]+
 
 NL			: '\n'
 
@@ -113,7 +106,7 @@ generic2		= '[' Any ']'
 	recovery entity 
 	fragment STRING_INT_CODE
 	start package
-	skip COMMENT STRING DIRECTIVE NL
+	skip COMMENT STRING NL
 }
 
 %nodes {
