@@ -51,38 +51,27 @@ namespace Land.Core.Parsing
 				?? new BaseNodeRetypingVisitor(g);
 		}
 
-		public (Node, ResourceStats) Parse(string text, bool enableTracing = false)
+		public (Node, Durations) Parse(string text, bool enableTracing = false)
 		{
 			Log = new List<Message>();
 			Statistics = new Statistics();
 			EnableTracing = enableTracing;
 
-			var d = new ResourceStats();
-
 			var parsingStarted = DateTime.UtcNow;
 			Node root = null;
+			Durations stats = null;
 
 			/// Если парсеру передан препроцессор
 			if (Preproc != null)
 			{
-				var watch = Stopwatch.StartNew();
 				/// Предобрабатываем текст
 				text = Preproc.Preprocess(text, out bool success);
-				watch.Stop();
-				d.ParseGoPre += watch.ElapsedMilliseconds;
 
 				/// Если препроцессор сработал успешно, можно парсить
 				if (success)
 				{
-					watch = Stopwatch.StartNew();
-					root = ParsingAlgorithm(text);
-					watch.Stop();
-					d.ParseGoMain += watch.ElapsedMilliseconds;
-
-					watch = Stopwatch.StartNew();
+					(root, stats) = ParsingAlgorithm(text);
 					Preproc.Postprocess(root, Log);
-					watch.Stop();
-					d.ParseGoPost += watch.ElapsedMilliseconds;
 				}
 				else
 				{
@@ -91,17 +80,17 @@ namespace Land.Core.Parsing
 			}
 			else
 			{
-				root = ParsingAlgorithm(text);
+				(root, stats) = ParsingAlgorithm(text);
 			}
 
 			Statistics.GeneralTimeSpent = DateTime.UtcNow - parsingStarted;
 			Statistics.TokensCount = LexingStream.Count;
 			Statistics.CharsCount = text.Length;
 
-			return (root, d);
+			return (root, stats);
 		}
 
-		protected abstract Node ParsingAlgorithm(string text);
+		protected abstract (Node, Durations) ParsingAlgorithm(string text);
 
 		public void SetPreprocessor(BasePreprocessor preproc)
 		{

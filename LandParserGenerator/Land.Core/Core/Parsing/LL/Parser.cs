@@ -75,7 +75,7 @@ namespace Land.Core.Parsing.LL
 		/// <returns>
 		/// Корень дерева разбора
 		/// </returns>
-		protected override Node ParsingAlgorithm(string text)
+		protected override (Node, Durations) ParsingAlgorithm(string text)
 		{
 			/// Контроль вложенностей пар
 			NestingLevel = new Dictionary<Node, int>();
@@ -89,8 +89,10 @@ namespace Land.Core.Parsing.LL
 			Stack.Push(NodeGenerator.Generate(Grammar.EOF_TOKEN_NAME));
 			Stack.Push(root);
 
+			var d = new Durations();
+
 			/// Читаем первую лексему из входного потока
-			var token = LexingStream.GetNextToken();
+			var token = LexingStream.GetNextToken(d);
 
 			/// Пока не прошли полностью правило для стартового символа
 			while (Stack.Count > 0)
@@ -121,7 +123,7 @@ namespace Land.Core.Parsing.LL
 						node.SetLocation(token.Location.Start, token.Location.End);
 						node.SetValue(token.Text);
 
-						token = LexingStream.GetNextToken();
+						token = LexingStream.GetNextToken(d);
 					}
 
 					continue;
@@ -197,7 +199,7 @@ namespace Land.Core.Parsing.LL
 					/// Если встретился неожиданный токен, но он в списке пропускаемых
 					if (GrammarObject.Options.IsSet(ParsingOption.GROUP_NAME, ParsingOption.SKIP, token.Name))
 					{
-						token = LexingStream.GetNextToken();
+						token = LexingStream.GetNextToken(d);
 					}
 					else
 					{
@@ -216,7 +218,7 @@ namespace Land.Core.Parsing.LL
 
 			root = TreePostProcessing(root);
 
-			return root;
+			return (root, d);
 		}
 
 		private HashSet<string> GetStopTokens(SymbolArguments args, IEnumerable<string> followSequence)
@@ -256,6 +258,7 @@ namespace Land.Core.Parsing.LL
 			var token = LexingStream.CurrentToken;
 
 			var stackTop = Stack.Peek();
+			var d = new Durations();
 
 			if (EnableTracing)
 				Log.Add(Message.Trace(
@@ -318,11 +321,11 @@ namespace Land.Core.Parsing.LL
 
 					if (ignorePairs)
 					{
-						token = LexingStream.GetNextToken();
+						token = LexingStream.GetNextToken(d);
 					}
 					else
 					{
-						token = LexingStream.GetNextToken(anyLevel, out List<IToken> skippedBuffer);
+						token = LexingStream.GetNextToken(anyLevel, d, out List<IToken> skippedBuffer);
 
 						/// Если при пропуске до токена на том же уровне
 						/// пропустили токены с более глубокой вложенностью
@@ -406,6 +409,7 @@ namespace Land.Core.Parsing.LL
 
 		private IToken ErrorRecovery(HashSet<string> stopTokens = null, string avoidedToken = null)
 		{
+			var d = new Durations();
 			// Если восстановление от ошибок отключено на уровне грамматики
 			if (!GrammarObject.Options.IsRecoveryEnabled())
 			{
@@ -471,7 +475,7 @@ namespace Land.Core.Parsing.LL
 
 					// Пропускаем токены, пока не поднимемся на тот же уровень вложенности, 
 					// на котором раскрывали нетерминал
-					var nonterminalLevelToken = LexingStream.GetNextToken(NestingLevel[currentNode], out skippedBuffer);
+					var nonterminalLevelToken = LexingStream.GetNextToken(NestingLevel[currentNode],d, out skippedBuffer);
 
 					if (nonterminalLevelToken.Type != Grammar.ERROR_TOKEN_TYPE)
 					{

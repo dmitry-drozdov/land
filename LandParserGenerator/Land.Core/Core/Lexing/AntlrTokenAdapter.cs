@@ -4,6 +4,8 @@ using System.Linq;
 using System.IO;
 using System.Diagnostics;
 using System.Text;
+using Antlr4.Runtime;
+using System.Xml.Linq;
 
 namespace Land.Core.Lexing
 {
@@ -29,8 +31,8 @@ namespace Land.Core.Lexing
 		public AntlrTokenAdapter(Antlr4.Runtime.IToken token, Antlr4.Runtime.Lexer lexer)
 		{
 			Token = token;
-			Name = lexer.Vocabulary.GetSymbolicName(Token.Type);
 			Type = Token.Type;
+			Name = lexer.Vocabulary.GetSymbolicName(Token.Type);
 
 			Location = new SegmentLocation()
 			{

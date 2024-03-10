@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Land.Core.Parsing;
 using Land.Core.Specification;
 
 namespace Land.Core.Lexing
@@ -21,13 +22,14 @@ namespace Land.Core.Lexing
 		/// Переход к следующему токену потока
 		/// </summary>
 		/// <returns></returns>
-		public virtual IToken GetNextToken()
+		public virtual IToken GetNextToken(Durations d)
 		{
+			d?.Start();
 			/// Если токен с нужным индексом ещё не считан
 			/// и последний считанный токен - не признак конца файла
 			if (CurrentIndex + 1 == Tokens.Count)
 			{
-				if (Tokens.Count == 0 || Tokens.Last().Type != Grammar.EOF_TOKEN_TYPE)
+				if (Tokens.Count == 0 || Tokens[Tokens.Count-1].Type != Grammar.EOF_TOKEN_TYPE)
 				{
 					++CurrentIndex;
 					Tokens.Add(Lexer.NextToken());
@@ -37,6 +39,7 @@ namespace Land.Core.Lexing
 			{
 				++CurrentIndex;
 			}
+			d?.Stop("base GetNextToken");
 
 			return Tokens[CurrentIndex];
 		}
