@@ -24,7 +24,7 @@ namespace Land.Core.Lexing
 		/// <returns></returns>
 		public virtual IToken GetNextToken(Durations d)
 		{
-			d?.Start();
+			//d?.Start();
 			/// Если токен с нужным индексом ещё не считан
 			/// и последний считанный токен - не признак конца файла
 			if (CurrentIndex + 1 == Tokens.Count)
@@ -39,7 +39,7 @@ namespace Land.Core.Lexing
 			{
 				++CurrentIndex;
 			}
-			d?.Stop("base GetNextToken");
+			//d?.Stop("base GetNextToken");
 
 			return Tokens[CurrentIndex];
 		}

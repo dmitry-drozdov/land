@@ -874,7 +874,7 @@ namespace Land.GUI
 							landCounts[pair.Key] += pair.Value;
 						}
 
-						totalStats += stats;
+						//totalStats += stats;
 
 					}
 				}

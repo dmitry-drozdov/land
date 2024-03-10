@@ -36,7 +36,7 @@ namespace Land.Core.Parsing.LR
 
 			var d = new Durations();
 
-			var watcher = Stopwatch.StartNew();
+			//var watcher = Stopwatch.StartNew();
 
 			EnableTracing = false; //debug
 
@@ -217,7 +217,7 @@ namespace Land.Core.Parsing.LR
 				root = TreePostProcessing(root);
 			//d.Stop("TreePostProcessing");
 
-			d.Add("ParsingAlgorithm", watcher);
+			//d.Add("ParsingAlgorithm", watcher);
 
 			return (root, d);
 		}

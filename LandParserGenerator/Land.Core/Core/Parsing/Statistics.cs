@@ -58,12 +58,14 @@ namespace Land.Core.Parsing
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Start()
 		{
+			return;
 			watch = Stopwatch.StartNew();
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Stop(string method)
 		{
+			return;
 			watch.Stop();
 			if (Stats.ContainsKey(method))
 				Stats[method] += watch.ElapsedMilliseconds;
@@ -74,6 +76,7 @@ namespace Land.Core.Parsing
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Add(string method, Stopwatch watch)
 		{
+			return;
 			watch.Stop();
 			if (Stats.ContainsKey(method))
 				Stats[method] += watch.ElapsedMilliseconds;
@@ -83,6 +86,7 @@ namespace Land.Core.Parsing
 
 		public static Durations operator +(Durations a, Durations b)
 		{
+			return a;
 			// add new values (b)
 			foreach (var key in b.Stats.Keys)
 			{

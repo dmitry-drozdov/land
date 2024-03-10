@@ -160,7 +160,7 @@ namespace Land.Core.Lexing
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public override IToken GetNextToken(Durations d = null)
 		{
-			d?.Start();
+			//d?.Start();
 			switch(CurrentTokenDirection)
 			{
 				case Direction.Down:
@@ -171,13 +171,13 @@ namespace Land.Core.Lexing
 					PairStack.Pop();
 					break;
 			}
-			d?.Stop("switch(CurrentTokenDirection)");
+			//d?.Stop("switch(CurrentTokenDirection)");
 
 			CurrentTokenDirection = Direction.Forward;
 
 			var token = base.GetNextToken(d);
 
-			d?.Start();
+			//d?.Start();
 			if(CustomBlockDefinition != null
 				&& CustomBlockDefinition.BaseToken == token.Name)
 			{
@@ -232,9 +232,9 @@ namespace Land.Core.Lexing
 					}
 				}
 			}
-			d?.Stop("custom block");
+			//d?.Stop("custom block");
 
-			d?.Start();
+			//d?.Start();
 			/// Предполагается, что токен может быть началом ровно одной пары, или концом ровно одной пары,
 			/// или одновременно началом и концом ровно одной пары
 			var closed = GrammarObject.Pairs.FirstOrDefault(p => p.Value.Right.Contains(token.Name));
@@ -257,7 +257,7 @@ namespace Land.Core.Lexing
 								{ MessageAddInfoKey.UnexpectedLexeme, token.Text }
 							}
 						));
-						d?.Stop("other");	
+						//d?.Stop("other");	
 						return Lexer.CreateToken(Grammar.ERROR_TOKEN_NAME, Grammar.ERROR_TOKEN_TYPE);
 					}
 					else if (PairStack.Peek() != closed.Value)
@@ -272,7 +272,7 @@ namespace Land.Core.Lexing
 								{ MessageAddInfoKey.ExpectedTokens, PairStack.Peek().Right.ToList() }
 							}
 						));
-						d?.Stop("other");
+						//d?.Stop("other");
 						return Lexer.CreateToken(Grammar.ERROR_TOKEN_NAME, Grammar.ERROR_TOKEN_TYPE);
 					}
 					else
@@ -304,7 +304,7 @@ namespace Land.Core.Lexing
 				}
 			}
 
-			d?.Stop("other");
+			//d?.Stop("other");
 			return token;
 		}
 
@@ -315,7 +315,7 @@ namespace Land.Core.Lexing
 		public IToken GetNextToken(int level, Durations d, out List<IToken> skipped)
 		{
 			skipped = new List<IToken>();
-			d.Start();
+			//d.Start();
 			while (true)
 			{
 				var next = GetNextToken(null);
@@ -326,7 +326,7 @@ namespace Land.Core.Lexing
 					|| next.Type == Grammar.EOF_TOKEN_TYPE
 					|| next.Type == Grammar.ERROR_TOKEN_TYPE)
 				{
-					d.Stop("GetNextToken loop");
+					//d.Stop("GetNextToken loop");
 					return next;
 				}
 				else
