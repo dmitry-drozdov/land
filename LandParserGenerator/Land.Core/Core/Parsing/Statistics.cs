@@ -5,6 +5,7 @@ using System.Text;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace Land.Core.Parsing
 {
@@ -54,11 +55,13 @@ namespace Land.Core.Parsing
 	{
 		public Dictionary<string, long> Stats { get; private set; } = new Dictionary<string, long>();
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Start()
 		{
 			watch = Stopwatch.StartNew();
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Stop(string method)
 		{
 			watch.Stop();
@@ -68,6 +71,7 @@ namespace Land.Core.Parsing
 				Stats.Add(method, watch.ElapsedMilliseconds);
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Add(string method, Stopwatch watch)
 		{
 			watch.Stop();

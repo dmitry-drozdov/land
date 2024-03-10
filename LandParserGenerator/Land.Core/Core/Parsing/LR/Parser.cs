@@ -7,6 +7,7 @@ using Land.Core.Specification;
 using Land.Core.Lexing;
 using Land.Core.Parsing.Tree;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace Land.Core.Parsing.LR
 {
@@ -35,9 +36,11 @@ namespace Land.Core.Parsing.LR
 
 			var d = new Durations();
 
-			var watcher  = Stopwatch.StartNew();
+			var watcher = Stopwatch.StartNew();
 
-			d.Start();
+			EnableTracing = false; //debug
+
+			//d.Start();
 
 			/// Множество индексов токенов, на которых запускалось восстановление
 			PositionsWhereRecoveryStarted = new HashSet<int>();
@@ -52,17 +55,18 @@ namespace Land.Core.Parsing.LR
 			Stack.Push(0);
 			NestingStack.Push(0);
 
-			d.Stop("init");
+			//d.Stop("init");
 
 
 			while (true)
 			{
+				//d.Start();
 				if (token.Type == Grammar.ERROR_TOKEN_TYPE)
 					break;
 
-				d.Start();
+
 				var currentState = Stack.PeekState();
-				d.Stop("PeekState");
+				//d.Stop("PeekState");
 
 				if (EnableTracing && token.Type != Grammar.ERROR_TOKEN_TYPE && token.Type != Grammar.ANY_TOKEN_TYPE)
 					Log.Add(Message.Trace(
@@ -70,13 +74,17 @@ namespace Land.Core.Parsing.LR
 						token.Location.Start
 					));
 
-				if (Table[currentState, token.Name].Count > 0)
+				//d.Start();
+				var cnt = Table[currentState, token.Name].Count;
+				//d.Stop("cnt");
+
+				if (cnt > 0)
 				{
 					if (token.Type == Grammar.ANY_TOKEN_TYPE)
 					{
-						d.Start();
-						token = SkipAny(NodeGenerator.Generate(Grammar.ANY_TOKEN_NAME), null, true);
-						d.Stop("SkipAny");
+						//d.Start();
+						token = SkipAny(NodeGenerator.Generate(Grammar.ANY_TOKEN_NAME), d, true);
+						//d.Stop("SkipAny");
 
 						/// Если при пропуске текста произошла ошибка, прерываем разбор
 						if (token.Type == Grammar.ERROR_TOKEN_TYPE)
@@ -85,11 +93,11 @@ namespace Land.Core.Parsing.LR
 							continue;
 					}
 
-					d.Start();
+					//d.Start();
 					var action = GetAction(currentState, token.Name);
-					d.Stop("GetAction");
+					//d.Stop("GetAction");
 
-					d.Start();
+					//d.Start();
 					/// Если нужно произвести перенос
 					if (action is ShiftAction)
 					{
@@ -111,7 +119,7 @@ namespace Land.Core.Parsing.LR
 						}
 
 						token = LexingStream.GetNextToken();
-						d.Stop("ShiftAction");
+						//d.Stop("ShiftAction");
 					}
 					/// Если нужно произвести свёртку
 					else if (action is ReduceAction reduce)
@@ -141,19 +149,19 @@ namespace Land.Core.Parsing.LR
 								token.Location.Start
 							));
 						}
-						d.Stop("ReduceAction");
+						//d.Stop("ReduceAction");
 						continue;
 					}
 					else if (action is AcceptAction)
 					{
 						root = Stack.PeekSymbol();
-						d.Stop("PeekSymbol");
+						//d.Stop("PeekSymbol");
 						break;
 					}
 				}
 				else if (token.Type == Grammar.ANY_TOKEN_TYPE)
 				{
-					d.Start();
+					//d.Start();
 
 					Log.Add(PotentialErrorMessage = Message.Trace(
 						$"Неожиданный символ {this.Developerify(LexingStream.CurrentToken)} для состояния{Environment.NewLine}\t\t" + Table.ToString(Stack.PeekState(), null, "\t\t"),
@@ -178,11 +186,11 @@ namespace Land.Core.Parsing.LR
 
 
 					token = ErrorRecovery();
-					d.Stop("ErrorRecovery");
+					//d.Stop("ErrorRecovery");
 				}
 				else
 				{
-					d.Start();
+					//d.Start();
 					/// Если встретился неожиданный токен, но он в списке пропускаемых
 					if (GrammarObject.Options.IsSet(ParsingOption.GROUP_NAME, ParsingOption.SKIP, token.Name))
 					{
@@ -200,16 +208,14 @@ namespace Land.Core.Parsing.LR
 
 						token = Lexer.CreateToken(Grammar.ANY_TOKEN_NAME, Grammar.ANY_TOKEN_TYPE);
 					}
-					d.Stop("Unexpected token");
+					//d.Stop("Unexpected token");
 				}
 			}
 
+			//d.Start();
 			if (root != null)
-			{
-				d.Start();
 				root = TreePostProcessing(root);
-				d.Stop("TreePostProcessing");
-			}
+			//d.Stop("TreePostProcessing");
 
 			d.Add("ParsingAlgorithm", watcher);
 
@@ -224,7 +230,7 @@ namespace Land.Core.Parsing.LR
 			return Table[currentState, token].OfType<ShiftAction>().FirstOrDefault()
 				?? Table[currentState, token].First();
 		}
-
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private IToken SkipAny(Node anyNode, Durations d, bool enableRecovery)
 		{
 			var nestingCopy = LexingStream.GetPairsState();

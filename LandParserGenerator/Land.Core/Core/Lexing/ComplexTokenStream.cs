@@ -5,6 +5,7 @@ using System.Linq;
 using Land.Core.Specification;
 using Land.Core.Parsing.Tree;
 using Land.Core.Parsing;
+using System.Runtime.CompilerServices;
 
 namespace Land.Core.Lexing
 {
@@ -156,7 +157,7 @@ namespace Land.Core.Lexing
 
 			return token;
 		}
-
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public override IToken GetNextToken(Durations d = null)
 		{
 			d?.Start();
@@ -310,13 +311,14 @@ namespace Land.Core.Lexing
 		/// <summary>
 		/// Получение следующего токена, находящегося на заданном уровне вложенности пар
 		/// </summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public IToken GetNextToken(int level, Durations d, out List<IToken> skipped)
 		{
 			skipped = new List<IToken>();
-
+			d.Start();
 			while (true)
 			{
-				var next = GetNextToken(d);
+				var next = GetNextToken(null);
 
 				/// Возвращаем следующий токен, если перешли на искомый уровень
 				/// или готовимся сделать шаг в направлении, отличном от разрешённого
@@ -324,6 +326,7 @@ namespace Land.Core.Lexing
 					|| next.Type == Grammar.EOF_TOKEN_TYPE
 					|| next.Type == Grammar.ERROR_TOKEN_TYPE)
 				{
+					d.Stop("GetNextToken loop");
 					return next;
 				}
 				else
