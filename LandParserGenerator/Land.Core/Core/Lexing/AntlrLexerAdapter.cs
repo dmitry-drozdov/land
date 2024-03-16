@@ -43,5 +43,17 @@ namespace Land.Core.Lexing
 		{
 			return new StubToken(name, type);
 		}
+
+		public IList<Antlr4.Runtime.IToken> GetAllTokens()
+		{
+			var res = new List<Antlr4.Runtime.IToken>();
+			var t = Lexer.NextToken();
+			while (t.Type != -1)
+			{
+				res.Add(t);
+				t = Lexer.NextToken();
+			}
+			return res;
+		}
 	}
 }

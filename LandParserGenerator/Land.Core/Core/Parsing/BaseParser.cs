@@ -35,6 +35,7 @@ namespace Land.Core.Parsing
 		public Statistics Statistics { get; set; }
 		public List<Message> Log { get; protected set; }
 		protected bool EnableTracing { get; set; }
+		public int TotalTokens = 0;
 
 		public BaseParser(
 			Grammar g,

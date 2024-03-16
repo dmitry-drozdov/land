@@ -13,6 +13,8 @@ using Land.Core.Lexing;
 using Land.Core.Parsing;
 using Land.Core.Parsing.LL;
 using Land.Core.Parsing.LR;
+using System.Windows.Forms;
+using System.Text.RegularExpressions;
 
 namespace Land.Core
 {
@@ -29,7 +31,7 @@ namespace Land.Core
 			var grammarOutput = new StreamWriter($"{TempName(lexerName)}.g4");
 
 			grammarOutput.WriteLine($"lexer grammar {lexerName};");
-			grammarOutput.WriteLine();	
+			grammarOutput.WriteLine();
 
 			/// Запоминаем соответствия между строчкой в генерируемом файле 
 			/// и тем терминалом, который оказывается на этой строчке
@@ -42,7 +44,7 @@ namespace Land.Core
 				tokensForLines[++linesCounter] = token.Name.StartsWith(Grammar.AUTO_TOKEN_PREFIX, StringComparison.Ordinal) ? token.Pattern : token.Name;
 			}
 
-			foreach (var token in grammar.TokenOrder.Where(t=>!String.IsNullOrEmpty(grammar.Tokens[t].Pattern)))
+			foreach (var token in grammar.TokenOrder.Where(t => !String.IsNullOrEmpty(grammar.Tokens[t].Pattern)))
 			{
 				var fragment = grammar.Options.GetSymbols(ParsingOption.GROUP_NAME, ParsingOption.FRAGMENT).Contains(token) ? "fragment " : String.Empty;
 				grammarOutput.WriteLine($"{fragment}{token}: {grammar.Tokens[token].Pattern}{(grammar.Tokens[token].LineStart ? $" {{this.InputStream.LA(-1 - Text.Length) == 10 || this.InputStream.LA(-1 - Text.Length) == -1}}?" : "")} ;");
@@ -81,19 +83,19 @@ namespace Land.Core
 			var hasErrors = !String.IsNullOrEmpty(antlrErrors.Result);
 
 			/// Если есть ошибки, приводим их к виду, больше соответствующему .land-файлу
-			if(hasErrors)
+			if (hasErrors)
 			{
 				var errorsList = antlrErrors.Result.Split(new char[] { '\n' }, StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim());
-				foreach(var error in errorsList)
+				foreach (var error in errorsList)
 				{
 					try
-					{ 
+					{
 						/// 1 - имя .g4 файла, 2 - номер строки, 3 - номер столбца, 4 - соо об ошибке
 						var parts = error.Split(new char[] { ':' }, 5);
 
 						/// проверяем, не упоминаются ли в соо об ошибке автотерминалы
 						var autoNames = System.Text.RegularExpressions.Regex.Matches(parts[4], $"{Grammar.AUTO_TOKEN_PREFIX}[0-9]+");
-						foreach(System.Text.RegularExpressions.Match name in autoNames)
+						foreach (System.Text.RegularExpressions.Match name in autoNames)
 						{
 							parts[4] = parts[4].Replace(name.Value, grammar.Developerify(name.Value));
 						}
@@ -153,14 +155,14 @@ namespace Land.Core
 		{
 			var builtGrammar = BuildGrammar(type, text, messages);
 
-			if (messages.Count(m=>m.Type == MessageType.Error) != 0)
+			if (messages.Count(m => m.Type == MessageType.Error) != 0)
 				return null;
 
 			builtGrammar.RebuildUserificationCache();
 
 			BaseTable table = null;
 
-			switch(type)
+			switch (type)
 			{
 				case GrammarType.LL:
 					table = new TableLL1(builtGrammar);
@@ -200,8 +202,29 @@ namespace Land.Core
 					break;
 			}
 
+
+
+			var adapter = new AntlrLexerAdapter(
+				(Antlr4.Runtime.ICharStream stream) => (Antlr4.Runtime.Lexer)Activator.CreateInstance(lexerType, stream)
+			);
+			var file = "e:\\phd\\large.go";
+
+			var watch = Stopwatch.StartNew();
+			adapter.SetSourceText(File.ReadAllText(file));
+			watch.Stop();
+			var d1 = watch.ElapsedMilliseconds;
+
+			watch = Stopwatch.StartNew();
+			var tokens = adapter.GetAllTokens();
+			watch.Stop();
+			var d2 = watch.ElapsedMilliseconds;
+
+
+			MessageBox.Show($"tokens={tokens.Count}, t_read={d1/1000}c., t_allTokens={d2/1000}c.");
+
 			return parser;
 		}
+
 
 		/// <summary>
 		/// Генерация библиотеки с парсером
@@ -213,11 +236,11 @@ namespace Land.Core
 		/// <param name="messages">Лог генерации парсера</param>
 		/// <returns>Признак успешности выполнения операции</returns>
 		public static bool GenerateLibrary(
-			GrammarType type, 
-			string text, 
-			string @namespace, 
+			GrammarType type,
+			string text,
+			string @namespace,
 			string path,
-			string keyPath, 
+			string keyPath,
 			List<Message> messages
 		)
 		{
@@ -256,7 +279,7 @@ namespace Land.Core
 			var grammarFileName = TempName($"{@namespace.Replace('.', '_')}_Grammar.cs");
 			var nodeGeneratorFileName = TempName($"{@namespace.Replace('.', '_')}_NodeGenerator.cs");
 
-			BuildLexer(builtGrammar, Path.GetFileNameWithoutExtension(lexerFileName) , messages);
+			BuildLexer(builtGrammar, Path.GetFileNameWithoutExtension(lexerFileName), messages);
 
 			/// Проверяем, не появились ли ошибки после генерации исходников лексера
 			if (messages.Count(m => m.Type == MessageType.Error) != 0)
@@ -266,28 +289,28 @@ namespace Land.Core
 			File.WriteAllText(parserFileName, GetParserProviderText(@namespace));
 			File.WriteAllText(nodeGeneratorFileName, GetNodeGeneratorText(builtGrammar, @namespace));
 
-            //if (!String.IsNullOrEmpty(keyPath) && !File.Exists(keyPath))
-            //{
+			//if (!String.IsNullOrEmpty(keyPath) && !File.Exists(keyPath))
+			//{
 
-            //    // Создаём файл ключа
+			//    // Создаём файл ключа
 
-            //    Process process = new Process();
-            //    ProcessStartInfo startInfo = new ProcessStartInfo()
-            //    {
-            //        FileName = "cmd.exe",
-            //        Arguments = $"/C chcp 1251 | \"Resources/sn.exe\" -k \"{keyPath}\"",
-            //        CreateNoWindow = true,
-            //        RedirectStandardOutput = true,
-            //        UseShellExecute = false
-            //    };
-            //    process.StartInfo = startInfo;
-            //    process.Start();
+			//    Process process = new Process();
+			//    ProcessStartInfo startInfo = new ProcessStartInfo()
+			//    {
+			//        FileName = "cmd.exe",
+			//        Arguments = $"/C chcp 1251 | \"Resources/sn.exe\" -k \"{keyPath}\"",
+			//        CreateNoWindow = true,
+			//        RedirectStandardOutput = true,
+			//        UseShellExecute = false
+			//    };
+			//    process.StartInfo = startInfo;
+			//    process.Start();
 
-            //    process.WaitForExit();
-            //}
+			//    process.WaitForExit();
+			//}
 
-            /// Компилируем библиотеку
-            var codeProvider = new CSharpCodeProvider();
+			/// Компилируем библиотеку
+			var codeProvider = new CSharpCodeProvider();
 			var compilerParams = new System.CodeDom.Compiler.CompilerParameters();
 
 			compilerParams.GenerateInMemory = false;
@@ -559,7 +582,7 @@ namespace " + @namespace + @"
 	}");
 
 
-			foreach (var name in grammar.Rules.Keys.Where(key=>!key.StartsWith(Grammar.AUTO_RULE_PREFIX, StringComparison.Ordinal)))
+			foreach (var name in grammar.Rules.Keys.Where(key => !key.StartsWith(Grammar.AUTO_RULE_PREFIX, StringComparison.Ordinal)))
 				nodeClassesSource.AppendLine(@"
 	[Serializable]
 	public class " + name + @"_node : RuleNode 

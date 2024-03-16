@@ -475,7 +475,7 @@ namespace Land.Core.Parsing.LL
 
 					// Пропускаем токены, пока не поднимемся на тот же уровень вложенности, 
 					// на котором раскрывали нетерминал
-					var nonterminalLevelToken = LexingStream.GetNextToken(NestingLevel[currentNode],d, out skippedBuffer);
+					var nonterminalLevelToken = LexingStream.GetNextToken(NestingLevel[currentNode], d, out skippedBuffer);
 
 					if (nonterminalLevelToken.Type != Grammar.ERROR_TOKEN_TYPE)
 					{

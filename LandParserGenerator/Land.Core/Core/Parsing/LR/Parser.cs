@@ -21,6 +21,7 @@ namespace Land.Core.Parsing.LR
 		private HashSet<int> PositionsWhereRecoveryStarted { get; set; }
 		private Message PotentialErrorMessage { get; set; }
 
+
 		public Parser(
 			Grammar g,
 			ILexer lexer,
@@ -554,7 +555,7 @@ namespace Land.Core.Parsing.LR
 
 					// Пропускаем токены, пока не поднимемся на тот же уровень вложенности, 
 					// на котором раскрывали нетерминал
-					var nonterminalLevelToken = LexingStream.GetNextToken(NestingStack.Peek(), new Durations(), out skippedBuffer);
+					var nonterminalLevelToken = LexingStream.GetNextToken(NestingStack.Peek(),  new Durations(), out skippedBuffer);
 
 					if (nonterminalLevelToken.Type != Grammar.ERROR_TOKEN_TYPE)
 					{

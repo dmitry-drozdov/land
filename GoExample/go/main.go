@@ -2,7 +2,10 @@ package main
 
 import (
 	"fmt"
+	"go/parser"
+	"go/token"
 	"strings"
+	"time"
 	"utils/slice"
 
 	"github.com/mohae/shuffle"
@@ -29,11 +32,31 @@ var folders = []string{
 }
 
 func main() {
-	// err := makeTestSet(15)
+	// err := makeTestSet(40)
 	// if err != nil {
 	// 	panic(err)
 	// }
 	// return
+
+	// err := GenerateLargeFile(`e:\phd\test_repos_light`, `e:\phd\large.go`)
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// return
+
+	err := GenerateLargeFileStandard(`e:\phd\large.go`)
+	if err != nil {
+		panic(err)
+	}
+
+	t0 := time.Now()
+	fset := token.NewFileSet()
+	_, err = parser.ParseFile(fset, `e:\phd\large.go`, nil, 0)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(time.Since(t0))
+	return
 
 	cnt, err := deleteDups(`e:\phd\test_repos`)
 	if err != nil {

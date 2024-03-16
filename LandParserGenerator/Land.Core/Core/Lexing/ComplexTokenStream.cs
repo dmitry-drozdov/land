@@ -38,10 +38,10 @@ namespace Land.Core.Lexing
 
 		public string BaseToken { get; set; }
 
-		public bool IsStartLexem(string lexem) => 
+		public bool IsStartLexem(string lexem) =>
 			lexem.StartsWith(StartLexemPrefix, StringComparison.Ordinal) && lexem.EndsWith(StartLexemSuffix);
 
-		public bool IsEndLexem(string lexem) => 
+		public bool IsEndLexem(string lexem) =>
 			lexem.StartsWith(EndLexemPrefix, StringComparison.Ordinal) && lexem.EndsWith(EndLexemSuffix);
 
 		public string GetName(string blockStart) => blockStart
@@ -61,7 +61,7 @@ namespace Land.Core.Lexing
 
 	public enum Direction { Forward, Up, Down };
 
-	public class ComplexTokenStream: TokenStream, IGrammarProvided
+	public class ComplexTokenStream : TokenStream, IGrammarProvided
 	{
 		public Grammar GrammarObject { get; private set; }
 
@@ -91,7 +91,7 @@ namespace Land.Core.Lexing
 		/// </summary>
 		private CustomBlockDefinition CustomBlockDefinition { get; set; }
 
-		public ComplexTokenStream(Grammar grammar, ILexer lexer, string text, List<Message> log): base(lexer, text)
+		public ComplexTokenStream(Grammar grammar, ILexer lexer, string text, List<Message> log) : base(lexer, text)
 		{
 			GrammarObject = grammar;
 			Log = log;
@@ -158,10 +158,10 @@ namespace Land.Core.Lexing
 			return token;
 		}
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public override IToken GetNextToken(Durations d = null)
+		public override IToken GetNextToken( Durations d = null)
 		{
 			//d?.Start();
-			switch(CurrentTokenDirection)
+			switch (CurrentTokenDirection)
 			{
 				case Direction.Down:
 					PairStack.Push(OpenedPair);
@@ -178,17 +178,17 @@ namespace Land.Core.Lexing
 			var token = base.GetNextToken(d);
 
 			//d?.Start();
-			if(CustomBlockDefinition != null
+			if (CustomBlockDefinition != null
 				&& CustomBlockDefinition.BaseToken == token.Name)
 			{
-				if(CustomBlockDefinition.IsStartLexem(token.Text))
+				if (CustomBlockDefinition.IsStartLexem(token.Text))
 				{
 					var newBlock = new CustomBlockNode
 					{
 						Location = new SegmentLocation { Start = token.Location.Start },
 
 						/// Можно не типизировать, типизируем при вставке блоков в дерево
-						Start = new Node(Grammar.CUSTOM_BLOCK_START_TOKEN_NAME)			
+						Start = new Node(Grammar.CUSTOM_BLOCK_START_TOKEN_NAME)
 					};
 
 					newBlock.Start.SetLocation(token.Location.Start, token.Location.End);
@@ -220,7 +220,7 @@ namespace Land.Core.Lexing
 						currentBlock.Location.End = token.Location.End;
 
 						/// Добавляем пользовательский блок в дерево ПБ
-						if(CustomBlockStack.Any())
+						if (CustomBlockStack.Any())
 						{
 							CustomBlockStack.Peek().Children.Add(currentBlock);
 							currentBlock.Parent = CustomBlockStack.Peek();

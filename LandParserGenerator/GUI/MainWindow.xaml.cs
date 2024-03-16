@@ -915,6 +915,10 @@ namespace Land.GUI
 				FrontendUpdateDispatcher.Invoke(OnPackageFileParsingError, "");
 
 				FrontendUpdateDispatcher.Invoke(OnPackageFileParsingError, "");
+				FrontendUpdateDispatcher.Invoke(OnPackageFileParsingError, $"Всего токенов {Parser.TotalTokens}");
+				FrontendUpdateDispatcher.Invoke(OnPackageFileParsingError, "");
+
+				FrontendUpdateDispatcher.Invoke(OnPackageFileParsingError, "");
 				FrontendUpdateDispatcher.Invoke(OnPackageFileParsingError, "5 дольше всего разбираемых файлов:");
 				FrontendUpdateDispatcher.Invoke(OnPackageFileParsingError, "");
 
