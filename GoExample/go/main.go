@@ -44,17 +44,16 @@ func main() {
 	// }
 	// return
 
-	err := GenerateLargeFileStandard(`e:\phd\large`, "go")
+	err := GenerateLargeFileStandard(`e:\phd\large\large`, "go")
+	if err != nil {
+		panic(err)
+	}
+
+	err = GenerateLargeFileStandardSharp(`e:\phd\large\large`, "cs")
 	if err != nil {
 		panic(err)
 	}
 	return
-
-	// err := GenerateLargeFileStandardSharp(`e:\phd\large`, "cs")
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// return
 
 	t0 := time.Now()
 	fset := token.NewFileSet()
