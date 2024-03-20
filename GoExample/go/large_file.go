@@ -59,14 +59,15 @@ func GenerateLargeFile(root string, out string) error {
 	return os.WriteFile(out, all, fs.ModePerm)
 }
 
-func GenerateLargeFileStandard(out string) error {
+func GenerateLargeFileStandard(out string, ext string) error {
 	var sb strings.Builder
 	sb.Grow(1e9)
 
 	sb.WriteString("package test\n")
 	sb.WriteString(`import "os"`)
 
-	for i := 0; i < 750000; i++ {
+	n := 600000
+	for i := 0; i < n; i++ {
 		sb.WriteString(fmt.Sprintf(`
 			type MyType%v struct {}
 			func (t *MyType%v) DoAction%v(a *int, b struct{}, c interface{}, d []int, m map[<-chan int]*int) (float64, error) {
@@ -75,6 +76,30 @@ func GenerateLargeFileStandard(out string) error {
 			}
 		`, i, i, i))
 	}
+	for i := 0; i < (n*715)/10000; i++ { // add 7.15%
+		sb.WriteString(fmt.Sprintf(`
+			type MyType%v struct {}
+		`, i))
+	}
 
-	return os.WriteFile(out, []byte(sb.String()), fs.ModePerm)
+	return os.WriteFile(fmt.Sprint(out, n, ".", ext), []byte(sb.String()), fs.ModePerm)
+}
+
+func GenerateLargeFileStandardSharp(out string, ext string) error {
+	var sb strings.Builder
+	sb.Grow(1e9)
+
+	n := 700000
+	for i := 0; i < n; i++ {
+		sb.WriteString(fmt.Sprintf(`
+		public IList<Some.Antlr4.Runtime.IToken> GetAllTokens%v(ref string name%v, int[] type%v, List<Message> errors = null)
+		{
+			var grammarOutput = new StreamWriter($"{TempName(lexerName)}.g4");
+			var scanner = 10;
+			return null;
+		}
+		`, i, i, i))
+	}
+
+	return os.WriteFile(fmt.Sprint(out, n, ".", ext), []byte(sb.String()), fs.ModePerm)
 }
