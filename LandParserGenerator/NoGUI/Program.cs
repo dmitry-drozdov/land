@@ -51,6 +51,7 @@ namespace NoGUI
 		{
 			var statsPerFile = new Dictionary<string, Statistics>();
 			var totalStats = new Statistics();
+			var precision = argument.Files.Count / 10 + 1;
 			for (var counter = 0; counter < argument.Files.Count; ++counter)
 			{
 				var file = argument.Files[counter];
@@ -60,7 +61,6 @@ namespace NoGUI
 					Durations stats = null;
 
 					(root, stats) = this.File_Parse(file, File.ReadAllText(file)) ?? (null, null);
-					Console.Write('.');
 
 					if (Parser.Log.Any(l => l.Type == MessageType.Error))
 					{
@@ -78,8 +78,13 @@ namespace NoGUI
 				{
 					Console.WriteLine(ex.ToString());
 				}
-				
+
+				if (counter % precision == 0)
+				{
+					Console.Write($"{(counter * 100) / argument.Files.Count} => ");
+				}
 			}
+			Console.WriteLine();
 			return totalStats;
 		}
 	}
@@ -89,7 +94,7 @@ namespace NoGUI
 		{
 			var actor = new Actor();
 			actor.BuildGrammar("e:\\phd\\my\\land\\LanD Specifications\\sharp\\golang.land");
-			var path = "e:\\phd\\large\\";
+			var path = "e:\\phd\\test_repos_light\\";
 
 			var files = new List<string>();
 			/// Возможна ошибка при доступе к определённым директориям
