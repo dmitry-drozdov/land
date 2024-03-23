@@ -26,10 +26,10 @@ namespace Land.Core.Lexing
 
 		public void SetSourceText(string text)
 		{
-			byte[] textBuffer = Encoding.UTF8.GetBytes(text);
-			MemoryStream memStream = new MemoryStream(textBuffer);
+			/*byte[] textBuffer = Encoding.UTF8.GetBytes(text);
+			MemoryStream memStream = new MemoryStream(textBuffer);*/
 
-			var stream = CharStreams.fromStream(memStream);
+			var stream = CharStreams.fromstring(text);
 
 			Lexer = LexerConstructor(stream);
 		}
@@ -55,5 +55,18 @@ namespace Land.Core.Lexing
 			}
 			return res;
 		}
+
+		/*public IList<AntlrTokenAdapter> GetAllTokens()
+	{
+		var res = new List<AntlrTokenAdapter>();
+		var t = new AntlrTokenAdapter(Lexer.NextToken(), Lexer);
+		while (t.Type != -1)
+		{
+			res.Add(t);
+			t = new AntlrTokenAdapter(Lexer.NextToken(), Lexer);
+		}
+		return res;
+	}*/
+
 	}
 }
