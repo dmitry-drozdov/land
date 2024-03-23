@@ -204,10 +204,10 @@ namespace Land.Core
 
 
 
-			var adapter = new AntlrLexerAdapter(
+			/*var adapter = new AntlrLexerAdapter(
 				(Antlr4.Runtime.ICharStream stream) => (Antlr4.Runtime.Lexer)Activator.CreateInstance(lexerType, stream)
 			);
-			var file = "e:\\phd\\large.go";
+			var file = "e:\\phd\\large\\large.cs";
 
 			var watch = Stopwatch.StartNew();
 			adapter.SetSourceText(File.ReadAllText(file));
@@ -220,7 +220,7 @@ namespace Land.Core
 			var d2 = watch.ElapsedMilliseconds;
 
 
-			MessageBox.Show($"tokens={tokens.Count}, t_read={d1/1000}c., t_allTokens={d2/1000}c.");
+			MessageBox.Show($"tokens={tokens.Count}, t_read={d1/1000}c., t_allTokens={(float)d2/1000}c.");*/
 
 			return parser;
 		}
