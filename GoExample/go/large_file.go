@@ -64,15 +64,12 @@ func GenerateLargeFileStandard(out string, ext string) error {
 	sb.Grow(1e9)
 
 	sb.WriteString("package test\n")
-	sb.WriteString(`import "os"`)
+
 
 	n := 100000
 	for i := 0; i < n; i++ {
 		sb.WriteString(fmt.Sprintf(`
-func (t *MyType%v) DoAction%v(*[]struct{}, map[<-chan int]*int) (error) {
-	var a = -1 + 2
-	return nil
-}
+func (t *MyType%v) DoAction%v(i int, f float) (error) {}
 		`, i, i))
 	}
 

@@ -41,10 +41,11 @@ func main() {
 	// }
 	// return
 
-	// err := GenerateLargeFileStandard(`e:\phd\large\large`, "go")
-	// if err != nil {
-	// 	panic(err)
-	// }
+	err := GenerateLargeFileStandard(`e:\phd\large\large`, "go")
+	if err != nil {
+		panic(err)
+	}
+	return
 
 	// err = GenerateLargeFileStandardSharp(`e:\phd\large\large`, "cs")
 	// if err != nil {
