@@ -2,10 +2,7 @@ package main
 
 import (
 	"fmt"
-	"go/parser"
-	"go/token"
 	"strings"
-	"time"
 	"utils/slice"
 
 	"github.com/mohae/shuffle"
@@ -44,25 +41,25 @@ func main() {
 	// }
 	// return
 
-	err := GenerateLargeFileStandard(`e:\phd\large\large`, "go")
-	if err != nil {
-		panic(err)
-	}
+	// err := GenerateLargeFileStandard(`e:\phd\large\large`, "go")
+	// if err != nil {
+	// 	panic(err)
+	// }
 
-	err = GenerateLargeFileStandardSharp(`e:\phd\large\large`, "cs")
-	if err != nil {
-		panic(err)
-	}
-	return
+	// err = GenerateLargeFileStandardSharp(`e:\phd\large\large`, "cs")
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// return
 
-	t0 := time.Now()
-	fset := token.NewFileSet()
-	_, err = parser.ParseFile(fset, `e:\phd\large.go`, nil, 0)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(time.Since(t0))
-	return
+	// t0 := time.Now()
+	// fset := token.NewFileSet()
+	// _, err = parser.ParseFile(fset, `e:\phd\large.go`, nil, 0)
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// fmt.Println(time.Since(t0))
+	// return
 
 	cnt, err := deleteDups(`e:\phd\test_repos`)
 	if err != nil {
