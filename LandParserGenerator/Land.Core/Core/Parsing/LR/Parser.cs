@@ -84,7 +84,7 @@ namespace Land.Core.Parsing.LR
 					if (token.Type == Grammar.ANY_TOKEN_TYPE)
 					{
 						//d.Start();
-						//token = SkipAny(NodeGenerator.Generate(Grammar.ANY_TOKEN_NAME), d, true);
+						token = SkipAny(NodeGenerator.Generate(Grammar.ANY_TOKEN_NAME), d, true);
 						//d.Stop("SkipAny");
 
 						/// Если при пропуске текста произошла ошибка, прерываем разбор
@@ -102,13 +102,13 @@ namespace Land.Core.Parsing.LR
 					/// Если нужно произвести перенос
 					if (action is ShiftAction)
 					{
-						/*var tokenNode = NodeGenerator.Generate(token.Name);
+						var tokenNode = NodeGenerator.Generate(token.Name);
 						tokenNode.SetValue(token.Text);
-						tokenNode.SetLocation(token.Location.Start, token.Location.End);*/
+						tokenNode.SetLocation(token.Location.Start, token.Location.End);
 
 						var shift = (ShiftAction)action;
 						/// Вносим в стек новое состояние
-						Stack.Push(null, shift.TargetItemIndex);
+						Stack.Push(tokenNode, shift.TargetItemIndex);
 						NestingStack.Push(LexingStream.GetPairsCount());
 
 						if (EnableTracing)
@@ -125,12 +125,12 @@ namespace Land.Core.Parsing.LR
 					/// Если нужно произвести свёртку
 					else if (action is ReduceAction reduce)
 					{
-						//var parentNode = NodeGenerator.Generate(reduce.ReductionAlternative.NonterminalSymbolName);
+						var parentNode = NodeGenerator.Generate(reduce.ReductionAlternative.NonterminalSymbolName);
 
 						/// Снимаем со стека символы ветки, по которой нужно произвести свёртку
 						for (var i = 0; i < reduce.ReductionAlternative.Count; ++i)
 						{
-							//parentNode.AddFirstChild(Stack.PeekSymbol());
+							parentNode.AddFirstChild(Stack.PeekSymbol());
 							Stack.Pop();
 							NestingStack.Pop();
 						}
@@ -138,7 +138,7 @@ namespace Land.Core.Parsing.LR
 
 						/// Кладём на стек состояние, в которое нужно произвести переход
 						Stack.Push(
-							null,
+							parentNode,
 							Table.Transitions[currentState][reduce.ReductionAlternative.NonterminalSymbolName]
 						);
 						NestingStack.Push(LexingStream.GetPairsCount());
@@ -155,7 +155,7 @@ namespace Land.Core.Parsing.LR
 					}
 					else if (action is AcceptAction)
 					{
-						//root = Stack.PeekSymbol();
+						root = Stack.PeekSymbol();
 						//d.Stop("PeekSymbol");
 						break;
 					}
@@ -234,7 +234,6 @@ namespace Land.Core.Parsing.LR
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private IToken SkipAny(Node anyNode, Durations d, bool enableRecovery)
 		{
-			throw new NotImplementedException();
 			var nestingCopy = LexingStream.GetPairsState();
 			var token = LexingStream.CurrentToken;
 			var tokenIndex = LexingStream.CurrentIndex;
@@ -442,7 +441,6 @@ namespace Land.Core.Parsing.LR
 
 		private IToken ErrorRecovery(HashSet<string> stopTokens = null, string avoidedToken = null)
 		{
-			throw new NotImplementedException();
 			// Если восстановление от ошибок отключено на уровне грамматики
 			if (!GrammarObject.Options.IsRecoveryEnabled())
 			{
@@ -557,7 +555,7 @@ namespace Land.Core.Parsing.LR
 
 					// Пропускаем токены, пока не поднимемся на тот же уровень вложенности, 
 					// на котором раскрывали нетерминал
-					var nonterminalLevelToken = LexingStream.GetNextToken(NestingStack.Peek(), new Durations(), out skippedBuffer);
+					var nonterminalLevelToken = LexingStream.GetNextToken(NestingStack.Peek(),  new Durations(), out skippedBuffer);
 
 					if (nonterminalLevelToken.Type != Grammar.ERROR_TOKEN_TYPE)
 					{
