@@ -828,6 +828,8 @@ namespace Land.GUI
 					{
 						statsPerFile[file] = Parser.Statistics;
 
+						if (root == null) continue;
+
 						var visitor = new CountEntitiesVisitor(
 						    true,
 						    argument.TargetEntityTypes,
