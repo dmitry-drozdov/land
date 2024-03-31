@@ -6,11 +6,15 @@ using Land.Core.Specification;
 
 namespace Land.Core.Parsing.LR
 {
+	public static class Stats
+	{
+		public static ulong  Access = 0;
+	}
 	/// <summary>
 	/// Таблица LR(1) парсинга
 	/// </summary>
 	[Serializable]
-	public class TableLR1: BaseTable
+	public class TableLR1 : BaseTable
 	{
 		private Dictionary<string, int> Lookaheads { get; set; }
 
@@ -31,7 +35,7 @@ namespace Land.Core.Parsing.LR
 
 		public List<HashSet<string>> AfterAnyTokens { get; private set; }
 
-		public TableLR1(Grammar g): base(g)
+		public TableLR1(Grammar g) : base(g)
 		{
 			Lookaheads = g.Tokens.Keys
 				.Zip(Enumerable.Range(0, g.Tokens.Count), (a, b) => new { smb = a, idx = b })
@@ -45,7 +49,7 @@ namespace Land.Core.Parsing.LR
 			Actions = new HashSet<Action>[Items.Count, Lookaheads.Count];
 			AfterAnyTokens = new List<HashSet<string>>();
 
-			for (var i=0; i<Items.Count;++i)
+			for (var i = 0; i < Items.Count; ++i)
 			{
 				AfterAnyTokens.Add(new HashSet<string>());
 
@@ -54,10 +58,10 @@ namespace Land.Core.Parsing.LR
 					this[i, lookahead.Key] = new HashSet<Action>();
 				}
 
-				foreach(var marker in Items[i].Markers)
+				foreach (var marker in Items[i].Markers)
 				{
 					/// A => alpha * a beta
-					if(g[marker.Next] is TerminalSymbol)
+					if (g[marker.Next] is TerminalSymbol)
 					{
 						this[i, marker.Next].Add(new ShiftAction()
 						{
@@ -72,7 +76,7 @@ namespace Land.Core.Parsing.LR
 					}
 
 					/// A => alpha *
-					if (String.IsNullOrEmpty(marker.Next) 
+					if (String.IsNullOrEmpty(marker.Next)
 						&& marker.Alternative.NonterminalSymbolName != g.StartSymbol)
 					{
 						this[i, marker.Lookahead].Add(new ReduceAction()
@@ -96,7 +100,7 @@ namespace Land.Core.Parsing.LR
 				}
 
 				/// S => ...*, $
-				if (Items[i].Markers.Any(item=>item.Alternative.NonterminalSymbolName == g.StartSymbol 
+				if (Items[i].Markers.Any(item => item.Alternative.NonterminalSymbolName == g.StartSymbol
 					&& String.IsNullOrEmpty(item.Next)
 					&& item.Lookahead == Grammar.EOF_TOKEN_NAME))
 				{
@@ -110,7 +114,7 @@ namespace Land.Core.Parsing.LR
 			Items = new List<Item>()
 			{
 				builder.BuildClosure(new Item
-				{ 
+				{
 					Markers = new HashSet<Marker>(
 						(GrammarObject[GrammarObject.StartSymbol] as NonterminalSymbol)
 							.Alternatives.Select(a=>new Marker(a, 0, Grammar.EOF_TOKEN_NAME))
@@ -160,9 +164,9 @@ namespace Land.Core.Parsing.LR
 			if (a.Count != b.Count)
 				return false;
 
-			foreach(var elem in a)
+			foreach (var elem in a)
 			{
-				if (!b.Any(e=> e.Position == elem.Position
+				if (!b.Any(e => e.Position == elem.Position
 					&& e.Lookahead == elem.Lookahead
 					&& e.Alternative.Equals(elem.Alternative)))
 					return false;
@@ -173,9 +177,17 @@ namespace Land.Core.Parsing.LR
 
 		public HashSet<Action> this[int i, string lookahead]
 		{
-			get { return Actions[i, Lookaheads[lookahead]]; }
+			get
+			{
+				Stats.Access++;
+				return Actions[i, Lookaheads[lookahead]];
+			}
 
-			private set { Actions[i, Lookaheads[lookahead]] = value; }
+			private set
+			{
+				Stats.Access++;
+				Actions[i, Lookaheads[lookahead]] = value;
+			}
 		}
 
 		public override List<Message> CheckValidity()
@@ -219,7 +231,7 @@ namespace Land.Core.Parsing.LR
 					}
 
 			/// Проверяем состояния на наличие нескольких пунктов перед Any
-			for(var i=0; i<Items.Count; ++i)
+			for (var i = 0; i < Items.Count; ++i)
 			{
 				var anys = Items[i].Markers
 					.GroupBy(m => new { m.Alternative, m.Position })
@@ -227,11 +239,11 @@ namespace Land.Core.Parsing.LR
 					.Select(e => e.First().Alternative[e.First().Position].Arguments)
 					.ToList();
 
-				if (anys.Count > 1 
-					&& !anys.Skip(1).All(e=>e.Equals(anys[0])))
+				if (anys.Count > 1
+					&& !anys.Skip(1).All(e => e.Equals(anys[0])))
 				{
 					errors.Add(Message.Error(
-						$"Any-конфликт: согласно состоянию{Environment.NewLine}" + $"\t\t{ToString(i, null, "\t\t")}{Environment.NewLine}" 
+						$"Any-конфликт: согласно состоянию{Environment.NewLine}" + $"\t\t{ToString(i, null, "\t\t")}{Environment.NewLine}"
 							+ $"\tпрефикс, оканчивающийся на Any может быть разобран несколькими способами",
 						null,
 						"LanD"
@@ -249,7 +261,7 @@ namespace Land.Core.Parsing.LR
 			var orderedLookaheads = Lookaheads.OrderBy(l => l.Value);
 			output.WriteLine("," + String.Join(",", orderedLookaheads.Select(l => l.Key)));
 
-			for(var i=0; i< Items.Count; ++i)
+			for (var i = 0; i < Items.Count; ++i)
 			{
 				output.Write($"{i},");
 
@@ -266,7 +278,7 @@ namespace Land.Core.Parsing.LR
 		public string ToString(int state, string lookahead = null, string padding = "")
 		{
 			var altPosGroups = Items[state].Markers
-				.Where(i=>String.IsNullOrEmpty(lookahead) || i.Lookahead == lookahead)
+				.Where(i => String.IsNullOrEmpty(lookahead) || i.Lookahead == lookahead)
 				.GroupBy(i => new { i.Alternative, i.Position });
 			var strings = new List<string>();
 
@@ -280,7 +292,7 @@ namespace Land.Core.Parsing.LR
 					groupString += $"    |    {String.Join(", ", group.Select(l => GrammarObject.Developerify(l.Lookahead)))}";
 
 				strings.Add(groupString);
-            }
+			}
 
 			return String.Join($"{Environment.NewLine}{padding}", strings);
 		}

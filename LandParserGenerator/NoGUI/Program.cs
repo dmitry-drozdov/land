@@ -4,6 +4,7 @@ using Land.Core.Parsing.Tree;
 using Land.Core.Specification;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -92,6 +93,9 @@ namespace NoGUI
 	{
 		static void Main(string[] args)
 		{
+			CheckPerfomance();
+
+			return;
 			var actor = new Actor();
 			actor.BuildGrammar("e:\\phd\\my\\land\\LanD Specifications\\sharp\\golang.land");
 			var path = "e:\\phd\\test_repos_light\\";
@@ -115,6 +119,89 @@ namespace NoGUI
 				Files = files
 			});
 			Console.WriteLine(stats.ToString());
+		}
+
+		static void CheckPerfomance()
+		{
+			var words = new List<string>()
+			{
+				"COMMENT",
+				"COMMENT_L",
+				"COMMENT_ML",
+				"ITALIC_QUOTE",
+				"QUOTE",
+				"SPREAD",
+				"STRING",
+				"STRING_STD",
+				"CHAR",
+				"CLASS_STRUCT_INTERFACE",
+				"ID",
+				"LB",
+				"RB",
+				"NL",
+				"CURVE_BRACKETED",
+				"ROUND_BRACKETED",
+				"SQUARE_BRACKETED"
+			};
+			for (var i = 0; i < 8; i++)
+			{
+				words.Add($"auto__{i}");
+			}
+
+			var dict = new Dictionary<string, int>();
+			var dictInt = new Dictionary<int, int>();
+			var arr = new string[words.Count];
+			var j = 0;
+			foreach (var word in words)
+			{
+				dict.Add(word, dict.Count);
+				dictInt.Add(dictInt.Count, dictInt.Count);
+				arr[j++] = word;
+			}
+
+			var cnt = 231_085_200/ words.Count;
+
+			var watch = Stopwatch.StartNew();
+			for (var k = 0; k < cnt; k++)
+			{
+				for (var i = 0; i < words.Count; i++)
+				{
+					var o = dict[words[i]];
+				}
+			}
+			watch.Stop();
+
+			var s1 = watch.ElapsedMilliseconds;
+			Console.WriteLine(s1);
+
+
+			watch = Stopwatch.StartNew();
+			for (var k = 0; k < cnt; k++)
+			{
+				for (var i = words.Count-1; i >0; i--)
+				{
+					var o = dictInt[i];
+				}
+			}
+			watch.Stop();
+
+			var s2 = watch.ElapsedMilliseconds;
+			Console.WriteLine(s2);
+			Console.WriteLine((float)s1 / s2);
+
+			watch = Stopwatch.StartNew();
+			for (var k = 0; k < cnt; k++)
+			{
+				for (var i = words.Count - 1; i > 0; i--)
+				{
+					var o = arr[i];
+				}
+			}
+			watch.Stop();
+
+			var s3 = watch.ElapsedMilliseconds;
+			Console.WriteLine(s3);
+			Console.WriteLine((float)s1 / s3);
 		}
 
 

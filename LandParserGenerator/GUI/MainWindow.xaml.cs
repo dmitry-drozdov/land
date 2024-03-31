@@ -21,6 +21,7 @@ using Land.Core.Parsing.Tree;
 using System.ComponentModel;
 using System.Text.Json;
 using Land.GUI.Serializers;
+using Land.Core.Parsing.LR;
 //using System.Windows.Shapes;
 
 namespace Land.GUI
@@ -792,7 +793,7 @@ namespace Land.GUI
 			var timeSpent = new TimeSpan();
 			var errorFiles = new List<string>();
 
-			FrontendUpdateDispatcher.Invoke((Action)(() => { Batch_Log.Items.Clear(); }));
+			FrontendUpdateDispatcher.Invoke((System.Action)(() => { Batch_Log.Items.Clear(); }));
 			var statsPerFile = new Dictionary<string, Statistics>();
 			var landCounts = new Dictionary<string, int>();
 			var landLists = new List<FileLandPair>();
@@ -809,7 +810,7 @@ namespace Land.GUI
 					Node root = null;
 					Durations stats = null;
 
-					FrontendUpdateDispatcher.Invoke((Action)(() =>
+					FrontendUpdateDispatcher.Invoke((System.Action)(() =>
 					{
 						(root, stats) = File_Parse(file, File.ReadAllText(file, GetEncoding(file))) ?? (null, null);
 					}));
@@ -912,6 +913,10 @@ namespace Land.GUI
 				{
 					FrontendUpdateDispatcher.Invoke(OnPackageFileParsingError, $"{pair.Key} {pair.Value} ({(pair.Value * 100) / total})");
 				}
+				FrontendUpdateDispatcher.Invoke(OnPackageFileParsingError, "");
+
+				FrontendUpdateDispatcher.Invoke(OnPackageFileParsingError, "");
+				FrontendUpdateDispatcher.Invoke(OnPackageFileParsingError, $"Обращений к словарям {Stats.Access}");
 				FrontendUpdateDispatcher.Invoke(OnPackageFileParsingError, "");
 
 				FrontendUpdateDispatcher.Invoke(OnPackageFileParsingError, "");

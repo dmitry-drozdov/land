@@ -141,6 +141,7 @@ namespace Land.Core.Parsing.LR
 							parentNode,
 							Table.Transitions[currentState][reduce.ReductionAlternative.NonterminalSymbolName]
 						);
+						Stats.Access++;
 						NestingStack.Push(LexingStream.GetPairsCount());
 
 						if (EnableTracing)
