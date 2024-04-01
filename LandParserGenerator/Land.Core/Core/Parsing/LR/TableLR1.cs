@@ -6,7 +6,6 @@ using Land.Core.Specification;
 
 namespace Land.Core.Parsing.LR
 {
-
 	/// <summary>
 	/// Таблица LR(1) парсинга
 	/// </summary>
@@ -23,7 +22,10 @@ namespace Land.Core.Parsing.LR
 		/// <summary>
 		/// Действия, которые надо совершать при встрече различных терминалов
 		/// </summary>
-		private HashSet<Action>[,] Actions { get; set; }
+		private HashSet<Action>[,] actions;
+
+		private Action[,] Actions { get; set; }
+		private bool[,] Conflicts { get; set; }
 
 		/// <summary>
 		/// Переходы между состояниями
@@ -43,7 +45,10 @@ namespace Land.Core.Parsing.LR
 			/// Строим набор множеств пунктов
 			BuildItems(builder);
 
-			Actions = new HashSet<Action>[Items.Count, Lookaheads.Count];
+
+			actions = new HashSet<Action>[Items.Count, Lookaheads.Count];
+			Actions = new Action[Items.Count, Lookaheads.Count];
+			Conflicts = new bool[Items.Count, Lookaheads.Count];
 			AfterAnyTokens = new List<HashSet<string>>();
 
 			for (var i = 0; i < Items.Count; ++i)
@@ -52,7 +57,7 @@ namespace Land.Core.Parsing.LR
 
 				foreach (var lookahead in Lookaheads)
 				{
-					this[i, lookahead.Key] = new HashSet<Action>();
+					actions[i, Lookaheads[lookahead.Key]] = new HashSet<Action>();
 				}
 
 				foreach (var marker in Items[i].Markers)
@@ -60,9 +65,9 @@ namespace Land.Core.Parsing.LR
 					/// A => alpha * a beta
 					if (g[marker.Next] is TerminalSymbol)
 					{
-						this[i, marker.Next].Add(new Action()
+						actions[i, Lookaheads[marker.Next]].Add(new Action()
 						{
-							ActionType=0,
+							ActionType = 0,
 							TargetItemIndex = Transitions[i][marker.Next]
 						});
 
@@ -77,9 +82,9 @@ namespace Land.Core.Parsing.LR
 					if (String.IsNullOrEmpty(marker.Next)
 						&& marker.Alternative.NonterminalSymbolName != g.StartSymbol)
 					{
-						this[i, marker.Lookahead].Add(new Action()
+						actions[i, Lookaheads[marker.Lookahead]].Add(new Action()
 						{
-							ActionType=1,
+							ActionType = 1,
 							ReductionAlternative = marker.Alternative
 						});
 					}
@@ -103,9 +108,27 @@ namespace Land.Core.Parsing.LR
 					&& String.IsNullOrEmpty(item.Next)
 					&& item.Lookahead == Grammar.EOF_TOKEN_NAME))
 				{
-					this[i, Grammar.EOF_TOKEN_NAME].Add(new Action() { ActionType=2});
+					actions[i, Lookaheads[Grammar.EOF_TOKEN_NAME]].Add(new Action() { ActionType = 2 });
 				}
 			}
+
+			for (var i = 0; i < actions.GetLength(0); i++)
+			{
+				for (var j = 0; j < actions.GetLength(1); j++)
+				{
+					var a = actions[i, j].ToList();
+					if (a.Count() == 0)
+						continue;
+					if (a.Count() == 1)
+					{
+						Actions[i, j] = a[0];
+						continue;
+					}
+					Actions[i,j]= a.First(x => x.ActionType == 0);
+					Conflicts[i, j] = true;
+				}
+			}
+
 		}
 
 		private void BuildItems(ClosureGotoBuilder builder)
@@ -174,7 +197,7 @@ namespace Land.Core.Parsing.LR
 			return true;
 		}
 
-		public HashSet<Action> this[int i, string lookahead]
+		public Action this[int i, string lookahead]
 		{
 			get
 			{
@@ -185,6 +208,11 @@ namespace Land.Core.Parsing.LR
 			{
 				Actions[i, Lookaheads[lookahead]] = value;
 			}
+		}
+
+		public bool Conflict(int i, string lookahead)
+		{
+			return Conflicts[i, Lookaheads[lookahead]];
 		}
 
 		public override List<Message> CheckValidity()
@@ -253,7 +281,7 @@ namespace Land.Core.Parsing.LR
 
 		public override void ExportToCsv(string filename)
 		{
-			var output = new StreamWriter(filename);
+			/*var output = new StreamWriter(filename);
 
 			var orderedLookaheads = Lookaheads.OrderBy(l => l.Value);
 			output.WriteLine("," + String.Join(",", orderedLookaheads.Select(l => l.Key)));
@@ -269,7 +297,7 @@ namespace Land.Core.Parsing.LR
 				output.WriteLine();
 			}
 
-			output.Close();
+			output.Close();*/
 		}
 
 		public string ToString(int state, string lookahead = null, string padding = "")
@@ -298,7 +326,7 @@ namespace Land.Core.Parsing.LR
 		{
 			return new HashSet<string>(
 				Lookaheads.Keys
-					.Where(l => this[state, l].Count > 0)
+					.Where(l => actions[state, Lookaheads[l]].Count > 0)
 					.Union(AfterAnyTokens[state])
 			);
 		}

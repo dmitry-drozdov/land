@@ -76,10 +76,11 @@ namespace Land.Core.Parsing.LR
 					));
 
 				//d.Start();
-				var cnt = Table[currentState, token.Name].Count;
 				//d.Stop("cnt");
 
-				if (cnt > 0)
+				var action = Table[currentState, token.Name];
+
+				if (action != null)
 				{
 					if (token.Type == Grammar.ANY_TOKEN_TYPE)
 					{
@@ -95,7 +96,7 @@ namespace Land.Core.Parsing.LR
 					}
 
 					//d.Start();
-					var action = GetAction(currentState, token.Name);
+					
 					//d.Stop("GetAction");
 
 					//d.Start();
@@ -106,9 +107,8 @@ namespace Land.Core.Parsing.LR
 						tokenNode.SetValue(token.Text);
 						tokenNode.SetLocation(token.Location.Start, token.Location.End);
 
-						var shift = action;
 						/// Вносим в стек новое состояние
-						Stack.Push(tokenNode, shift.TargetItemIndex);
+						Stack.Push(tokenNode, action.TargetItemIndex);
 						NestingStack.Push(LexingStream.GetPairsCount());
 
 						if (EnableTracing)
@@ -223,29 +223,15 @@ namespace Land.Core.Parsing.LR
 			return (root, d);
 		}
 
-		private Action GetAction(int currentState, string token)
-		{
-			if (Table[currentState, token].Count == 0)
-				return null;
 
-			Action first = null;
-			foreach (var item in Table[currentState, token])
-			{
-				first = item;
-				if (item.ActionType == 0) return item;
-			}
-			return first;
-
-			/*return Table[currentState, token].OfType<ShiftAction>().FirstOrDefault()
-				?? Table[currentState, token].First();*/
-		}
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private IToken SkipAny(Node anyNode, Durations d, bool enableRecovery)
 		{
 			var nestingCopy = LexingStream.GetPairsState();
 			var token = LexingStream.CurrentToken;
 			var tokenIndex = LexingStream.CurrentIndex;
-			var rawActions = Table[Stack.PeekState(), Grammar.ANY_TOKEN_NAME];
+			var action = Table[Stack.PeekState(), Grammar.ANY_TOKEN_NAME];
+			var conflict = Table.Conflict(Stack.PeekState(), Grammar.ANY_TOKEN_NAME);
 
 			if (EnableTracing)
 			{
@@ -258,18 +244,12 @@ namespace Land.Core.Parsing.LR
 
 			/// Пока по Any нужно производить свёртки (ячейка таблицы непуста и нет конфликтов)
 
-			while (rawActions.Count == 1)
+			while (action != null && action.ActionType == 1 && !conflict)
 			{
-				Action reduce = null;
-				foreach (var action in rawActions)
-				{
-					if (action.ActionType == 1) reduce = action;
-				}
-				if (reduce == null) break;
-				var parentNode = NodeGenerator.Generate(reduce.ReductionAlternative.NonterminalSymbolName);
+				var parentNode = NodeGenerator.Generate(action.ReductionAlternative.NonterminalSymbolName);
 
 				/// Снимаем со стека символы ветки, по которой нужно произвести свёртку
-				for (var i = 0; i < reduce.ReductionAlternative.Count; ++i)
+				for (var i = 0; i < action.ReductionAlternative.Count; ++i)
 				{
 					parentNode.AddFirstChild(Stack.PeekSymbol());
 					Stack.Pop();
@@ -279,11 +259,12 @@ namespace Land.Core.Parsing.LR
 				/// Кладём на стек состояние, в которое нужно произвести переход
 				Stack.Push(
 					parentNode,
-					Table.Transitions[Stack.PeekState()][reduce.ReductionAlternative.NonterminalSymbolName]
+					Table.Transitions[Stack.PeekState()][action.ReductionAlternative.NonterminalSymbolName]
 				);
 				NestingStack.Push(LexingStream.GetPairsCount());
 
-				rawActions = Table[Stack.PeekState(), Grammar.ANY_TOKEN_NAME];
+				action = Table[Stack.PeekState(), Grammar.ANY_TOKEN_NAME];
+				conflict = Table.Conflict(Stack.PeekState(), Grammar.ANY_TOKEN_NAME);
 			}
 
 			/// Берём опции из нужного вхождения Any
@@ -301,9 +282,8 @@ namespace Land.Core.Parsing.LR
 			}
 
 			/// Производим перенос
-			var shift = rawActions.Where(a => a.ActionType == 0).Single();
 			/// Вносим в стек новое состояние
-			Stack.Push(anyNode, shift.TargetItemIndex);
+			Stack.Push(anyNode, action.TargetItemIndex);
 			NestingStack.Push(LexingStream.GetPairsCount());
 
 
@@ -643,12 +623,7 @@ namespace Land.Core.Parsing.LR
 					.OfType<ShiftAction>().FirstOrDefault()
 					.TargetItemIndex;*/
 
-				Action shift = null;
-				foreach (var item in Table[Stack.PeekState(), Grammar.ANY_TOKEN_NAME])
-				{
-					shift = item;
-					if (item.ActionType == 0) break;
-				}
+				Action shift = Table[Stack.PeekState(), Grammar.ANY_TOKEN_NAME];
 
 				return anyArgs.Contains(AnyArgument.Avoid, LexingStream.CurrentToken.Name)
 					|| GetStopTokens(anyArgs, shift.TargetItemIndex).Except(oldStopTokens).Count() == 0
