@@ -6,10 +6,6 @@ using Land.Core.Specification;
 
 namespace Land.Core.Parsing.LR
 {
-	public static class Stats
-	{
-		public static ulong  Access = 0;
-	}
 	/// <summary>
 	/// Таблица LR(1) парсинга
 	/// </summary>
@@ -179,13 +175,11 @@ namespace Land.Core.Parsing.LR
 		{
 			get
 			{
-				Stats.Access++;
 				return Actions[i, Lookaheads[lookahead]];
 			}
 
 			private set
 			{
-				Stats.Access++;
 				Actions[i, Lookaheads[lookahead]] = value;
 			}
 		}
