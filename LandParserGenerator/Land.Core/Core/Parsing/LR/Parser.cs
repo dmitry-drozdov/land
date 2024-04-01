@@ -100,13 +100,13 @@ namespace Land.Core.Parsing.LR
 
 					//d.Start();
 					/// Если нужно произвести перенос
-					if (action is ShiftAction)
+					if (action.ActionType == 0)
 					{
 						var tokenNode = NodeGenerator.Generate(token.Name);
 						tokenNode.SetValue(token.Text);
 						tokenNode.SetLocation(token.Location.Start, token.Location.End);
 
-						var shift = (ShiftAction)action;
+						var shift = action;
 						/// Вносим в стек новое состояние
 						Stack.Push(tokenNode, shift.TargetItemIndex);
 						NestingStack.Push(LexingStream.GetPairsCount());
@@ -123,12 +123,12 @@ namespace Land.Core.Parsing.LR
 						//d.Stop("ShiftAction");
 					}
 					/// Если нужно произвести свёртку
-					else if (action is ReduceAction reduce)
+					else if (action.ActionType == 1)
 					{
-						var parentNode = NodeGenerator.Generate(reduce.ReductionAlternative.NonterminalSymbolName);
+						var parentNode = NodeGenerator.Generate(action.ReductionAlternative.NonterminalSymbolName);
 
 						/// Снимаем со стека символы ветки, по которой нужно произвести свёртку
-						for (var i = 0; i < reduce.ReductionAlternative.Count; ++i)
+						for (var i = 0; i < action.ReductionAlternative.Count; ++i)
 						{
 							parentNode.AddFirstChild(Stack.PeekSymbol());
 							Stack.Pop();
@@ -139,22 +139,21 @@ namespace Land.Core.Parsing.LR
 						/// Кладём на стек состояние, в которое нужно произвести переход
 						Stack.Push(
 							parentNode,
-							Table.Transitions[currentState][reduce.ReductionAlternative.NonterminalSymbolName]
+							Table.Transitions[currentState][action.ReductionAlternative.NonterminalSymbolName]
 						);
-						Stats.Access++;
 						NestingStack.Push(LexingStream.GetPairsCount());
 
 						if (EnableTracing)
 						{
 							Log.Add(Message.Trace(
-								$"Свёртка по правилу {GrammarObject.Developerify(reduce.ReductionAlternative)} -> {GrammarObject.Developerify(reduce.ReductionAlternative.NonterminalSymbolName)}",
+								$"Свёртка по правилу {GrammarObject.Developerify(action.ReductionAlternative)} -> {GrammarObject.Developerify(action.ReductionAlternative.NonterminalSymbolName)}",
 								token.Location.Start
 							));
 						}
 						//d.Stop("ReduceAction");
 						continue;
 					}
-					else if (action is AcceptAction)
+					else if (action.ActionType == 2)
 					{
 						root = Stack.PeekSymbol();
 						//d.Stop("PeekSymbol");
@@ -229,8 +228,16 @@ namespace Land.Core.Parsing.LR
 			if (Table[currentState, token].Count == 0)
 				return null;
 
-			return Table[currentState, token].OfType<ShiftAction>().FirstOrDefault()
-				?? Table[currentState, token].First();
+			Action first = null;
+			foreach (var item in Table[currentState, token])
+			{
+				first = item;
+				if (item.ActionType == 0) return item;
+			}
+			return first;
+
+			/*return Table[currentState, token].OfType<ShiftAction>().FirstOrDefault()
+				?? Table[currentState, token].First();*/
 		}
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private IToken SkipAny(Node anyNode, Durations d, bool enableRecovery)
@@ -250,8 +257,15 @@ namespace Land.Core.Parsing.LR
 			}
 
 			/// Пока по Any нужно производить свёртки (ячейка таблицы непуста и нет конфликтов)
-			while (rawActions.Count == 1 && rawActions.First() is ReduceAction reduce)
+
+			while (rawActions.Count == 1)
 			{
+				Action reduce = null;
+				foreach (var action in rawActions)
+				{
+					if (action.ActionType == 1) reduce = action;
+				}
+				if (reduce == null) break;
 				var parentNode = NodeGenerator.Generate(reduce.ReductionAlternative.NonterminalSymbolName);
 
 				/// Снимаем со стека символы ветки, по которой нужно произвести свёртку
@@ -287,7 +301,7 @@ namespace Land.Core.Parsing.LR
 			}
 
 			/// Производим перенос
-			var shift = (ShiftAction)rawActions.Where(a => a is ShiftAction).Single();
+			var shift = rawActions.Where(a => a.ActionType == 0).Single();
 			/// Вносим в стек новое состояние
 			Stack.Push(anyNode, shift.TargetItemIndex);
 			NestingStack.Push(LexingStream.GetPairsCount());
@@ -556,7 +570,7 @@ namespace Land.Core.Parsing.LR
 
 					// Пропускаем токены, пока не поднимемся на тот же уровень вложенности, 
 					// на котором раскрывали нетерминал
-					var nonterminalLevelToken = LexingStream.GetNextToken(NestingStack.Peek(),  new Durations(), out skippedBuffer);
+					var nonterminalLevelToken = LexingStream.GetNextToken(NestingStack.Peek(), new Durations(), out skippedBuffer);
 
 					if (nonterminalLevelToken.Type != Grammar.ERROR_TOKEN_TYPE)
 					{
@@ -625,12 +639,19 @@ namespace Land.Core.Parsing.LR
 					.Select(i => i.Alternative[0].Arguments)
 					.FirstOrDefault();
 
-				var nextState = Table[Stack.PeekState(), Grammar.ANY_TOKEN_NAME]
+				/*var nextState = Table[Stack.PeekState(), Grammar.ANY_TOKEN_NAME]
 					.OfType<ShiftAction>().FirstOrDefault()
-					.TargetItemIndex;
+					.TargetItemIndex;*/
+
+				Action shift = null;
+				foreach (var item in Table[Stack.PeekState(), Grammar.ANY_TOKEN_NAME])
+				{
+					shift = item;
+					if (item.ActionType == 0) break;
+				}
 
 				return anyArgs.Contains(AnyArgument.Avoid, LexingStream.CurrentToken.Name)
-					|| GetStopTokens(anyArgs, nextState).Except(oldStopTokens).Count() == 0
+					|| GetStopTokens(anyArgs, shift.TargetItemIndex).Except(oldStopTokens).Count() == 0
 					&& (avoidedToken == null || anyArgs.Contains(AnyArgument.Avoid, avoidedToken));
 			}
 

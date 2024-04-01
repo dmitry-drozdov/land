@@ -7,12 +7,33 @@ using Land.Core.Specification;
 
 namespace Land.Core.Parsing.LR
 {
-	public abstract class Action
+	public class Action
 	{
-		public abstract string ActionName { get; }
+		public int ActionType;// 0 - shift, 1 - reduce, 2 - accept
+		public int TargetItemIndex;
+		public Alternative ReductionAlternative;
+
+		public override int GetHashCode()
+		{
+			if (ActionType == 0) return TargetItemIndex;
+			if (ActionType == 1) return ReductionAlternative.GetHashCode();
+			return 0;
+		}
+
+		public override bool Equals(object obj)
+		{
+			if (obj is Action b)
+			{
+				if (ActionType == 0)  return TargetItemIndex == b.TargetItemIndex;
+				if (ActionType == 1) return ReductionAlternative.Equals(b.ReductionAlternative);
+				return true;
+			}
+			else
+				return false;
+		}
 	}
 
-	public class ShiftAction: Action
+	/*public class ShiftAction: Action
 	{
 		public override string ActionName { get { return "Shift"; } }
 
@@ -85,5 +106,5 @@ namespace Land.Core.Parsing.LR
 		{
 			return 0;
 		}
-	}
+	}*/
 }

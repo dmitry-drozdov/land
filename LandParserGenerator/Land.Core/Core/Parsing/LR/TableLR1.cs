@@ -6,10 +6,7 @@ using Land.Core.Specification;
 
 namespace Land.Core.Parsing.LR
 {
-	public static class Stats
-	{
-		public static ulong  Access = 0;
-	}
+
 	/// <summary>
 	/// Таблица LR(1) парсинга
 	/// </summary>
@@ -63,8 +60,9 @@ namespace Land.Core.Parsing.LR
 					/// A => alpha * a beta
 					if (g[marker.Next] is TerminalSymbol)
 					{
-						this[i, marker.Next].Add(new ShiftAction()
+						this[i, marker.Next].Add(new Action()
 						{
+							ActionType=0,
 							TargetItemIndex = Transitions[i][marker.Next]
 						});
 
@@ -79,8 +77,9 @@ namespace Land.Core.Parsing.LR
 					if (String.IsNullOrEmpty(marker.Next)
 						&& marker.Alternative.NonterminalSymbolName != g.StartSymbol)
 					{
-						this[i, marker.Lookahead].Add(new ReduceAction()
+						this[i, marker.Lookahead].Add(new Action()
 						{
+							ActionType=1,
 							ReductionAlternative = marker.Alternative
 						});
 					}
@@ -104,7 +103,7 @@ namespace Land.Core.Parsing.LR
 					&& String.IsNullOrEmpty(item.Next)
 					&& item.Lookahead == Grammar.EOF_TOKEN_NAME))
 				{
-					this[i, Grammar.EOF_TOKEN_NAME].Add(new AcceptAction());
+					this[i, Grammar.EOF_TOKEN_NAME].Add(new Action() { ActionType=2});
 				}
 			}
 		}
@@ -179,13 +178,11 @@ namespace Land.Core.Parsing.LR
 		{
 			get
 			{
-				Stats.Access++;
 				return Actions[i, Lookaheads[lookahead]];
 			}
 
 			private set
 			{
-				Stats.Access++;
 				Actions[i, Lookaheads[lookahead]] = value;
 			}
 		}
@@ -194,7 +191,7 @@ namespace Land.Core.Parsing.LR
 		{
 			var errors = new List<Message>();
 
-			for (var itemIdx = 0; itemIdx < Actions.GetLength(0); ++itemIdx)
+			/*for (var itemIdx = 0; itemIdx < Actions.GetLength(0); ++itemIdx)
 				for (var lookaheadIdx = 0; lookaheadIdx < Actions.GetLength(1); ++lookaheadIdx)
 					if (Actions[itemIdx, lookaheadIdx].Count > 1)
 					{
@@ -249,7 +246,7 @@ namespace Land.Core.Parsing.LR
 						"LanD"
 					));
 				}
-			}
+			}*/
 
 			return errors;
 		}
