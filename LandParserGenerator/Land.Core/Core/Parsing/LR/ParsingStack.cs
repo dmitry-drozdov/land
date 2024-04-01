@@ -12,6 +12,7 @@ namespace Land.Core.Parsing.LR
 {
 	public class ParsingStack
 	{
+		// TODO: разнести на два стека обычных!
 		private Stack<int> StatesStack { get; set; } = new Stack<int>();
 		private Stack<Node> SymbolsStack { get; set; } = new Stack<Node>();
 
@@ -35,9 +36,9 @@ namespace Land.Core.Parsing.LR
 
 		public void Pop()
 		{
-			if(SymbolsStack.Count > 0)
+			//if(SymbolsStack.Count > 0)
 				SymbolsStack.Pop();
-			if (StatesStack.Count > 0)
+			//if (StatesStack.Count > 0)
 				StatesStack.Pop();
 		}
 

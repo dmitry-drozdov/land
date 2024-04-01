@@ -22,7 +22,7 @@ namespace Land.Core.Lexing
 		/// Переход к следующему токену потока
 		/// </summary>
 		/// <returns></returns>
-		public virtual IToken GetNextToken(Durations d)
+		public virtual IToken GetNextToken()
 		{
 			//d?.Start();
 			/// Если токен с нужным индексом ещё не считан

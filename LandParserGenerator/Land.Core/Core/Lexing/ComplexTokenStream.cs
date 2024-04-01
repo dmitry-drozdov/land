@@ -158,7 +158,7 @@ namespace Land.Core.Lexing
 			return token;
 		}
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public override IToken GetNextToken( Durations d = null)
+		public override IToken GetNextToken()
 		{
 			//d?.Start();
 			switch (CurrentTokenDirection)
@@ -175,7 +175,7 @@ namespace Land.Core.Lexing
 
 			CurrentTokenDirection = Direction.Forward;
 
-			var token = base.GetNextToken(d);
+			var token = base.GetNextToken();
 
 			//d?.Start();
 			if (CustomBlockDefinition != null
@@ -312,13 +312,13 @@ namespace Land.Core.Lexing
 		/// Получение следующего токена, находящегося на заданном уровне вложенности пар
 		/// </summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public IToken GetNextToken(int level, Durations d, out List<IToken> skipped)
+		public IToken GetNextToken(int level,out List<IToken> skipped)
 		{
 			skipped = new List<IToken>();
 			//d.Start();
 			while (true)
 			{
-				var next = GetNextToken(null);
+				var next = GetNextToken();
 
 				/// Возвращаем следующий токен, если перешли на искомый уровень
 				/// или готовимся сделать шаг в направлении, отличном от разрешённого

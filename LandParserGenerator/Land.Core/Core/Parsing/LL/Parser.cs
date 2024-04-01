@@ -92,7 +92,7 @@ namespace Land.Core.Parsing.LL
 			var d = new Durations();
 
 			/// Читаем первую лексему из входного потока
-			var token = LexingStream.GetNextToken(d);
+			var token = LexingStream.GetNextToken();
 
 			/// Пока не прошли полностью правило для стартового символа
 			while (Stack.Count > 0)
@@ -123,7 +123,7 @@ namespace Land.Core.Parsing.LL
 						node.SetLocation(token.Location.Start, token.Location.End);
 						node.SetValue(token.Text);
 
-						token = LexingStream.GetNextToken(d);
+						token = LexingStream.GetNextToken();
 					}
 
 					continue;
@@ -199,7 +199,7 @@ namespace Land.Core.Parsing.LL
 					/// Если встретился неожиданный токен, но он в списке пропускаемых
 					if (GrammarObject.Options.IsSet(ParsingOption.GROUP_NAME, ParsingOption.SKIP, token.Name))
 					{
-						token = LexingStream.GetNextToken(d);
+						token = LexingStream.GetNextToken();
 					}
 					else
 					{
@@ -321,11 +321,11 @@ namespace Land.Core.Parsing.LL
 
 					if (ignorePairs)
 					{
-						token = LexingStream.GetNextToken(d);
+						token = LexingStream.GetNextToken();
 					}
 					else
 					{
-						token = LexingStream.GetNextToken(anyLevel, d, out List<IToken> skippedBuffer);
+						token = LexingStream.GetNextToken(anyLevel, out List<IToken> skippedBuffer);
 
 						/// Если при пропуске до токена на том же уровне
 						/// пропустили токены с более глубокой вложенностью
@@ -475,7 +475,7 @@ namespace Land.Core.Parsing.LL
 
 					// Пропускаем токены, пока не поднимемся на тот же уровень вложенности, 
 					// на котором раскрывали нетерминал
-					var nonterminalLevelToken = LexingStream.GetNextToken(NestingLevel[currentNode], d, out skippedBuffer);
+					var nonterminalLevelToken = LexingStream.GetNextToken(NestingLevel[currentNode],  out skippedBuffer);
 
 					if (nonterminalLevelToken.Type != Grammar.ERROR_TOKEN_TYPE)
 					{

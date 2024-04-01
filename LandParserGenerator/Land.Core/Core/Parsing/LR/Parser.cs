@@ -15,7 +15,8 @@ namespace Land.Core.Parsing.LR
 	{
 		private TableLR1 Table { get; set; }
 
-		private ParsingStack Stack { get; set; }
+		private Stack<int> StatesStack { get; set; } = new Stack<int>();
+		private Stack<Node> SymbolsStack { get; set; } = new Stack<Node>();
 		private Stack<int> NestingStack { get; set; }
 
 		private HashSet<int> PositionsWhereRecoveryStarted { get; set; }
@@ -35,8 +36,6 @@ namespace Land.Core.Parsing.LR
 		{
 			Node root = null;
 
-			var d = new Durations();
-
 			//var watcher = Stopwatch.StartNew();
 
 			EnableTracing = false; //debug
@@ -52,8 +51,9 @@ namespace Land.Core.Parsing.LR
 			/// Читаем первую лексему из входного потока
 			var token = LexingStream.GetNextToken();
 			/// Создаём стек
-			Stack = new ParsingStack();
-			Stack.Push(0);
+			StatesStack = new Stack<int>();
+			SymbolsStack = new Stack<Node>();
+			StatesStack.Push(0);
 			NestingStack.Push(0);
 
 			//d.Stop("init");
@@ -66,12 +66,12 @@ namespace Land.Core.Parsing.LR
 					break;
 
 
-				var currentState = Stack.PeekState();
+				var currentState = StatesStack.Peek();
 				//d.Stop("PeekState");
 
 				if (EnableTracing && token.Type != Grammar.ERROR_TOKEN_TYPE && token.Type != Grammar.ANY_TOKEN_TYPE)
 					Log.Add(Message.Trace(
-						$"Текущий токен: {this.Developerify(token)} | Стек: {Stack.ToString(GrammarObject)}",
+						$"Текущий токен: {this.Developerify(token)} | Стек: TODO Stack.ToString(GrammarObject)",
 						token.Location.Start
 					));
 
@@ -85,7 +85,7 @@ namespace Land.Core.Parsing.LR
 					if (token.Type == Grammar.ANY_TOKEN_TYPE)
 					{
 						//d.Start();
-						token = SkipAny(NodeGenerator.Generate(Grammar.ANY_TOKEN_NAME), d, true);
+						token = SkipAny(NodeGenerator.Generate(Grammar.ANY_TOKEN_NAME), true);
 						//d.Stop("SkipAny");
 
 						/// Если при пропуске текста произошла ошибка, прерываем разбор
@@ -96,7 +96,7 @@ namespace Land.Core.Parsing.LR
 					}
 
 					//d.Start();
-					
+
 					//d.Stop("GetAction");
 
 					//d.Start();
@@ -108,7 +108,8 @@ namespace Land.Core.Parsing.LR
 						tokenNode.SetLocation(token.Location.Start, token.Location.End);
 
 						/// Вносим в стек новое состояние
-						Stack.Push(tokenNode, action.TargetItemIndex);
+						SymbolsStack.Push(tokenNode);
+						StatesStack.Push(action.TargetItemIndex);
 						NestingStack.Push(LexingStream.GetPairsCount());
 
 						if (EnableTracing)
@@ -130,17 +131,17 @@ namespace Land.Core.Parsing.LR
 						/// Снимаем со стека символы ветки, по которой нужно произвести свёртку
 						for (var i = 0; i < action.ReductionAlternative.Count; ++i)
 						{
-							parentNode.AddFirstChild(Stack.PeekSymbol());
-							Stack.Pop();
+							parentNode.AddFirstChild(SymbolsStack.Peek());
+							SymbolsStack.Pop();
+							StatesStack.Pop();
 							NestingStack.Pop();
 						}
-						currentState = Stack.PeekState();
+						currentState = StatesStack.Peek();
 
 						/// Кладём на стек состояние, в которое нужно произвести переход
-						Stack.Push(
-							parentNode,
-							Table.Transitions[currentState][action.ReductionAlternative.NonterminalSymbolName]
-						);
+						SymbolsStack.Push(parentNode);
+						StatesStack.Push(Table.Transitions[currentState][action.ReductionAlternative.NonterminalSymbolName]);
+
 						NestingStack.Push(LexingStream.GetPairsCount());
 
 						if (EnableTracing)
@@ -155,7 +156,7 @@ namespace Land.Core.Parsing.LR
 					}
 					else if (action.ActionType == 2)
 					{
-						root = Stack.PeekSymbol();
+						root = SymbolsStack.Peek();
 						//d.Stop("PeekSymbol");
 						break;
 					}
@@ -165,7 +166,7 @@ namespace Land.Core.Parsing.LR
 					//d.Start();
 
 					Log.Add(PotentialErrorMessage = Message.Trace(
-						$"Неожиданный символ {this.Developerify(LexingStream.CurrentToken)} для состояния{Environment.NewLine}\t\t" + Table.ToString(Stack.PeekState(), null, "\t\t"),
+						$"Неожиданный символ {this.Developerify(LexingStream.CurrentToken)} для состояния{Environment.NewLine}\t\t" + Table.ToString(StatesStack.Peek(), null, "\t\t"),
 						LexingStream.CurrentToken.Location.Start,
 						addInfo: new Dictionary<MessageAddInfoKey, object>
 						{
@@ -179,7 +180,7 @@ namespace Land.Core.Parsing.LR
 							},
 							{
 								MessageAddInfoKey.ExpectedTokens,
-								Table.Items[Stack.PeekState()].Markers
+								Table.Items[StatesStack.Peek()].Markers
 									.Where(i=>i.Lookahead != null).Select(e => e.Lookahead).ToList()
 							}
 						}
@@ -220,26 +221,27 @@ namespace Land.Core.Parsing.LR
 
 			//d.Add("ParsingAlgorithm", watcher);
 
-			return (root, d);
+			return (root, null);
 		}
 
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private IToken SkipAny(Node anyNode, Durations d, bool enableRecovery)
+		private IToken SkipAny(Node anyNode, bool enableRecovery)
 		{
 			var nestingCopy = LexingStream.GetPairsState();
 			var token = LexingStream.CurrentToken;
 			var tokenIndex = LexingStream.CurrentIndex;
-			var action = Table[Stack.PeekState(), Grammar.ANY_TOKEN_NAME];
-			var conflict = Table.Conflict(Stack.PeekState(), Grammar.ANY_TOKEN_NAME);
+			var peekState = StatesStack.Peek();
+			var action = Table[peekState, Grammar.ANY_TOKEN_NAME];
+			var conflict = Table.Conflict(peekState, Grammar.ANY_TOKEN_NAME);
 
 			if (EnableTracing)
 			{
-				Log.Add(Message.Trace(
+				/*Log.Add(Message.Trace(
 					$"Инициирован пропуск Any | Стек: {Stack.ToString(GrammarObject)} | Состояние: {Environment.NewLine}\t\t"
 						+ Table.ToString(Stack.PeekState(), null, "\t\t"),
 					token.Location.Start
-				));
+				));*/
 			}
 
 			/// Пока по Any нужно производить свёртки (ячейка таблицы непуста и нет конфликтов)
@@ -251,24 +253,24 @@ namespace Land.Core.Parsing.LR
 				/// Снимаем со стека символы ветки, по которой нужно произвести свёртку
 				for (var i = 0; i < action.ReductionAlternative.Count; ++i)
 				{
-					parentNode.AddFirstChild(Stack.PeekSymbol());
-					Stack.Pop();
+					parentNode.AddFirstChild(SymbolsStack.Peek());
+					SymbolsStack.Pop();
+					StatesStack.Pop();
 					NestingStack.Pop();
 				}
 
 				/// Кладём на стек состояние, в которое нужно произвести переход
-				Stack.Push(
-					parentNode,
-					Table.Transitions[Stack.PeekState()][action.ReductionAlternative.NonterminalSymbolName]
-				);
+				var state = Table.Transitions[StatesStack.Peek()][action.ReductionAlternative.NonterminalSymbolName];
+				StatesStack.Push(state);
+				SymbolsStack.Push(parentNode);
 				NestingStack.Push(LexingStream.GetPairsCount());
 
-				action = Table[Stack.PeekState(), Grammar.ANY_TOKEN_NAME];
-				conflict = Table.Conflict(Stack.PeekState(), Grammar.ANY_TOKEN_NAME);
+				action = Table[state, Grammar.ANY_TOKEN_NAME];
+				conflict = Table.Conflict(state, Grammar.ANY_TOKEN_NAME);
 			}
 
 			/// Берём опции из нужного вхождения Any
-			var marker = Table.Items[Stack.PeekState()].Markers
+			var marker = Table.Items[StatesStack.Peek()].Markers
 				.First(i => i.Next == Grammar.ANY_TOKEN_NAME);
 
 			anyNode.Options = marker.Alternative[marker.Position].Options;
@@ -283,20 +285,21 @@ namespace Land.Core.Parsing.LR
 
 			/// Производим перенос
 			/// Вносим в стек новое состояние
-			Stack.Push(anyNode, action.TargetItemIndex);
+			StatesStack.Push(action.TargetItemIndex);
+			SymbolsStack.Push(anyNode);
 			NestingStack.Push(LexingStream.GetPairsCount());
 
 
 			if (EnableTracing)
 			{
-				Log.Add(Message.Trace(
+				/*Log.Add(Message.Trace(
 					$"Поиск окончания последовательности, соответствующей Any | Стек: {Stack.ToString(GrammarObject)} | Состояние: {Environment.NewLine}\t\t"
 						+ Table.ToString(Stack.PeekState(), null, "\t\t"),
 					token.Location.Start
-				));
+				));*/
 			}
 
-			var stopTokens = GetStopTokens(anyNode.Arguments, Stack.PeekState());
+			var stopTokens = GetStopTokens(anyNode.Arguments, StatesStack.Peek());
 			var ignorePairs = anyNode.Arguments.Contains(AnyArgument.IgnorePairs);
 
 			var startLocation = anyNode.Location?.Start
@@ -322,7 +325,7 @@ namespace Land.Core.Parsing.LR
 				}
 				else
 				{
-					token = LexingStream.GetNextToken(anyLevel, d, out List<IToken> skippedBuffer);
+					token = LexingStream.GetNextToken(anyLevel, out List<IToken> skippedBuffer);
 
 					//d.Start();
 					if (skippedBuffer.Count > 0)
@@ -479,33 +482,36 @@ namespace Land.Core.Parsing.LR
 			// в котором есть пункт A -> * Any ...
 			do
 			{
-				if (Stack.CountSymbols > 0)
+				if (SymbolsStack.Count > 0)
 				{
-					if (Stack.PeekSymbol().Location != null)
+					if (SymbolsStack.Peek().Location != null)
 					{
-						startLocation = Stack.PeekSymbol().Location.Start;
+						startLocation = SymbolsStack.Peek().Location.Start;
 						if (endLocation == null)
 						{
-							endLocation = Stack.PeekSymbol().Location.End;
+							endLocation = SymbolsStack.Peek().Location.End;
 						}
 					}
 
-					value = Stack.PeekSymbol().GetValue()
+					value = SymbolsStack.Peek().GetValue()
 						.Concat(value).ToList();
 
 					// Запоминаем снятый со стека символ - это то, что было успешно распознано
-					previouslyMatched = Stack.PeekSymbol();
+					previouslyMatched = SymbolsStack.Peek();
+
+					
 				}
 
-				Stack.Pop();
+				SymbolsStack.Pop();
+				StatesStack.Pop();	
 				NestingStack.Pop();
 
-				if (Stack.CountStates > 0)
+				if (StatesStack.Count > 0)
 				{
 					// Выбираем пункты, продукции которых потенциально могут участвовать
 					// в выводе текущего префикса из стартового символа
 					initialDerivationProds = new HashSet<PathFragment>(
-						Table.Items[Stack.PeekState()].Markers
+						Table.Items[StatesStack.Peek()].Markers
 							.Where
 							(i =>
 								// Точка должна стоять перед символом, только что снятым со стека
@@ -526,20 +532,20 @@ namespace Land.Core.Parsing.LR
 						oldCount = derivationProds.Count;
 
 						// Добавляем к списку пункты, порождающие уже добавленные пункты
-						derivationProds.UnionWith(Table.Items[Stack.PeekState()].Markers
+						derivationProds.UnionWith(Table.Items[StatesStack.Peek()].Markers
 							.Where(i => derivationProds.Any(p => p.Pos == 0 && p.Alt.NonterminalSymbolName == i.Next))
 							.Select(i => new PathFragment { Alt = i.Alternative, Pos = i.Position })
 						);
 					}
 				}
 			}
-			while (Stack.CountStates > 0 && (derivationProds.Count == initialDerivationProds.Count
+			while (StatesStack.Count > 0 && (derivationProds.Count == initialDerivationProds.Count
 				|| derivationProds.Except(initialDerivationProds).All(p => !GrammarObject.Options.IsSet(ParsingOption.GROUP_NAME, ParsingOption.RECOVERY, p.Alt[p.Pos]))
 				|| StartsWithAny(previouslyMatched)
 				|| IsUnsafeAny(stopTokens, avoidedToken))
 			);
 
-			if (Stack.CountStates > 0)
+			if (StatesStack.Count > 0)
 			{
 				if (LexingStream.GetPairsCount() != NestingStack.Peek())
 				{
@@ -550,7 +556,7 @@ namespace Land.Core.Parsing.LR
 
 					// Пропускаем токены, пока не поднимемся на тот же уровень вложенности, 
 					// на котором раскрывали нетерминал
-					var nonterminalLevelToken = LexingStream.GetNextToken(NestingStack.Peek(), new Durations(), out skippedBuffer);
+					var nonterminalLevelToken = LexingStream.GetNextToken(NestingStack.Peek(), out skippedBuffer);
 
 					if (nonterminalLevelToken.Type != Grammar.ERROR_TOKEN_TYPE)
 					{
@@ -579,12 +585,12 @@ namespace Land.Core.Parsing.LR
 					anyNode.Location?.Start ?? LexingStream.CurrentToken.Location.Start
 				));
 
-				Log.Add(Message.Trace(
+				/*Log.Add(Message.Trace(
 					$"Попытка продолжить разбор в состоянии {Environment.NewLine}\t\t{Table.ToString(Stack.PeekState(), null, "\t\t")}\tв позиции токена {this.Developerify(LexingStream.CurrentToken)}",
 					LexingStream.CurrentToken.Location.Start
-				));
+				));*/
 
-				var token = SkipAny(anyNode, new Durations(), false);
+				var token = SkipAny(anyNode, false);
 
 				// Если Any успешно пропустили и возобновили разбор,
 				// возвращаем токен, с которого разбор продолжается
@@ -614,7 +620,7 @@ namespace Land.Core.Parsing.LR
 		{
 			if (oldStopTokens != null && LexingStream.GetPairsCount() == NestingStack.Peek())
 			{
-				var anyArgs = Table.Items[Stack.PeekState()].Markers
+				var anyArgs = Table.Items[StatesStack.Peek()].Markers
 					.Where(i => i.Position == 0 && i.Next == Grammar.ANY_TOKEN_NAME)
 					.Select(i => i.Alternative[0].Arguments)
 					.FirstOrDefault();
@@ -623,7 +629,7 @@ namespace Land.Core.Parsing.LR
 					.OfType<ShiftAction>().FirstOrDefault()
 					.TargetItemIndex;*/
 
-				Action shift = Table[Stack.PeekState(), Grammar.ANY_TOKEN_NAME];
+				Action shift = Table[StatesStack.Peek(), Grammar.ANY_TOKEN_NAME];
 
 				return anyArgs.Contains(AnyArgument.Avoid, LexingStream.CurrentToken.Name)
 					|| GetStopTokens(anyArgs, shift.TargetItemIndex).Except(oldStopTokens).Count() == 0
