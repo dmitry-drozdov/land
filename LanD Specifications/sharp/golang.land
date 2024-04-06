@@ -115,11 +115,6 @@ generic2		= '[' Any ']'
 	void LB RB
 }
 
-%customblock {
-	start("//+")
-	end("//@")
-	basetoken COMMENT
-}
 
 %markup {
 	land func

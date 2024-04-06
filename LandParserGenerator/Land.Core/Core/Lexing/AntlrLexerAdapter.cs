@@ -7,7 +7,7 @@ using Antlr4.Runtime;
 
 namespace Land.Core.Lexing
 {
-	public class AntlrLexerAdapter : ILexer
+	public class AntlrLexerAdapter 
 	{
 		private Lexer Lexer { get; set; }
 
@@ -34,17 +34,17 @@ namespace Land.Core.Lexing
 			Lexer = LexerConstructor(stream);
 		}
 
-		public IToken NextToken()
+		public AntlrTokenAdapter NextToken()
 		{
 			return new AntlrTokenAdapter(Lexer.NextToken(), Lexer);
 		}
 
-		public IToken CreateToken(string name, int type)
+		public AntlrTokenAdapter CreateToken(string name, int type)
 		{
-			return new StubToken(name, type);
+			return new AntlrTokenAdapter(name, type, Lexer);
 		}
 
-		public IList<Antlr4.Runtime.IToken> GetAllTokens()
+		public IList<IToken> GetAllTokens()
 		{
 			var res = new List<Antlr4.Runtime.IToken>();
 			var t = Lexer.NextToken();

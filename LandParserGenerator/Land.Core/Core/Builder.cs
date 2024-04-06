@@ -11,7 +11,6 @@ using SpecParsing = Land.Core.Specification.Parsing;
 using Land.Core.Specification;
 using Land.Core.Lexing;
 using Land.Core.Parsing;
-using Land.Core.Parsing.LL;
 using Land.Core.Parsing.LR;
 using System.Windows.Forms;
 using System.Text.RegularExpressions;
@@ -164,9 +163,9 @@ namespace Land.Core
 
 			switch (type)
 			{
-				case GrammarType.LL:
+				/*case GrammarType.LL:
 					table = new TableLL1(builtGrammar);
-					break;
+					break;*/
 				case GrammarType.LR:
 					table = new TableLR1(builtGrammar);
 					break;
@@ -186,13 +185,13 @@ namespace Land.Core
 
 			switch (type)
 			{
-				case GrammarType.LL:
+				/*case GrammarType.LL:
 					parser = new Parsing.LL.Parser(builtGrammar,
 						new AntlrLexerAdapter(
 							(Antlr4.Runtime.ICharStream stream) => (Antlr4.Runtime.Lexer)Activator.CreateInstance(lexerType, stream)
 						)
 					);
-					break;
+					break;*/
 				case GrammarType.LR:
 					parser = new Parsing.LR.Parser(builtGrammar,
 						new AntlrLexerAdapter(
@@ -260,9 +259,9 @@ namespace Land.Core
 
 			switch (type)
 			{
-				case GrammarType.LL:
+				/*case GrammarType.LL:
 					table = new TableLL1(builtGrammar);
-					break;
+					break;*/
 				case GrammarType.LR:
 					table = new TableLR1(builtGrammar);
 					break;

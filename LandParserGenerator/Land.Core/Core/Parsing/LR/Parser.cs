@@ -26,7 +26,7 @@ namespace Land.Core.Parsing.LR
 
 		public Parser(
 			Grammar g,
-			ILexer lexer,
+			AntlrLexerAdapter lexer,
 			BaseNodeGenerator nodeGen = null,
 			BaseNodeRetypingVisitor retypingVisitor = null) : base(g, lexer, nodeGen, retypingVisitor)
 		{
@@ -227,7 +227,7 @@ namespace Land.Core.Parsing.LR
 
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private IToken SkipAny(Node anyNode, bool enableRecovery)
+		private AntlrTokenAdapter SkipAny(Node anyNode, bool enableRecovery)
 		{
 			var nestingCopy = LexingStream.GetPairsState();
 			var token = LexingStream.CurrentToken;
@@ -325,7 +325,7 @@ namespace Land.Core.Parsing.LR
 				}
 				else
 				{
-					token = LexingStream.GetNextToken(anyLevel, out List<IToken> skippedBuffer);
+					token = LexingStream.GetNextToken(anyLevel, out List<AntlrTokenAdapter> skippedBuffer);
 
 					//d.Start();
 					if (skippedBuffer.Count > 0)
@@ -444,7 +444,7 @@ namespace Land.Core.Parsing.LR
 			}
 		}
 
-		private IToken ErrorRecovery(HashSet<string> stopTokens = null, string avoidedToken = null)
+		private AntlrTokenAdapter ErrorRecovery(HashSet<string> stopTokens = null, string avoidedToken = null)
 		{
 			// Если восстановление от ошибок отключено на уровне грамматики
 			if (!GrammarObject.Options.IsRecoveryEnabled())
@@ -556,7 +556,7 @@ namespace Land.Core.Parsing.LR
 			{
 				if (LexingStream.GetPairsCount() != NestingStack.Peek())
 				{
-					var skippedBuffer = new List<IToken>();
+					var skippedBuffer = new List<AntlrTokenAdapter>();
 
 					// Запоминаем токен, на котором произошла ошибка
 					var currentToken = LexingStream.CurrentToken;

@@ -13,7 +13,7 @@ namespace Land.Core
 		/// <summary>
 		/// Получение строкового описания токена в терминах грамматики языка
 		/// </summary>
-		public static string Developerify(this IGrammarProvided target, IToken token)
+		public static string Developerify(this IGrammarProvided target, AntlrTokenAdapter token)
 		{
 			var userified = target.GrammarObject.Developerify(token.Name);
 

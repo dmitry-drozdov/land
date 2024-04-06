@@ -8,9 +8,9 @@ namespace Land.Core.Lexing
 {
 	public interface ILexer
 	{
-		IToken NextToken();
+		AntlrTokenAdapter NextToken();
 
-		IToken CreateToken(string name, int type);
+		AntlrTokenAdapter CreateToken(string name, int type);
 
 		void SetSourceFile(string filename);
 

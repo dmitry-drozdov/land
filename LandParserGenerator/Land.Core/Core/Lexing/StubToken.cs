@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Land.Core.Lexing
 {
-	public class StubToken : IToken
+	/*public class StubToken : IToken
 	{
 		public string Text { get; set; } = String.Empty;
 		public string Name { get; private set; }
@@ -22,6 +22,6 @@ namespace Land.Core.Lexing
 			Name = name;
 			Type = type;
 		}
-	}
+	}*/
 
 }

@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 namespace Land.Core.Lexing
 {
-	public interface IToken
+	/*public interface IToken
 	{
 		SegmentLocation Location { get; }
 		string Text { get; }
 		string Name { get; }
 		int Type { get; }
-	}
+	}*/
 
 }
