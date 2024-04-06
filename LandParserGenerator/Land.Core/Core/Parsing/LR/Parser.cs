@@ -8,6 +8,7 @@ using Land.Core.Lexing;
 using Land.Core.Parsing.Tree;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using Antlr4.Runtime.Misc;
 
 namespace Land.Core.Parsing.LR
 {
@@ -85,7 +86,7 @@ namespace Land.Core.Parsing.LR
 					if (token.Type == Grammar.ANY_TOKEN_TYPE)
 					{
 						//d.Start();
-						token = SkipAny(NodeGenerator.Generate(Grammar.ANY_TOKEN_NAME), true);
+						token = SkipAny(new Node(Grammar.ANY_TOKEN_NAME), true);
 						//d.Stop("SkipAny");
 
 						/// Если при пропуске текста произошла ошибка, прерываем разбор
@@ -103,7 +104,7 @@ namespace Land.Core.Parsing.LR
 					/// Если нужно произвести перенос
 					if (action.ActionType == 0)
 					{
-						var tokenNode = NodeGenerator.Generate(token.Name);
+						var tokenNode = new Node(token.Name);
 						tokenNode.SetValue(token.Text);
 						tokenNode.SetLocation(token.Location.Start, token.Location.End);
 
@@ -126,7 +127,7 @@ namespace Land.Core.Parsing.LR
 					/// Если нужно произвести свёртку
 					else if (action.ActionType == 1)
 					{
-						var parentNode = NodeGenerator.Generate(action.ReductionAlternative.NonterminalSymbolName);
+						var parentNode = new Node(action.ReductionAlternative.NonterminalSymbolName);
 
 						/// Снимаем со стека символы ветки, по которой нужно произвести свёртку
 						for (var i = 0; i < action.ReductionAlternative.Count; ++i)
@@ -248,7 +249,7 @@ namespace Land.Core.Parsing.LR
 
 			while (action != null && action.ActionType == 1 && !conflict)
 			{
-				var parentNode = NodeGenerator.Generate(action.ReductionAlternative.NonterminalSymbolName);
+				var parentNode = new Node(action.ReductionAlternative.NonterminalSymbolName);
 
 				/// Снимаем со стека символы ветки, по которой нужно произвести свёртку
 				for (var i = 0; i < action.ReductionAlternative.Count; ++i)
@@ -581,7 +582,7 @@ namespace Land.Core.Parsing.LR
 				// Пытаемся пропустить Any в этом месте,
 				// Any захватывает участок с начала последнего 
 				// снятого со стека символа до места восстановления
-				var anyNode = NodeGenerator.Generate(Grammar.ANY_TOKEN_NAME);
+				var anyNode = new Node(Grammar.ANY_TOKEN_NAME);
 				if (startLocation != null)
 					anyNode.SetLocation(startLocation, endLocation);
 				anyNode.Value = value.ToList();

@@ -65,7 +65,7 @@ namespace NoGUI
 
 					if (Parser.Log.Any(l => l.Type == MessageType.Error))
 					{
-						Console.WriteLine("errors");
+						Console.WriteLine("!!!! errors");
 					}
 					else
 					{
@@ -77,7 +77,7 @@ namespace NoGUI
 				}
 				catch (Exception ex)
 				{
-					Console.WriteLine(ex.ToString());
+					Console.WriteLine("!!!!!"+ex.ToString());
 				}
 
 				if (counter % precision == 0)
@@ -93,9 +93,9 @@ namespace NoGUI
 	{
 		static void Main(string[] args)
 		{
-			CheckPerfomance();
+			/*CheckPerfomance();
 
-			return;
+			return;*/
 			var actor = new Actor();
 			actor.BuildGrammar("e:\\phd\\my\\land\\LanD Specifications\\sharp\\golang.land");
 			var path = "e:\\phd\\test_repos_light\\";

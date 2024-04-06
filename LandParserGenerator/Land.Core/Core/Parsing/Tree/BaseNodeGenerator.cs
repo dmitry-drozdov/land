@@ -22,14 +22,7 @@ namespace Land.Core.Parsing.Tree
 			SymbolOptionsManager opts = null, 
 			SymbolArguments args = null)
 		{
-			return (Node)Cache[Cache.ContainsKey(symbol) ? symbol : BASE_NODE_TYPE]
-				.Invoke(new object[] { symbol, opts, args });
-		}
-
-		public virtual Node Generate(Node node)
-		{
-			return (Node)Cache[Cache.ContainsKey(node.Symbol) ? node.Symbol : BASE_NODE_TYPE]
-				.Invoke(new object[] { node.Symbol, node.Options, node.Arguments });
+			return new Node(symbol, opts, args);
 		}
 	}
 }
