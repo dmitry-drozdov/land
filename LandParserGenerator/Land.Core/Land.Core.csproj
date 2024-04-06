@@ -113,7 +113,6 @@
     <Compile Include="Core\Parsing\Tree\Visitors\GhostListOptionProcessingVisitor.cs" />
     <Compile Include="Core\Parsing\LR\Action.cs" />
     <Compile Include="Core\Parsing\LR\Parser.cs" />
-    <Compile Include="Core\Parsing\LR\ParsingStack.cs" />
     <Compile Include="Core\Parsing\LR\TableLR1.cs" />
     <Compile Include="Core\Parsing\BaseParser.cs" />
     <Compile Include="Core\Parsing\Tree\Node.cs" />

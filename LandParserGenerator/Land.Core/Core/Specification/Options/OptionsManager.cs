@@ -86,25 +86,6 @@ namespace Land.Core.Specification
 			return Options.ContainsKey(symbol) ? Options[symbol] : null;
 		}
 
-		/// <summary>
-		/// Слияние хранимых опций для символа и переданных на вход
-		/// </summary>
-		public SymbolOptionsManager MergeForSymbol(string symbol, SymbolOptionsManager local)
-		{
-			var global = Options[symbol];
-			var merged = new SymbolOptionsManager();
-
-			/// Если есть локальные опции, они все остаются в неизменном виде
-			foreach (var group in local.GetGroups())
-				foreach (var option in local.GetOptions(group))
-					merged.Set(group, option, local.GetParams(group, option));
-			/// Дополняем локальные опции глобальными
-			foreach (var group in global.GetGroups())
-				foreach (var option in global.GetOptions(group).Except(local.GetOptions(group)))
-					merged.Set(group, option, local.GetParams(group, option));
-
-			return merged;
-		}
 
 		public void Clear(string group, string option)
 		{

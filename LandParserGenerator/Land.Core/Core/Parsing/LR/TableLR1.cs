@@ -124,9 +124,19 @@ namespace Land.Core.Parsing.LR
 						Actions[i, j] = a[0];
 						continue;
 					}
-					Actions[i,j]= a.First(x => x.ActionType == 0);
+					Actions[i, j] = a.First(x => x.ActionType == 0);
 					Conflicts[i, j] = true;
 				}
+			}
+			actions = null;
+
+			for (var i = 0; i < Items.Count; i++)
+			{
+				var marker = Items[i].Markers.FirstOrDefault(m => m.Next == Grammar.ANY_TOKEN_NAME);
+				if (marker == null) continue;
+				var cp = Items[i];
+				cp.AnyEntry = marker.Alternative[marker.Position];
+				Items[i] = cp;
 			}
 
 		}
@@ -322,13 +332,21 @@ namespace Land.Core.Parsing.LR
 			return String.Join($"{Environment.NewLine}{padding}", strings);
 		}
 
+		private Dictionary<int, HashSet<string>> ExpectedTokensCache = new Dictionary<int, HashSet<string>>();
+
 		public HashSet<string> GetExpectedTokens(int state)
 		{
-			return new HashSet<string>(
+			if (ExpectedTokensCache.TryGetValue(state, out var result))
+			{
+				return result;
+			}
+			result = new HashSet<string>(
 				Lookaheads.Keys
-					.Where(l => actions[state, Lookaheads[l]].Count > 0)
+					.Where(l => Actions[state, Lookaheads[l]] != null)
 					.Union(AfterAnyTokens[state])
 			);
+			ExpectedTokensCache.Add(state, result);
+			return result;
 		}
 	}
 }

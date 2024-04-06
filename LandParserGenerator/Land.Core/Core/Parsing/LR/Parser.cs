@@ -270,11 +270,10 @@ namespace Land.Core.Parsing.LR
 			}
 
 			/// Берём опции из нужного вхождения Any
-			var marker = Table.Items[StatesStack.Peek()].Markers
-				.First(i => i.Next == Grammar.ANY_TOKEN_NAME);
+			var anyEntry = Table.Items[StatesStack.Peek()].AnyEntry;
 
-			anyNode.Options = marker.Alternative[marker.Position].Options;
-			anyNode.Arguments = marker.Alternative[marker.Position].Arguments;
+			anyNode.Options = anyEntry.Options;
+			anyNode.Arguments = anyEntry.Arguments;
 
 			/// Проверяем, не происходит ли восстановление в действительно некорректной программе
 			if (anyNode.Arguments.Contains(AnyArgument.Error)
@@ -408,13 +407,20 @@ namespace Land.Core.Parsing.LR
 
 		public HashSet<string> GetStopTokens(SymbolArguments args, int state)
 		{
-			var stopTokens = args.Contains(AnyArgument.Except)
-				? args.AnyArguments[AnyArgument.Except]
-				: new HashSet<string>(
-					Table.GetExpectedTokens(state).Except(args.Contains(AnyArgument.Include)
-						? args.AnyArguments[AnyArgument.Include] : new HashSet<string>())
-				);
-
+			HashSet<string> stopTokens;
+			if (args.Contains(AnyArgument.Except))
+			{
+				stopTokens = args.AnyArguments[AnyArgument.Except];
+			}
+			else if (args.Contains(AnyArgument.Include))
+			{
+				stopTokens = Table.GetExpectedTokens(state);
+				stopTokens.ExceptWith(args.AnyArguments[AnyArgument.Include]);
+			}
+			else
+			{
+				stopTokens = Table.GetExpectedTokens(state);
+			}
 			stopTokens.Remove(Grammar.ANY_TOKEN_NAME);
 
 			return stopTokens;
@@ -499,11 +505,11 @@ namespace Land.Core.Parsing.LR
 					// Запоминаем снятый со стека символ - это то, что было успешно распознано
 					previouslyMatched = SymbolsStack.Peek();
 
-					
+
 				}
 
 				SymbolsStack.Pop();
-				StatesStack.Pop();	
+				StatesStack.Pop();
 				NestingStack.Pop();
 
 				if (StatesStack.Count > 0)
