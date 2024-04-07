@@ -31,14 +31,16 @@ namespace Land.Core.Specification
 		public OptionsManager Options { get; private set; } = new OptionsManager();
 
 		// Стартовый символ грамматики
-		public string StartSymbol => 
+		public string StartSymbol =>
 			Options?.GetSymbols(ParsingOption.GROUP_NAME, ParsingOption.START).FirstOrDefault();
 
 		// Содержание грамматики
 		public Dictionary<string, NonterminalSymbol> Rules { get; private set; } = new Dictionary<string, NonterminalSymbol>();
 		public Dictionary<string, TerminalSymbol> Tokens { get; private set; } = new Dictionary<string, TerminalSymbol>();
 		public Dictionary<string, PairSymbol> Pairs { get; private set; } = new Dictionary<string, PairSymbol>();
-		public HashSet<string> NonEmptyPrecedence { get; private set; } = new HashSet<string>(); 
+		public Dictionary<string, PairSymbol> PairsRight { get; private set; } = new Dictionary<string, PairSymbol>();
+		public Dictionary<string, PairSymbol> PairsLeft{ get; private set; } = new Dictionary<string, PairSymbol>();
+		public HashSet<string> NonEmptyPrecedence { get; private set; } = new HashSet<string>();
 		public List<string> TokenOrder { get; private set; } = new List<string>();
 
 		// Псевдонимы именованных нетерминалов
@@ -124,6 +126,15 @@ namespace Land.Core.Specification
 			SentenceTokensCacheConsistent = false;
 		}
 
+		public void FillPairs()
+		{
+			foreach (var item in Pairs)
+			{
+				PairsRight[item.Value.Right] = item.Value;
+				PairsLeft[item.Value.Left] = item.Value;
+			}
+		}
+
 		#region Описание символов
 
 		public void AddAliases(string smb, HashSet<string> aliases)
@@ -132,18 +143,18 @@ namespace Land.Core.Specification
 
 			var intersectionWithSymbols = aliases.Intersect(Rules.Keys.Union(Tokens.Keys)).ToList();
 
-			if(intersectionWithSymbols.Count > 0)
+			if (intersectionWithSymbols.Count > 0)
 			{
 				throw new IncorrectGrammarException(
 						$"Среди псевдонимов нетерминала {smb} присутствуют символы, определённые как терминалы или нетерминалы: {String.Join(", ", intersectionWithSymbols)}"
 					);
 			}
 
-			foreach(var kvp in Aliases)
+			foreach (var kvp in Aliases)
 			{
 				var intersectionWithAliases = kvp.Value.Intersect(aliases).ToList();
 
-				if(intersectionWithAliases.Count > 0)
+				if (intersectionWithAliases.Count > 0)
 					throw new IncorrectGrammarException(
 						$"Нетерминалы {smb} и {kvp.Key} имеют общие псевдонимы: {String.Join(", ", intersectionWithAliases)}"
 					);
@@ -159,8 +170,8 @@ namespace Land.Core.Specification
 			/// Если грамматика LL и якорь устанавливается для символа, сгенерированного
 			/// для некоторой сущности с квантификатором +, этот же якорь надо установить
 			/// для вспомогательного символа с квантификатором *, входящего в правило для данного
-			if (Type == GrammarType.LL 
-				&& AutoRuleQuantifier.ContainsKey(smb) 
+			if (Type == GrammarType.LL
+				&& AutoRuleQuantifier.ContainsKey(smb)
 				&& AutoRuleQuantifier[smb].Quantifier == Quantifier.ONE_OR_MORE)
 				_symbolLocations[Rules[smb].Alternatives[0][1]] = loc;
 		}
@@ -175,7 +186,7 @@ namespace Land.Core.Specification
 
 		private string AlreadyDeclaredCheck(string name)
 		{
-			if(name == CUSTOM_BLOCK_RULE_NAME)
+			if (name == CUSTOM_BLOCK_RULE_NAME)
 			{
 				return $"Имя {CUSTOM_BLOCK_RULE_NAME} является зарезервированным и не может быть использовано в грамматике";
 			}
@@ -195,7 +206,7 @@ namespace Land.Core.Specification
 				return $"Повторное определение: символ {name} определён как пара";
 			}
 
-			if (Aliases.Any(p=>p.Value.Contains(name)))
+			if (Aliases.Any(p => p.Value.Contains(name)))
 			{
 				return $"Повторное определение: символ {name} определён как псевдоним";
 			}
@@ -252,7 +263,7 @@ namespace Land.Core.Specification
 			switch (quantifier)
 			{
 				case Quantifier.ONE_OR_MORE:
-					switch(Type)
+					switch (Type)
 					{
 						case GrammarType.LL:
 							Rules[newName] = new NonterminalSymbol(newName, new string[][]{
@@ -293,10 +304,10 @@ namespace Land.Core.Specification
 							break;
 					}
 					break;
-				case Quantifier.ZERO_OR_MORE:			
+				case Quantifier.ZERO_OR_MORE:
 					switch (Type)
 					{
-						case GrammarType.LL:						
+						case GrammarType.LL:
 							Rules[newName] = new NonterminalSymbol(newName, new string[][]{
 								new string[]{ },
 								new string[]{ elemName, newName }
@@ -358,7 +369,7 @@ namespace Land.Core.Specification
 		public string GetTerminal(string pattern) =>
 			Tokens.Values.FirstOrDefault(t => t.Pattern == pattern)?.Name;
 
-		public void DeclareTerminal(string name,  string pattern, bool lineStart = false)
+		public void DeclareTerminal(string name, string pattern, bool lineStart = false)
 		{
 			ConstructionLog.Add($"grammar.DeclareTerminal(\"{name}\", @\"{pattern.Replace("\"", "\"\"")}\", {lineStart.ToString().ToLower()});");
 
@@ -376,10 +387,11 @@ namespace Land.Core.Specification
 				throw new IncorrectGrammarException(checkingResult);
 			else
 			{
+
 				Pairs[name] = new PairSymbol()
 				{
-					Left = left,
-					Right = right,
+					Left = left.First(x => x != "GENERAL_ATTRIBUTE_START"),
+					Right = right.First(),
 					Name = name
 				};
 			}
@@ -461,9 +473,9 @@ namespace Land.Core.Specification
 							}
 
 							errorSymbols = symbols
-								.Where(s => Pairs.Values.Any(e => e.Left.Contains(s) || e.Right.Contains(s)))
+								.Where(s => Pairs.Values.Any(e => e.Left==s || e.Right==s))
 								.ToList();
-							if(errorSymbols.Count > 0)
+							if (errorSymbols.Count > 0)
 							{
 								throw new IncorrectGrammarException(
 									$"Символ{(errorSymbols.Count > 1 ? "ы" : "")} '{String.Join("', '", errorSymbols)}' " +
@@ -575,7 +587,7 @@ namespace Land.Core.Specification
 
 			/// Игнорируем регистр в строковых литералах, исключая экранированные символы
 			/// и символы Юникод в формате \uXXXX
-			if(Options.IsSet(ParsingOption.GROUP_NAME, ParsingOption.IGNORECASE))
+			if (Options.IsSet(ParsingOption.GROUP_NAME, ParsingOption.IGNORECASE))
 			{
 				var regex = new Regex(@"'([^'\\]*|(\\\\)+|\\[^\\])*'");
 
@@ -584,7 +596,7 @@ namespace Land.Core.Specification
 					var newPattern = new System.Text.StringBuilder();
 					var currentPosition = 0;
 
-					foreach(Match match in regex.Matches(token.Pattern))
+					foreach (Match match in regex.Matches(token.Pattern))
 					{
 						newPattern.Append(token.Pattern.Substring(currentPosition, match.Index - currentPosition));
 
@@ -634,7 +646,7 @@ namespace Land.Core.Specification
 							}
 						}
 
-						if(stringOpened)
+						if (stringOpened)
 							newPattern.Append("'");
 
 						currentPosition = match.Index + match.Length;
@@ -762,8 +774,8 @@ namespace Land.Core.Specification
 				messages.AddRange(LocalOptionsCheck());
 
 				/// Грамматика валидна или невалидна в зависимости от наличия сообщений об ошибках
-				State = messages.Any(m => m.Type == MessageType.Error) 
-					? GrammarState.Invalid 
+				State = messages.Any(m => m.Type == MessageType.Error)
+					? GrammarState.Invalid
 					: GrammarState.Valid;
 			}
 
@@ -813,7 +825,7 @@ namespace Land.Core.Specification
 				{
 					var altStartingNonterminals = alt.Elements.Select(e => e.Symbol).TakeWhile(s => Rules.ContainsKey(s)).ToList();
 
-					for(var i = 0; i< altStartingNonterminals.Count; ++i)
+					for (var i = 0; i < altStartingNonterminals.Count; ++i)
 					{
 						graph[nt].Add(altStartingNonterminals[i]);
 
@@ -926,7 +938,7 @@ namespace Land.Core.Specification
 			/// Для каждого Any, не являющегося AnyExcept, 
 			/// находим Any, которые могут идти после него 
 			/// и не являются этим же самым Any
-			foreach(var pair in anys.Where(kvp=>!kvp.Key.Contains(AnyArgument.Except.ToString())).Select(kvp=>kvp.Value))
+			foreach (var pair in anys.Where(kvp => !kvp.Key.Contains(AnyArgument.Except.ToString())).Select(kvp => kvp.Value))
 			{
 				var nextTokens = firstBuilder.First(pair.Item1.Subsequence(pair.Item2 + 1));
 				if (nextTokens.Contains(null))
@@ -936,7 +948,7 @@ namespace Land.Core.Specification
 				}
 
 				/// Множество токенов Any, о которых надо предупредить разработчика грамматики
-				var warningTokens = nextTokens.Where(t => t.StartsWith(Grammar.ANY_TOKEN_NAME, StringComparison.Ordinal) 
+				var warningTokens = nextTokens.Where(t => t.StartsWith(Grammar.ANY_TOKEN_NAME, StringComparison.Ordinal)
 					&& t != pair.Item1[pair.Item2]);
 
 				if (warningTokens.Count() > 0)
@@ -979,18 +991,18 @@ namespace Land.Core.Specification
 		{
 			AutoRuleUserWrittenForm = new Dictionary<string, string>();
 
-			foreach(var smb in Rules.Keys.Where(k=>k.StartsWith(AUTO_RULE_PREFIX, StringComparison.Ordinal)))
+			foreach (var smb in Rules.Keys.Where(k => k.StartsWith(AUTO_RULE_PREFIX, StringComparison.Ordinal)))
 				AutoRuleUserWrittenForm[smb] = Developerify(smb);
 		}
 
 		public string Developerify(string name)
 		{
-			if(name.StartsWith(AUTO_RULE_PREFIX, StringComparison.Ordinal))
+			if (name.StartsWith(AUTO_RULE_PREFIX, StringComparison.Ordinal))
 			{
 				if (AutoRuleUserWrittenForm.ContainsKey(name))
 					return AutoRuleUserWrittenForm[name];
 
-				if(AutoRuleQuantifier.ContainsKey(name))
+				if (AutoRuleQuantifier.ContainsKey(name))
 				{
 					var elementName = Rules[name].Alternatives
 						.SelectMany(a => a.Elements).FirstOrDefault(e => e.Symbol != name);
@@ -1001,14 +1013,14 @@ namespace Land.Core.Specification
 							return Developerify(elementName) + "+";
 						case Quantifier.ZERO_OR_MORE:
 							return Developerify(elementName) + "*";
-						case Quantifier.ZERO_OR_ONE:					
+						case Quantifier.ZERO_OR_ONE:
 							return Developerify(elementName) + "?";
 					}
 				}
 				else
 				{
-					return $"({String.Join(" | ", Rules[name].Alternatives.Select(a=>Developerify(a)))})";
-                }
+					return $"({String.Join(" | ", Rules[name].Alternatives.Select(a => Developerify(a)))})";
+				}
 			}
 
 			return AutoTokenUserWrittenForm.ContainsKey(name) ? AutoTokenUserWrittenForm[name] : name;
@@ -1162,32 +1174,32 @@ namespace Land.Core.Specification
 			foreach (var rule in Rules.Where(r => !r.Key.StartsWith(AUTO_RULE_PREFIX, StringComparison.Ordinal)))
 			{
 				result += $"{rule.Key}\t=\t";
-				for(var altIdx = 0; altIdx < rule.Value.Alternatives.Count; ++altIdx)
+				for (var altIdx = 0; altIdx < rule.Value.Alternatives.Count; ++altIdx)
 				{
 					if (altIdx > 0)
 						result += "\t| ";
-					foreach(var entry in rule.Value.Alternatives[altIdx])
-					{				
+					foreach (var entry in rule.Value.Alternatives[altIdx])
+					{
 						/// Выводим локальные опции
-						foreach(var group in entry.Options.GetGroups())
+						foreach (var group in entry.Options.GetGroups())
 						{
 							/// Параметры текущей опции
 							List<dynamic> parameters;
 							/// Текст для группы опций
-							var groupText = String.Join(", ", entry.Options.GetOptions(group).Select(o => 
+							var groupText = String.Join(", ", entry.Options.GetOptions(group).Select(o =>
 								$"{o}{((parameters = entry.Options.GetParams(group, o)).Count > 0 ? $"({String.Join(", ", parameters)})" : "")}"
 							));
 							/// Добавляем текст группы к основному тексту
 							result += $"%{group}({groupText}) ";
 						}
 						/// Если текущий символ - это параметризованный Any, выводим его параметры
-						if(entry.Arguments.AnyArguments.Count > 0)
+						if (entry.Arguments.AnyArguments.Count > 0)
 						{
 							result += $"{Grammar.ANY_TOKEN_NAME}({String.Join(", ", entry.Arguments.AnyArguments.Select(kvp => $"{kvp.Key}({String.Join(", ", kvp.Value.Select(e => Developerify(e)))})"))}) ";
 						}
 						else
 							result += $"{Developerify(entry.Symbol)} ";
-                    }
+					}
 					result += Environment.NewLine;
 				}
 			}
@@ -1195,12 +1207,12 @@ namespace Land.Core.Specification
 			result += Environment.NewLine + "%%" + Environment.NewLine;
 
 			/// Выводим опции
-			foreach(var smb in Options.GetSymbols())
+			foreach (var smb in Options.GetSymbols())
 			{
 				var smbManager = Options.GetOptions(smb);
 
-				foreach(var group in smbManager.GetGroups())
-					foreach(var option in smbManager.GetOptions(group))
+				foreach (var group in smbManager.GetGroups())
+					foreach (var option in smbManager.GetOptions(group))
 					{
 						if (this.Type == GrammarType.LR &&
 							group.Equals(ParsingOption.GROUP_NAME.ToString(), StringComparison.CurrentCultureIgnoreCase) &&
@@ -1236,7 +1248,7 @@ namespace Land.Core.Specification
 
 		public string GetConstructionLog(SymbolOptionsManager opts)
 		{
-			return $"new SymbolOptionsManager(new Dictionary<string, Dictionary<string, List<dynamic>>>{{{String.Join(", ", opts.CloneRaw().Select(g=>$"{{\"{g.Key}\", new Dictionary<string, List<dynamic>>{{{String.Join(", ", g.Value.Select(o=>$"{{\"{o.Key}\", new List<dynamic>{{{String.Join(", ", o.Value.Select(p => GetParamString(p)))}}}}}"))}}}}}"))}}})";
+			return $"new SymbolOptionsManager(new Dictionary<string, Dictionary<string, List<dynamic>>>{{{String.Join(", ", opts.CloneRaw().Select(g => $"{{\"{g.Key}\", new Dictionary<string, List<dynamic>>{{{String.Join(", ", g.Value.Select(o => $"{{\"{o.Key}\", new List<dynamic>{{{String.Join(", ", o.Value.Select(p => GetParamString(p)))}}}}}"))}}}}}"))}}})";
 		}
 	}
 }

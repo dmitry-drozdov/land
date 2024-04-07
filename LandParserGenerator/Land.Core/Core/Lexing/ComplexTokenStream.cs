@@ -294,13 +294,13 @@ namespace Land.Core.Lexing
 			//d?.Start();
 			/// Предполагается, что токен может быть началом ровно одной пары, или концом ровно одной пары,
 			/// или одновременно началом и концом ровно одной пары
-			var closed = GrammarObject.Pairs.FirstOrDefault(p => p.Value.Right.Contains(token.Name));
+			GrammarObject.PairsRight.TryGetValue(token.Name, out var closed);
 
 			/// Если текущий токен закрывает некоторую конструкцию
-			if (closed.Value != null)
+			if (closed != null)
 			{
 				/// и при этом не открывает её же
-				if (!closed.Value.Left.Contains(token.Name))
+				if (closed.Left != token.Name)
 				{
 					/// проверяем, есть ли на стеке то, что можно этой конструкцией закрыть
 					if (PairStack.Count == 0)
@@ -317,16 +317,16 @@ namespace Land.Core.Lexing
 						//d?.Stop("other");	
 						return Lexer.CreateToken(Grammar.ERROR_TOKEN_NAME, Grammar.ERROR_TOKEN_TYPE);
 					}
-					else if (PairStack.Peek() != closed.Value)
+					else if (PairStack.Peek() != closed)
 					{
 						Log.Add(Message.Error(
-							$"Неожиданная закрывающая конструкция {this.Developerify(token)}, ожидается {String.Join("или ", PairStack.Peek().Right.Select(e => this.Developerify(e)))} для открывающей конструкции {String.Join("или ", PairStack.Peek().Left.Select(e => this.Developerify(e)))}",
+							$"Неожиданная закрывающая конструкция {this.Developerify(token)}, ожидается {String.Join("или ", PairStack.Peek().Right)} для открывающей конструкции {String.Join("или ", PairStack.Peek().Left)}",
 							token.Location.Start,
 							addInfo: new Dictionary<MessageAddInfoKey, object>
 							{
 								{ MessageAddInfoKey.UnexpectedToken, token.Name },
 								{ MessageAddInfoKey.UnexpectedLexeme, token.Text },
-								{ MessageAddInfoKey.ExpectedTokens, PairStack.Peek().Right.ToList() }
+								{ MessageAddInfoKey.ExpectedTokens, PairStack.Peek().Right }
 							}
 						));
 						//d?.Stop("other");
@@ -341,23 +341,22 @@ namespace Land.Core.Lexing
 				else
 				{
 					/// и есть что закрыть, закрываем
-					if (PairStack.Count > 0 && PairStack.Peek() == closed.Value)
+					if (PairStack.Count > 0 && PairStack.Peek() == closed)
 						CurrentTokenDirection = Direction.Up;
 					else
 					{
 						CurrentTokenDirection = Direction.Down;
-						OpenedPair = closed.Value;
+						OpenedPair = closed;
 					}
 				}
 			}
 			else
 			{
-				var opened = GrammarObject.Pairs.FirstOrDefault(p => p.Value.Left.Contains(token.Name));
-
-				if (opened.Value != null)
+				GrammarObject.PairsLeft.TryGetValue(token.Name, out var opened);
+				if (opened != null)
 				{
 					CurrentTokenDirection = Direction.Down;
-					OpenedPair = opened.Value;
+					OpenedPair = opened;
 				}
 			}
 

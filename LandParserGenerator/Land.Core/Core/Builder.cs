@@ -147,6 +147,8 @@ namespace Land.Core
 				return null;
 			}
 
+			specParser.ConstructedGrammar.FillPairs();
+
 			return specParser.ConstructedGrammar;
 		}
 

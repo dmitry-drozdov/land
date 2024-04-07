@@ -8,12 +8,12 @@ namespace Land.Core.Specification
 	public class PairSymbol: ISymbol
 	{
 		public string Name { get; set; }
-		public HashSet<string> Left { get; set; }
-		public HashSet<string> Right { get; set; }
+		public string Left { get; set; }
+		public string Right { get; set; }
 
 		public override bool Equals(object obj)
 		{
-			return obj is PairSymbol && ((PairSymbol)obj).Name == Name;
+			return obj is PairSymbol symbol && symbol.Name == Name;
 		}
 
 		public override int GetHashCode()
