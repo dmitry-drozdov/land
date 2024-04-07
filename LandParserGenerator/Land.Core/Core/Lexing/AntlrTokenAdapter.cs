@@ -4,8 +4,6 @@ namespace Land.Core.Lexing
 {
 	public class AntlrTokenAdapter
 	{
-		//private IToken Token { get; set; }
-
 		public SegmentLocation Location { get; private set; }
 		public string Text { get; private set; }
 		public string Name { get; set; }
@@ -14,10 +12,9 @@ namespace Land.Core.Lexing
 
 		public AntlrTokenAdapter(IToken Token, Lexer lexer)
 		{
-			//Token = token;
 			Type = Token.Type;
 			Name = lexer.Vocabulary.GetSymbolicName(Token.Type);
-			Text=Token.Text;
+			Text = Token.Text;
 
 			Location = new SegmentLocation()
 			{
@@ -26,9 +23,8 @@ namespace Land.Core.Lexing
 			};
 		}
 
-		public AntlrTokenAdapter(string name, int type, Lexer lexer)
+		public AntlrTokenAdapter(string name, int type)
 		{
-			//Token = lexer.TokenFactory.Create(type, "");
 			Type = type;
 			Name = name;
 

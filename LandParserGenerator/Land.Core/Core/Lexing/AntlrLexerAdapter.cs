@@ -41,7 +41,7 @@ namespace Land.Core.Lexing
 
 		public AntlrTokenAdapter CreateToken(string name, int type)
 		{
-			return new AntlrTokenAdapter(name, type, Lexer);
+			return new AntlrTokenAdapter(name, type);
 		}
 
 		public IList<IToken> GetAllTokens()
