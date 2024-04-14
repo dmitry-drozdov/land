@@ -51,9 +51,13 @@ namespace Land.Core.Parsing
 		}
 	}
 
+	[Serializable]
 	public class Durations
 	{
-		public Dictionary<string, long> Stats { get; private set; } = new Dictionary<string, long>();
+		public long Duration { get; set; }
+
+		/*public Dictionary<string, long> Stats { get; private set; } = new Dictionary<string, long>();
+	
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Start()
@@ -99,6 +103,6 @@ namespace Land.Core.Parsing
 			return a;
 		}
 
-		private Stopwatch watch = new Stopwatch();
+		private Stopwatch watch = new Stopwatch();*/
 	}
 }

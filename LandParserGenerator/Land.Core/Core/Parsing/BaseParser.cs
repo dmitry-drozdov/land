@@ -54,6 +54,7 @@ namespace Land.Core.Parsing
 
 		public (Node, Durations) Parse(string text, bool enableTracing = false)
 		{
+			var watch = Stopwatch.StartNew();
 			Log = new List<Message>();
 			Statistics = new Statistics();
 			EnableTracing = enableTracing;
@@ -87,6 +88,9 @@ namespace Land.Core.Parsing
 			Statistics.GeneralTimeSpent = DateTime.UtcNow - parsingStarted;
 			Statistics.TokensCount = LexingStream.Count;
 			Statistics.CharsCount = text.Length;
+
+			watch.Stop();
+			stats.Duration = watch.ElapsedMilliseconds;
 
 			return (root, stats);
 		}

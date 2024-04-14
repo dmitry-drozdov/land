@@ -907,13 +907,13 @@ namespace Land.GUI
 
 			if (statsPerFile.Count > 0)
 			{
-				FrontendUpdateDispatcher.Invoke(OnPackageFileParsingError, "");
+				/*FrontendUpdateDispatcher.Invoke(OnPackageFileParsingError, "");
 				var total = totalStats.Stats.FirstOrDefault(x => x.Key == "ParsingAlgorithm").Value;
 				foreach (var pair in totalStats.Stats)
 				{
 					FrontendUpdateDispatcher.Invoke(OnPackageFileParsingError, $"{pair.Key} {pair.Value} ({(pair.Value * 100) / total})");
 				}
-				FrontendUpdateDispatcher.Invoke(OnPackageFileParsingError, "");
+				FrontendUpdateDispatcher.Invoke(OnPackageFileParsingError, "");*/
 
 				FrontendUpdateDispatcher.Invoke(OnPackageFileParsingError, "");
 				FrontendUpdateDispatcher.Invoke(OnPackageFileParsingError, $"Всего токенов {Parser.TotalTokens}");
