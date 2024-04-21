@@ -209,7 +209,6 @@ func doWork(sname string) error {
 			a.mismatch++
 			continue
 		}
-
 		for k, v := range vf {
 			countMismatch := func() {
 				fmt.Println()
