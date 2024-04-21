@@ -179,6 +179,10 @@ func ParseFile(path string) (*ast.File, map[string]*FuncStat, map[string]*Struct
 				if len(y.Names) == 0 {
 					add(HumanType(y.Type))
 				}
+				// only types (=0) or mixed only types + name with type (=1)
+				if len(y.Names) != 1 {
+					ptr.RequirePostProcess = true
+				}
 			}
 
 			funcPos = append(funcPos, pair{x.Pos(), x.End()})

@@ -62,11 +62,11 @@ func main() {
 	// fmt.Println(time.Since(t0))
 	// return
 
-	cnt, err := deleteDups(`e:\phd\test_repos`)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Printf("deleted %v duplicates\n", cnt)
+	// cnt, err := deleteDups(`e:\phd\test_repos`)
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// fmt.Printf("deleted %v duplicates\n", cnt)
 
 	for _, f := range folders {
 		if err := doWork(f); err != nil {
@@ -95,7 +95,7 @@ func main() {
 		"go lines vendor", (goLinesVendor*100)/goLines,
 	)
 
-	err = GetTotalStats("results")
+	err := GetTotalStats("results")
 	if err != nil {
 		panic(err)
 	}
@@ -167,10 +167,11 @@ func doWork(sname string) error {
 	fmt.Println("parsing files with go ast DONE")
 
 	a := &AnalyzerFuncStats{
-		Source:     sname,
-		Duplicates: duplicates,
-		lnFull:     len(fullFunc),
-		lnLight:    len(lightFunc),
+		Source:         sname,
+		Duplicates:     duplicates,
+		lnFull:         len(fullFunc),
+		lnLight:        len(lightFunc),
+		postProcessReq: 0,
 	}
 
 	s := &a.StructStats
@@ -235,6 +236,9 @@ func doWork(sname string) error {
 			}
 
 			a.match++
+			if v.RequirePostProcess {
+				a.postProcessReq++
+			}
 		}
 	}
 

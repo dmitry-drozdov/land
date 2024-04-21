@@ -10,6 +10,8 @@
  "ArgsCover": 100,
  "VendorFuncs": 0,
  "VendorFuncsPerCent": 0,
+ "PostProcessReq": 1978,
+ "PostProcessReqPerCent": 6.3,
  "StructStats": {
   "Ok": 4901,
   "FailNotFound": 0,

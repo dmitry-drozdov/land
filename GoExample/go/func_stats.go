@@ -6,10 +6,11 @@ import (
 )
 
 type FuncStat struct {
-	Name    string
-	Args    []string
-	ArgsCnt byte
-	Return  byte
+	Name               string
+	Args               []string
+	ArgsCnt            byte
+	Return             byte
+	RequirePostProcess bool
 }
 
 type StructStat struct {
