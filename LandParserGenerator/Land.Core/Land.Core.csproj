@@ -95,6 +95,7 @@
     <Compile Include="Core\Lexing\IToken.cs" />
     <Compile Include="Core\Lexing\ILexer.cs" />
     <Compile Include="Core\Lexing\ComplexTokenStream.cs" />
+    <Compile Include="Core\Lexing\TokenStream.cs" />
     <Compile Include="Core\Parsing\Preprocessing\NoopPreprocessor.cs" />
     <Compile Include="Core\Parsing\Preprocessing\PipelinePreprocessor.cs" />
     <Compile Include="Core\Parsing\Preprocessing\BasePreprocessor.cs" />
@@ -115,6 +116,8 @@
     <Compile Include="Core\Parsing\LR\TableLR1.cs" />
     <Compile Include="Core\Parsing\BaseParser.cs" />
     <Compile Include="Core\Parsing\Tree\Node.cs" />
+    <Compile Include="Core\Parsing\LL\Parser.cs" />
+    <Compile Include="Core\Parsing\LL\TableLL1.cs" />
     <Compile Include="Core\Parsing\LR\Marker.cs" />
     <Compile Include="Core\Specification\TerminalSymbol.cs" />
     <Compile Include="Core\Lexing\AntlrLexerAdapter.cs" />
