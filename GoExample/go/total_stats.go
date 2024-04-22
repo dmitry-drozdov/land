@@ -44,7 +44,8 @@ func GetTotalStats(root string) error {
 
 	fmt.Printf(`total files: [%v], skipped files: [%v], ok methods: [%v], fail methods: [%v], accuracy: [%.3f%%], args cover: [%.2f%%], vendors ratio: [%.2f%%], duplicates: [%v]
 struct accuracy: [%.3f%%], missed struct: [%.3f%% (has anon func [%.3f%%])], incorrect struct: [%.3f%%]
-postprocessing required [%.3f]`,
+postprocessing required [%.3f%%]
+no body [%.3f%%]`,
 		ts.TotalFiles,
 		ts.SkippedFiles,
 		ts.Ok,
@@ -58,6 +59,7 @@ postprocessing required [%.3f]`,
 		float64(ts.StructStats.FailNotFoundHasFunc)/float64(ts.StructStats.FailNotFound)*100,
 		float64(ts.StructStats.FailIncorrectTypes)/float64(ts.StructStats.Total())*100,
 		ts.PostProcessReqPerCent/RoundedFloat(cnt),
+		ts.NoBodyPerCent/RoundedFloat(cnt),
 	)
 
 	return err

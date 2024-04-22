@@ -11,6 +11,7 @@ type FuncStat struct {
 	ArgsCnt            byte
 	Return             byte
 	RequirePostProcess bool
+	NoBody             bool
 }
 
 type StructStat struct {

@@ -27,6 +27,7 @@ type AnalyzerFuncStats struct {
 	lnLight        int
 	cntVendor      int
 	postProcessReq int
+	noBody         int
 
 	Duplicates            int
 	Source                string
@@ -41,8 +42,9 @@ type AnalyzerFuncStats struct {
 	VendorFuncsPerCent    RoundedFloat
 	PostProcessReq        int
 	PostProcessReqPerCent RoundedFloat
-
-	StructStats AnalyzerStructStats
+	NoBody                int
+	NoBodyPerCent         RoundedFloat
+	StructStats           AnalyzerStructStats
 }
 
 func (a *AnalyzerFuncStats) init() {
@@ -62,6 +64,9 @@ func (a *AnalyzerFuncStats) init() {
 
 	a.PostProcessReq = a.postProcessReq
 	a.PostProcessReqPerCent = ratio(a.postProcessReq, a.match)
+
+	a.NoBody = a.noBody
+	a.NoBodyPerCent = ratio(a.NoBody, a.match)
 
 	a.StructStats.Ratio = ratio(a.StructStats.Ok, a.StructStats.Total())
 }
@@ -107,6 +112,8 @@ func (a *AnalyzerFuncStats) Add(b AnalyzerFuncStats) {
 	a.VendorFuncsPerCent += b.VendorFuncsPerCent
 	a.PostProcessReq += b.PostProcessReq
 	a.PostProcessReqPerCent += b.PostProcessReqPerCent
+	a.NoBody += b.NoBody
+	a.NoBodyPerCent += b.NoBodyPerCent
 	a.Duplicates += b.Duplicates
 	a.StructStats.Add(b.StructStats)
 }

@@ -238,6 +238,9 @@ func doWork(sname string) error {
 			if v.RequirePostProcess {
 				a.postProcessReq++
 			}
+			if v.NoBody {
+				a.noBody++
+			}
 		}
 	}
 

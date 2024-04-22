@@ -184,6 +184,9 @@ func ParseFile(path string) (*ast.File, map[string]*FuncStat, map[string]*Struct
 					ptr.RequirePostProcess = true
 				}
 			}
+			if x.Body == nil {
+				ptr.NoBody = true
+			}
 
 			funcPos = append(funcPos, pair{x.Pos(), x.End()})
 

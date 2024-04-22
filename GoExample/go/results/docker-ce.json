@@ -12,6 +12,8 @@
  "VendorFuncsPerCent": 0,
  "PostProcessReq": 3426,
  "PostProcessReqPerCent": 5.84,
+ "NoBody": 93,
+ "NoBodyPerCent": 0.16,
  "StructStats": {
   "Ok": 13179,
   "FailNotFound": 0,
