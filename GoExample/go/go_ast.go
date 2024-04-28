@@ -98,10 +98,13 @@ func ParseFiles(root string) (map[string]map[string]*FuncStat, map[string]map[st
 		return nil, nil, 0, fmt.Errorf("empty output")
 	}
 
+	runtime.GC()
 	runtime.ReadMemStats(&m2)
 	if diff := m2.TotalAlloc - m1.TotalAlloc; diff > maxMemory {
 		maxMemory = diff // no need mutex run in 1 goroutine
 	}
+
+	files[0] = nil // do something with f to not be GCollected
 
 	fmt.Printf("%.2f sec.\n", float64(timeSpent)/(float64(time.Second)))
 	fmt.Printf("%d Mb \n", maxMemory/(1024*1024))
