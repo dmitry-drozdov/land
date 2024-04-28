@@ -105,6 +105,7 @@ func ParseFiles(root string) (map[string]map[string]*FuncStat, map[string]map[st
 
 	fmt.Printf("%.2f sec.\n", float64(timeSpent)/(float64(time.Second)))
 	fmt.Printf("%d Mb \n", maxMemory/(1024*1024))
+	fmt.Printf("%d ast objs\n", cnt(files))
 
 	return resFun, resStruct, duplicates, nil
 }
@@ -229,4 +230,15 @@ func HumanType(tp ast.Expr) string {
 		return HumanType(t.Elt)
 	}
 	return fmt.Sprintf("%T", tp)
+}
+
+func cnt(files []*ast.File) int {
+	res := 0
+	for _, f := range files {
+		res += len(f.Comments)
+		res += len(f.Decls)
+		res += len(f.Imports)
+		res += len(f.Unresolved)
+	}
+	return res
 }
