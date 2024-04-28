@@ -31,7 +31,7 @@ namespace Land.Core.Parsing.LL
 
 		public Parser(
 			Grammar g,
-			AntlrLexerAdapter lexer,
+			ILexer lexer,
 			BaseNodeGenerator nodeGen = null,
 			BaseNodeRetypingVisitor retypingVisitor = null) : base(g, lexer, nodeGen, retypingVisitor)
 		{
@@ -407,7 +407,7 @@ namespace Land.Core.Parsing.LL
 			}
 		}
 
-		private AntlrTokenAdapter ErrorRecovery(HashSet<string> stopTokens = null, string avoidedToken = null)
+		private IToken ErrorRecovery(HashSet<string> stopTokens = null, string avoidedToken = null)
 		{
 			var d = new Durations();
 			// Если восстановление от ошибок отключено на уровне грамматики

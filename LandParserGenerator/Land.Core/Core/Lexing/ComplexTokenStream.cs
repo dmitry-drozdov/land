@@ -61,63 +61,8 @@ namespace Land.Core.Lexing
 
 	public enum Direction { Forward, Up, Down };
 
-	public class ComplexTokenStream : IGrammarProvided
+	public class ComplexTokenStream : TokenStream, IGrammarProvided
 	{
-
-		//base
-		protected AntlrLexerAdapter Lexer { get; set; }
-
-		private List<AntlrTokenAdapter> Tokens { get; set; } = new List<AntlrTokenAdapter>();
-
-		/// <summary>
-		/// Переход к следующему токену потока
-		/// </summary>
-		/// <returns></returns>
-		public AntlrTokenAdapter GetNextTokenBase()
-		{
-			//d?.Start();
-			/// Если токен с нужным индексом ещё не считан
-			/// и последний считанный токен - не признак конца файла
-			if (CurrentIndex + 1 == Tokens.Count)
-			{
-				if (Tokens.Count == 0 || Tokens[Tokens.Count - 1].Type != Grammar.EOF_TOKEN_TYPE)
-				{
-					++CurrentIndex;
-					Tokens.Add(Lexer.NextToken());
-				}
-			}
-			else
-			{
-				++CurrentIndex;
-			}
-			//d?.Stop("base GetNextToken");
-
-			return Tokens[CurrentIndex];
-		}
-
-		/// <summary>
-		/// Текущий токен потока
-		/// </summary>
-		/// <returns></returns>
-		public AntlrTokenAdapter CurrentToken { get { return CurrentIndex >= 0 ? Tokens[CurrentIndex] : null; } }
-
-		public int CurrentIndex { get; private set; } = -1;
-
-		public int Count => Tokens.Count;
-
-		public AntlrTokenAdapter MoveTo(int idx)
-		{
-			if (idx >= 0 && idx < Tokens.Count)
-			{
-				CurrentIndex = idx;
-				return Tokens[CurrentIndex];
-			}
-			else
-			{
-				return null;
-			}
-		}
-		//base end
 		public Grammar GrammarObject { get; private set; }
 
 		private List<Message> Log { get; set; }
@@ -146,10 +91,8 @@ namespace Land.Core.Lexing
 		/// </summary>
 		private CustomBlockDefinition CustomBlockDefinition { get; set; }
 
-		public ComplexTokenStream(Grammar grammar, AntlrLexerAdapter lexer, string text, List<Message> log)
+		public ComplexTokenStream(Grammar grammar, ILexer lexer, string text, List<Message> log) : base(lexer, text)
 		{
-			Lexer = lexer;
-			Lexer.SetSourceText(text);
 			GrammarObject = grammar;
 			Log = log;
 
@@ -201,9 +144,9 @@ namespace Land.Core.Lexing
 			return PairStack.Count;
 		}
 
-		public AntlrTokenAdapter MoveTo(int idx, PairAwareState state)
+		public IToken MoveTo(int idx, PairAwareState state)
 		{
-			var token = MoveTo(idx);
+			var token = base.MoveTo(idx);
 
 			if (token != null)
 			{
@@ -215,7 +158,7 @@ namespace Land.Core.Lexing
 			return token;
 		}
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public AntlrTokenAdapter GetNextToken()
+		public override IToken GetNextToken()
 		{
 			//d?.Start();
 			switch (CurrentTokenDirection)
@@ -232,7 +175,7 @@ namespace Land.Core.Lexing
 
 			CurrentTokenDirection = Direction.Forward;
 
-			var token = GetNextTokenBase();
+			var token = base.GetNextToken();
 
 			//d?.Start();
 			if (CustomBlockDefinition != null
@@ -368,9 +311,9 @@ namespace Land.Core.Lexing
 		/// Получение следующего токена, находящегося на заданном уровне вложенности пар
 		/// </summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public AntlrTokenAdapter GetNextToken(int level, out List<AntlrTokenAdapter> skipped)
+		public IToken GetNextToken(int level,out List<IToken> skipped)
 		{
-			skipped = new List<AntlrTokenAdapter>();
+			skipped = new List<IToken>();
 			//d.Start();
 			while (true)
 			{

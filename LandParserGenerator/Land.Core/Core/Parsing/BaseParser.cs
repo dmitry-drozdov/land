@@ -23,7 +23,7 @@ namespace Land.Core.Parsing
 	{
 		public Grammar GrammarObject { get; protected set; }
 
-		protected AntlrLexerAdapter Lexer { get; set; }
+		protected ILexer Lexer { get; set; }
 		public ComplexTokenStream LexingStream { get; protected set; }
 
 		protected BaseNodeGenerator NodeGenerator { get; set; }
@@ -39,7 +39,7 @@ namespace Land.Core.Parsing
 
 		public BaseParser(
 			Grammar g,
-			AntlrLexerAdapter lexer,
+			ILexer lexer,
 			BaseNodeGenerator nodeGen = null,
 			BaseNodeRetypingVisitor retypeVisitor = null)
 		{
