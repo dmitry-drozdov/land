@@ -6,10 +6,11 @@ import (
 )
 
 type FuncStat struct {
-	Name    string
-	Args    []string
-	ArgsCnt byte
-	Return  byte
+	Receiver string
+	Name     string
+	Args     []string
+	ArgsCnt  byte
+	Return   byte
 }
 
 type StructStat struct {
@@ -24,7 +25,7 @@ func (f *FuncStat) EqualTo(g *FuncStat) bool {
 	if f == nil || g == nil {
 		return false
 	}
-	if f.Name != g.Name || f.ArgsCnt != g.ArgsCnt || f.Return != g.Return {
+	if f.Name != g.Name || f.ArgsCnt != g.ArgsCnt || f.Return != g.Return || f.Receiver != g.Receiver {
 		return false
 	}
 	if len(f.Args) != len(g.Args) {

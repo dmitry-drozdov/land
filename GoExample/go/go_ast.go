@@ -156,16 +156,16 @@ func ParseFile(path string) (*ast.File, map[string]*FuncStat, map[string]*Struct
 			}
 
 		case *ast.FuncDecl:
-			ret := byte(0)
-			if x.Type.Results != nil {
-				ret = byte(x.Type.Results.NumFields())
-			}
-
 			ptr := &FuncStat{
 				Name:    x.Name.Name,
 				ArgsCnt: byte(x.Type.Params.NumFields()),
-				Return:  ret,
 				Args:    make([]string, 0, 3),
+			}
+			if x.Type.Results != nil {
+				ptr.Return = byte(x.Type.Results.NumFields())
+			}
+			if x.Recv != nil && len(x.Recv.List) > 0 {
+				ptr.Receiver = HumanType(x.Recv.List[0].Type)
 			}
 			resFun[x.Name.Name] = ptr
 
