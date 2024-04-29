@@ -43,31 +43,21 @@ struct_type = ID generic2? '='? anon_struct
 
 anon_struct = 'struct' '{' Any '}'
 
-anon_interface = 'interface' '{' Any '}'
 
 func = 'func' f_reciever? f_name generic2? f_args f_returns ('{' Any '}')
 	| 'func' f_reciever? f_name generic2? f_args f_returns NL
 	| 'func' f_reciever? f_name generic2? f_args NL
 
 
-anon_func_title = 'func' f_args NL | 'func' f_args f_returns
-
-
 f_reciever = LB Any RB 
-
 f_args = LB Any RB
-		
-
 f_returns = Any 
-
-
 
 water_entity	=	Any 
 
 package_name =	ID
 import_name	 =	ID
 param 		 =	ID
-f_type		 =	ID | LB ID RB
 f_name		 =	ID
 t_name		 =	ID
 

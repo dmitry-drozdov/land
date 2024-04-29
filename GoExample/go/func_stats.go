@@ -18,14 +18,21 @@ type StructStat struct {
 	Types []string
 }
 
-func (f *FuncStat) EqualTo(g *FuncStat) bool {
+func (f *FuncStat) EqualTo(g *FuncStat, gt GrammarType) bool {
 	if f == nil && g == nil {
 		return true
 	}
 	if f == nil || g == nil {
 		return false
 	}
-	if f.Name != g.Name || f.ArgsCnt != g.ArgsCnt || f.Return != g.Return || f.Receiver != g.Receiver {
+	if f.Name != g.Name || f.Receiver != g.Receiver {
+		return false
+	}
+	if gt == GrammarTypeHighLevel {
+		return true
+	}
+
+	if f.ArgsCnt != g.ArgsCnt || f.Return != g.Return {
 		return false
 	}
 	if len(f.Args) != len(g.Args) {

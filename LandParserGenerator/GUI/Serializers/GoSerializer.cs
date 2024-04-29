@@ -102,7 +102,18 @@ namespace Land.GUI.Serializers
 						res.Return = pcc.Children.Count(x => x.ToString() == "f_return" || x.ToString().StartsWith("go_type", StringComparison.Ordinal));
 						break;
 					case "f_reciever":
-						res.Receiver = pcc.Children.FirstOrDefault(x => x.ToString() == "f_type")?.Children[0].ToString().Replace("ID: ", "");
+						res.Receiver = pcc.Children.FirstOrDefault(x => x.ToString() == "f_type")?.Children[0]?.ToString()?.Replace("ID: ", "");
+						if (res.Receiver == null) // highlevel grammar
+						{
+							var components = pcc.Children[0].ToString().Split(' ');
+							var idx = components.Length-1;
+							for (var i=0; i<components.Length; i++)
+							{
+								if (components[i] == "[") idx = i - 1;
+							}
+							res.Receiver = components[idx];
+						}
+
 						break;
 					default:
 						if (opt.StartsWith("f_name: ", StringComparison.Ordinal)) res.Name = opt.Replace("f_name: ", "");

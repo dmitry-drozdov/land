@@ -9,6 +9,15 @@ import (
 	cp "github.com/otiai10/copy"
 )
 
+type GrammarType string
+
+const (
+	GrammarTypeHighLevel GrammarType = "GrammarTypeHighLevel"
+	GrammarTypeMarkup    GrammarType = "GrammarTypeMarkup"
+)
+
+var currentMode = GrammarTypeHighLevel
+
 var folders = []string{
 	"sourcegraph",
 	"delivery-offering",
@@ -69,7 +78,7 @@ func main() {
 	// fmt.Printf("deleted %v duplicates\n", cnt)
 
 	for _, f := range folders {
-		if err := doWork(f); err != nil {
+		if err := doWork(f, currentMode); err != nil {
 			fmt.Printf("[%v] <ERROR>: [%v]\n", f, err)
 		}
 	}
@@ -146,7 +155,7 @@ func makeTestSet(percent int) error {
 	return nil
 }
 
-func doWork(sname string) error {
+func doWork(sname string, gt GrammarType) error {
 	fmt.Printf("\n===== %s START =====\n", sname)
 	defer fmt.Printf("===== %s END =====\n", sname)
 
@@ -225,11 +234,13 @@ func doWork(sname string) error {
 				continue
 			}
 
-			if len(v.Args) != len(funcs.Args) || byte(len(funcs.Args)) != funcs.ArgsCnt {
-				a.notAllArgs++
+			if gt == GrammarTypeMarkup {
+				if len(v.Args) != len(funcs.Args) || byte(len(funcs.Args)) != funcs.ArgsCnt {
+					a.notAllArgs++
+				}
 			}
 
-			if !v.EqualTo(funcs) {
+			if !v.EqualTo(funcs, gt) {
 				countMismatch()
 				continue
 			}
