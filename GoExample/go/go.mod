@@ -1,6 +1,6 @@
 module gotest
 
-go 1.18
+go 1.22
 
 require (
 	github.com/segmentio/encoding v0.4.0
