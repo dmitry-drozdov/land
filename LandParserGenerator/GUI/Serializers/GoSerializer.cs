@@ -106,10 +106,14 @@ namespace Land.GUI.Serializers
 						if (res.Receiver == null) // highlevel grammar
 						{
 							var components = pcc.Children[0].ToString().Split(' ');
-							var idx = components.Length-1;
-							for (var i=0; i<components.Length; i++)
+							var idx = components.Length - 1;
+							for (var i = 0; i < components.Length; i++)
 							{
-								if (components[i] == "[") idx = i - 1;
+								if (components[i] == "[")
+								{
+									idx = i - 1;
+									break;
+								}
 							}
 							res.Receiver = components[idx];
 						}

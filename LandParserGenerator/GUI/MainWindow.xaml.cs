@@ -22,6 +22,7 @@ using System.ComponentModel;
 using System.Text.Json;
 using Land.GUI.Serializers;
 using Land.Core.Parsing.LR;
+using System.Diagnostics;
 //using System.Windows.Shapes;
 
 namespace Land.GUI
@@ -802,6 +803,10 @@ namespace Land.GUI
 
 			var totalStats = new Durations();
 
+			var allNodes = new List<Node>(); // to track memory
+			GC.Collect();
+			var m0 = Process.GetCurrentProcess().PrivateMemorySize64;
+
 			for (; counter < argument.Files.Count; ++counter)
 			{
 				var file = argument.Files[counter];
@@ -814,6 +819,8 @@ namespace Land.GUI
 					{
 						(root, stats) = File_Parse(file, File.ReadAllText(file, GetEncoding(file))) ?? (null, null);
 					}));
+
+					allNodes.Add(root);
 
 					timeSpent += Parser.Statistics.GeneralTimeSpent;
 
@@ -842,7 +849,7 @@ namespace Land.GUI
 							var oldPath = @"E:\phd\test_repos";
 							var newPath = @"E:\phd\test_repos\results";
 							var path = file.Replace(oldPath, newPath).Replace(".go", ".json");
-							GoSerializer.Serialize(path, root);
+							//GoSerializer.Serialize(path, root);
 						}
 						if (file.EndsWith(".graphql"))
 						{
@@ -915,6 +922,13 @@ namespace Land.GUI
 				}
 				FrontendUpdateDispatcher.Invoke(OnPackageFileParsingError, "");
 
+				GC.Collect();
+				var m1 = Process.GetCurrentProcess().PrivateMemorySize64;
+				var d = (m1 - m0) / (float)(1024 * 1024);
+
+				FrontendUpdateDispatcher.Invoke(OnPackageFileParsingError, "");
+				FrontendUpdateDispatcher.Invoke(OnPackageFileParsingError, $"Всего деревьев {allNodes.Count}; {d:f1} Mb");
+				FrontendUpdateDispatcher.Invoke(OnPackageFileParsingError, "");
 
 				FrontendUpdateDispatcher.Invoke(OnPackageFileParsingError, "");
 				FrontendUpdateDispatcher.Invoke(OnPackageFileParsingError, $"Всего токенов {Parser.TotalTokens}");
