@@ -4,17 +4,17 @@
  "TotalFiles": 13393,
  "SkippedFiles": 0,
  "SkippedPerCent": 0,
- "Fail": 1,
- "Ok": 107278,
+ "Fail": 0,
+ "Ok": 107279,
  "Accuracy": 100,
  "ArgsCover": 100,
  "VendorFuncs": 0,
  "VendorFuncsPerCent": 0,
  "StructStats": {
-  "Ok": 1083,
+  "Ok": 30496,
   "FailNotFound": 0,
   "FailNotFoundHasFunc": 0,
-  "FailIncorrectTypes": 29413,
-  "Ratio": 3.55
+  "FailIncorrectTypes": 0,
+  "Ratio": 100
  }
 }

@@ -16,7 +16,7 @@ const (
 	GrammarTypeMarkup    GrammarType = "GrammarTypeMarkup"
 )
 
-var currentMode = GrammarTypeHighLevel
+var currentMode = GrammarTypeMarkup
 
 var folders = []string{
 	"sourcegraph",
