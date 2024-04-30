@@ -5,6 +5,8 @@ import (
 	"strings"
 )
 
+type TypeStats map[string]int
+
 type FuncStat struct {
 	Receiver string
 	Name     string

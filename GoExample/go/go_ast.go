@@ -15,7 +15,19 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-func ParseFiles(root string) (map[string]map[string]*FuncStat, map[string]map[string]*StructStat, int, error) {
+type goAST struct {
+	stats TypeStats
+	mx    sync.Mutex
+}
+
+func NewGoAST() *goAST {
+	return &goAST{
+		stats: make(TypeStats, 10),
+		mx:    sync.Mutex{},
+	}
+}
+
+func (a *goAST) ParseFiles(root string) (map[string]map[string]*FuncStat, map[string]map[string]*StructStat, int, error) {
 	resFun := make(map[string]map[string]*FuncStat, 5000)
 	resStruct := make(map[string]map[string]*StructStat, 5000)
 	g := errgroup.Group{}
@@ -70,7 +82,7 @@ func ParseFiles(root string) (map[string]map[string]*FuncStat, map[string]map[st
 
 		g.Go(func() error {
 			t0 := time.Now()
-			f, dataFunc, dataStruct, err := ParseFile(pathBk)
+			f, dataFunc, dataStruct, err := a.ParseFile(pathBk)
 			if err != nil {
 				return err
 			}
@@ -112,7 +124,7 @@ func ParseFiles(root string) (map[string]map[string]*FuncStat, map[string]map[st
 	return resFun, resStruct, duplicates, nil
 }
 
-func ParseFile(path string) (*ast.File, map[string]*FuncStat, map[string]*StructStat, error) {
+func (a *goAST) ParseFile(path string) (*ast.File, map[string]*FuncStat, map[string]*StructStat, error) {
 	resFun := make(map[string]*FuncStat, 100)
 	resStruct := make(map[string]*StructStat, 100)
 
@@ -147,10 +159,10 @@ func ParseFile(path string) (*ast.File, map[string]*FuncStat, map[string]*Struct
 				resStruct[x.Name.Name] = &StructStat{Name: x.Name.Name, Types: make([]string, 0, 5)}
 				for _, f := range y.Fields.List {
 					for i := 0; i < len(f.Names); i++ { // a, b, c int => append 3 int
-						resStruct[x.Name.Name].Types = append(resStruct[x.Name.Name].Types, HumanType(f.Type))
+						resStruct[x.Name.Name].Types = append(resStruct[x.Name.Name].Types, a.humanType(f.Type))
 					}
 					if len(f.Names) == 0 { // embedded type
-						resStruct[x.Name.Name].Types = append(resStruct[x.Name.Name].Types, HumanType(f.Type))
+						resStruct[x.Name.Name].Types = append(resStruct[x.Name.Name].Types, a.humanType(f.Type))
 					}
 				}
 			}
@@ -165,7 +177,7 @@ func ParseFile(path string) (*ast.File, map[string]*FuncStat, map[string]*Struct
 				ptr.Return = byte(x.Type.Results.NumFields())
 			}
 			if x.Recv != nil && len(x.Recv.List) > 0 {
-				ptr.Receiver = HumanType(x.Recv.List[0].Type)
+				ptr.Receiver = a.humanType(x.Recv.List[0].Type)
 			}
 			resFun[x.Name.Name] = ptr
 
@@ -176,11 +188,11 @@ func ParseFile(path string) (*ast.File, map[string]*FuncStat, map[string]*Struct
 			for _, y := range x.Type.Params.List {
 				// can be several args with 1 type: n int, j, k, l float
 				for i := 0; i < len(y.Names); i++ {
-					add(HumanType(y.Type))
+					add(a.humanType(y.Type))
 				}
 				// at least 1 name always presented
 				if len(y.Names) == 0 {
-					add(HumanType(y.Type))
+					add(a.humanType(y.Type))
 				}
 			}
 
@@ -195,22 +207,23 @@ func ParseFile(path string) (*ast.File, map[string]*FuncStat, map[string]*Struct
 	return f, resFun, resStruct, nil
 }
 
-func HumanType(tp ast.Expr) string {
+func (a *goAST) humanType(tp ast.Expr) (res string) {
+	defer func() { a.mx.Lock(); a.stats[res]++; a.mx.Unlock() }()
 	switch t := tp.(type) {
 	case *ast.Ident:
 		return t.Name
 	case *ast.SelectorExpr:
 		return fmt.Sprintf("%v.%v\n", t.X, t.Sel.Name)
 	case *ast.StarExpr:
-		return HumanType(t.X)
+		return a.humanType(t.X)
 	case *ast.ArrayType:
-		return HumanType(t.Elt)
+		return a.humanType(t.Elt)
 	case *ast.IndexExpr:
-		return HumanType(t.X)
+		return a.humanType(t.X)
 	case *ast.IndexListExpr:
-		return HumanType(t.X)
+		return a.humanType(t.X)
 	case *ast.ParenExpr:
-		return HumanType(t.X)
+		return a.humanType(t.X)
 	case *ast.FuncType:
 		return "anon_func_title"
 	case *ast.ChanType:
@@ -222,7 +235,7 @@ func HumanType(tp ast.Expr) string {
 	case *ast.InterfaceType:
 		return "anon_interface"
 	case *ast.Ellipsis:
-		return HumanType(t.Elt)
+		return a.humanType(t.Elt)
 	}
 	return fmt.Sprintf("%T", tp)
 }

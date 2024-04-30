@@ -169,11 +169,24 @@ func doWork(sname string, gt GrammarType) error {
 
 	source := fmt.Sprintf(`e:\phd\test_repos\%s\`, sname)
 	fmt.Println("parsing files with go ast...")
-	fullFunc, fullStruct, duplicates, err := ParseFiles(source)
+	ast := NewGoAST()
+	fullFunc, fullStruct, duplicates, err := ast.ParseFiles(source)
 	if err != nil {
 		return err
 	}
 	fmt.Println("parsing files with go ast DONE")
+
+	mp, ch, total := 0, 0, 0
+	for k, v := range ast.stats {
+		total += v
+		switch k {
+		case "map":
+			mp += v
+		case "chan":
+			ch += v
+		}
+	}
+	fmt.Printf("map [%d] chan [%d] total [%d]\n", mp, ch, total)
 
 	a := &AnalyzerFuncStats{
 		Source:     sname,
