@@ -84,11 +84,11 @@ f_type		 =	ID | LB ID RB
 f_name		 =	ID
 t_name		 =	ID
 
-map = 'map' '[' Any ']' Any
-	| 'map' '[' Any ']' LB Any RB
-chan = 	'chan' Any
-		| 'chan<-' Any
-		| '<-chan' Any
+map = 'map' '[' AnyInclude('*') ']' AnyInclude('[', ']', 'map', '*', ID)
+	| 'map' '[' AnyInclude('*') ']' LB Any RB
+chan = 	'chan' AnyInclude('[', ']', 'map', '*', ID)
+		| 'chan<-' AnyInclude('[', ']', 'map', '*', ID)
+		| '<-chan' AnyInclude('[', ']', 'map', '*', ID)
 
 go_type			= (ID 
 					| arr_ptr* (ID | anon | map | chan) 
