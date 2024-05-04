@@ -81,11 +81,14 @@ namespace Land.GUI.Serializers
 		static int MaxDepth(Node node)
 		{
 			if (node.Children.Count == 0) return 0;
-			if (node.ToString() == "go_type")
+			var name = node.ToString();
+			if (name == "go_type")
 			{
-				return 1 + MaxDepth(node.Children.First(x => x.ToString() != "arr_ptr"));
+				return 1 + MaxDepth(node.Children.Last());
 			}
-			return node.Children.Select(x => MaxDepth(x)).Max();
+			var extra = 0;
+			if (name == "anon_func_title") extra++;
+			return extra + node.Children.Select(x => MaxDepth(x)).Max();
 		}
 
 
@@ -113,7 +116,7 @@ namespace Land.GUI.Serializers
 					case "f_returns":
 						var returns = pcc.Children.Where(x => x.ToString() == "f_return" || x.ToString().StartsWith("go_type", StringComparison.Ordinal));
 						res.Return = returns.Count();
-						foreach(var ret in returns) res.ReturnsDepth.Add(MaxDepth(ret));
+						foreach (var ret in returns) res.ReturnsDepth.Add(MaxDepth(ret));
 						break;
 					case "f_reciever":
 						res.Receiver = pcc.Children.FirstOrDefault(x => x.ToString() == "f_type")?.Children[0]?.ToString()?.Replace("ID: ", "");
