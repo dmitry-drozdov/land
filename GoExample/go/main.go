@@ -189,10 +189,11 @@ func doWork(sname string, gt GrammarType) error {
 	fmt.Printf("map [%d] chan [%d] total [%d]\n", mp, ch, total)
 
 	a := &AnalyzerFuncStats{
-		Source:     sname,
-		Duplicates: duplicates,
-		lnFull:     len(fullFunc),
-		lnLight:    len(lightFunc),
+		Source:         sname,
+		Duplicates:     duplicates,
+		lnFull:         len(fullFunc),
+		lnLight:        len(lightFunc),
+		postProcessReq: 0,
 	}
 
 	s := &a.StructStats
@@ -234,7 +235,6 @@ func doWork(sname string, gt GrammarType) error {
 			a.mismatch++
 			continue
 		}
-
 		for k, v := range vf {
 			countMismatch := func() {
 				fmt.Println()
@@ -277,6 +277,12 @@ func doWork(sname string, gt GrammarType) error {
 			}
 
 			a.match++
+			if v.RequirePostProcess {
+				a.postProcessReq++
+			}
+			if v.NoBody {
+				a.noBody++
+			}
 		}
 	}
 

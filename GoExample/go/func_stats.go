@@ -11,13 +11,15 @@ import (
 type TypeStats map[string]int
 
 type FuncStat struct {
-	Receiver     string
-	Name         string
-	Args         []string
-	ArgsDepth    []int
-	ArgsCnt      byte
-	Return       byte
-	ReturnsDepth []int
+	Receiver           string
+	Name               string
+	Args               []string
+	ArgsDepth          []int
+	ArgsCnt            byte
+	Return             byte
+	ReturnsDepth       []int
+	RequirePostProcess bool
+	NoBody             bool
 }
 
 type StructStat struct {

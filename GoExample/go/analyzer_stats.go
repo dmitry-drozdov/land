@@ -20,26 +20,31 @@ func (a *AnalyzerStructStats) Total() int {
 }
 
 type AnalyzerFuncStats struct {
-	notAllArgs int
-	mismatch   int
-	match      int
-	lnFull     int
-	lnLight    int
-	cntVendor  int
+	notAllArgs     int
+	mismatch       int
+	match          int
+	lnFull         int
+	lnLight        int
+	cntVendor      int
+	postProcessReq int
+	noBody         int
 
-	Duplicates         int
-	Source             string
-	TotalFiles         int
-	SkippedFiles       int
-	SkippedPerCent     RoundedFloat
-	Fail               int
-	Ok                 int
-	Accuracy           RoundedFloat
-	ArgsCover          RoundedFloat
-	VendorFuncs        int
-	VendorFuncsPerCent RoundedFloat
-
-	StructStats AnalyzerStructStats
+	Duplicates            int
+	Source                string
+	TotalFiles            int
+	SkippedFiles          int
+	SkippedPerCent        RoundedFloat
+	Fail                  int
+	Ok                    int
+	Accuracy              RoundedFloat
+	ArgsCover             RoundedFloat
+	VendorFuncs           int
+	VendorFuncsPerCent    RoundedFloat
+	PostProcessReq        int
+	PostProcessReqPerCent RoundedFloat
+	NoBody                int
+	NoBodyPerCent         RoundedFloat
+	StructStats           AnalyzerStructStats
 }
 
 func (a *AnalyzerFuncStats) init() {
@@ -56,6 +61,12 @@ func (a *AnalyzerFuncStats) init() {
 
 	a.VendorFuncs = a.cntVendor
 	a.VendorFuncsPerCent = ratio(a.cntVendor, a.mismatch)
+
+	a.PostProcessReq = a.postProcessReq
+	a.PostProcessReqPerCent = ratio(a.postProcessReq, a.match)
+
+	a.NoBody = a.noBody
+	a.NoBodyPerCent = ratio(a.NoBody, a.match)
 
 	a.StructStats.Ratio = ratio(a.StructStats.Ok, a.StructStats.Total())
 }
@@ -99,6 +110,10 @@ func (a *AnalyzerFuncStats) Add(b AnalyzerFuncStats) {
 	a.ArgsCover += b.ArgsCover
 	a.VendorFuncs += b.VendorFuncs
 	a.VendorFuncsPerCent += b.VendorFuncsPerCent
+	a.PostProcessReq += b.PostProcessReq
+	a.PostProcessReqPerCent += b.PostProcessReqPerCent
+	a.NoBody += b.NoBody
+	a.NoBodyPerCent += b.NoBodyPerCent
 	a.Duplicates += b.Duplicates
 	a.StructStats.Add(b.StructStats)
 }

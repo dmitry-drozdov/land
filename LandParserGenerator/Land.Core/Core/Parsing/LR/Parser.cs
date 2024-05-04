@@ -142,7 +142,6 @@ namespace Land.Core.Parsing.LR
 						/// Кладём на стек состояние, в которое нужно произвести переход
 						SymbolsStack.Push(parentNode);
 						StatesStack.Push(Table.Transitions[currentState][action.ReductionAlternative.NonterminalSymbolName]);
-
 						NestingStack.Push(LexingStream.GetPairsCount());
 
 						if (EnableTracing)
