@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using System.Windows.Controls;
 
 namespace Land.GUI.Serializers
 {
@@ -77,6 +78,16 @@ namespace Land.GUI.Serializers
 			}
 		}
 
+		static int MaxDepth(Node node)
+		{
+			if (node.Children.Count == 0) return 0;
+			if (node.ToString() == "go_type")
+			{
+				return 1 + MaxDepth(node.Children.First(x => x.ToString() != "arr_ptr"));
+			}
+			return node.Children.Select(x => MaxDepth(x)).Max();
+		}
+
 
 		static void ParseFunc(Node pc, StreamWriter sw)
 		{
@@ -96,10 +107,13 @@ namespace Land.GUI.Serializers
 						foreach (var arg in args)
 						{
 							res.Args.Add(arg.ToString().Replace("f_arg: ", ""));
+							res.ArgsDepth.Add(MaxDepth(arg));
 						}
 						break;
 					case "f_returns":
-						res.Return = pcc.Children.Count(x => x.ToString() == "f_return" || x.ToString().StartsWith("go_type", StringComparison.Ordinal));
+						var returns = pcc.Children.Where(x => x.ToString() == "f_return" || x.ToString().StartsWith("go_type", StringComparison.Ordinal));
+						res.Return = returns.Count();
+						foreach(var ret in returns) res.ReturnsDepth.Add(MaxDepth(ret));
 						break;
 					case "f_reciever":
 						res.Receiver = pcc.Children.FirstOrDefault(x => x.ToString() == "f_type")?.Children[0]?.ToString()?.Replace("ID: ", "");

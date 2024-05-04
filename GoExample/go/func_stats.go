@@ -1,18 +1,23 @@
 package main
 
 import (
+	"fmt"
 	"sort"
 	"strings"
+
+	"golang.org/x/exp/constraints"
 )
 
 type TypeStats map[string]int
 
 type FuncStat struct {
-	Receiver string
-	Name     string
-	Args     []string
-	ArgsCnt  byte
-	Return   byte
+	Receiver     string
+	Name         string
+	Args         []string
+	ArgsDepth    []int
+	ArgsCnt      byte
+	Return       byte
+	ReturnsDepth []int
 }
 
 type StructStat struct {
@@ -66,4 +71,32 @@ func compareStrings(s1, s2 string) bool {
 	s2 = strings.TrimSpace(s2)
 	s2 = strings.ToLower(s2)
 	return s1 == s2
+}
+
+type DepthStats[T interface {
+	constraints.Float | constraints.Integer
+}] struct {
+	max, total, cnt T
+	names           []string
+}
+
+func (d *DepthStats[T]) Process(depth T, name string) T {
+	if depth > d.max {
+		d.max = depth
+		d.names = []string{}
+	}
+	if depth == d.max {
+		d.names = append(d.names, name)
+	}
+	d.cnt++
+	d.total += depth
+	return depth
+}
+
+func (d *DepthStats[T]) String() string {
+	var names []string
+	if d.max > 2 {
+		names = d.names
+	}
+	return fmt.Sprintf("max[%v] avg[%.3f] [%+v]\n", d.max, float64(d.total)/float64(d.cnt), names)
 }

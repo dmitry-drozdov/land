@@ -16,7 +16,7 @@ const (
 	GrammarTypeMarkup    GrammarType = "GrammarTypeMarkup"
 )
 
-var currentMode = GrammarTypeMarkup
+var currentMode = GrammarTypeHighLevel
 
 var folders = []string{
 	"sourcegraph",
@@ -224,6 +224,10 @@ func doWork(sname string, gt GrammarType) error {
 		}
 	}
 
+	argsDepth := &DepthStats[int]{}
+	retsDepth := &DepthStats[int]{}
+	totalDepth := &DepthStats[int]{}
+	avgDepth := &DepthStats[float64]{}
 	for kf, vf := range fullFunc {
 		kl, ok := lightFunc[kf]
 		if !ok {
@@ -253,6 +257,20 @@ func doWork(sname string, gt GrammarType) error {
 				}
 			}
 
+			sum := 0
+			for _, argDepth := range funcs.ArgsDepth {
+				sum += argsDepth.Process(argDepth, funcs.Name)
+			}
+			for _, retDepth := range funcs.ReturnsDepth {
+				sum += retsDepth.Process(retDepth, funcs.Name)
+			}
+			totalDepth.Process(sum, funcs.Name)
+			if funcs.ArgsCnt+funcs.Return > 0 {
+				avgDepth.Process(float64(sum)/float64(funcs.ArgsCnt+funcs.Return), funcs.Name)
+			} else {
+				avgDepth.Process(0, funcs.Name)
+			}
+
 			if !v.EqualTo(funcs, gt) {
 				countMismatch()
 				continue
@@ -261,6 +279,11 @@ func doWork(sname string, gt GrammarType) error {
 			a.match++
 		}
 	}
+
+	fmt.Printf("argsDepth: " + argsDepth.String())
+	fmt.Printf("retsDepth: " + retsDepth.String())
+	fmt.Printf("totalDepth: " + totalDepth.String())
+	fmt.Printf("avgDepth: " + avgDepth.String())
 
 	return a.Dump()
 }

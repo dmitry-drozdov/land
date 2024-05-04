@@ -11,8 +11,10 @@ namespace Land.GUI
 	{
 		public string Name { get; set; } = "";
 		public List<string> Args { get; set; } = new List<string>();
+		public List<int> ArgsDepth { get; set; } = new List<int>();
 		public int ArgsCnt { get; set; } = 0;
 		public int Return { get; set; } = 0;
+		public List<int> ReturnsDepth { get; set; } = new List<int>();
 		public string Receiver { get; set; } = "";
 
 		public bool Empty
