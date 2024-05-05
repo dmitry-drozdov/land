@@ -87,7 +87,7 @@ namespace Land.GUI.Serializers
 				return 1 + MaxDepth(node.Children.Last());
 			}
 			var extra = 0;
-			if (name == "anon_func_title") extra++;
+			if (name == "anon_func_title" || name == "struct_content") extra++;
 			return extra + node.Children.Select(x => MaxDepth(x)).Max();
 		}
 
