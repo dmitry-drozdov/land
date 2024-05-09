@@ -187,6 +187,7 @@ func doWork(sname string, gt GrammarType) error {
 		}
 	}
 	fmt.Printf("map [%d] chan [%d] total [%d]\n", mp, ch, total)
+	fmt.Printf("chan ratio: %.2f\n%%", float64(ch)/float64(total)*100)
 
 	a := &AnalyzerFuncStats{
 		Source:         sname,
