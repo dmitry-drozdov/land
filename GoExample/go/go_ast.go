@@ -125,7 +125,7 @@ func (a *goAST) ParseFiles(root string) (map[string]map[string]*FuncStat, map[st
 
 	fmt.Printf("%.2f sec.\n", float64(timeSpent)/(float64(time.Second)))
 	fmt.Printf("%d Mb \n", maxMemory/(1024*1024))
-	fmt.Printf("%d/%d req/all nodes (%.2f%%)\n", totalRequiredNodes, totalNodes, ratio(totalRequiredNodes, totalNodes))
+	fmt.Printf("%d / %d req/all nodes (%.2f%%)\n", totalRequiredNodes, totalNodes, ratio(totalRequiredNodes, totalNodes))
 
 	return resFun, resStruct, duplicates, nil
 }

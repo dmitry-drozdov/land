@@ -26,7 +26,11 @@ func ReturnMap() *map[int][]*string {
 	return nil // some comment
 }
 
-type Mp map[struct{}]func() int
+type SomeType map[struct{}]func() int
+
+func action(s string) int {
+
+}
 
 var I int
 

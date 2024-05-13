@@ -9,6 +9,8 @@ import (
 	cp "github.com/otiai10/copy"
 )
 
+
+
 type GrammarType string
 
 const (
@@ -176,7 +178,7 @@ func doWork(sname string, gt GrammarType) error {
 	}
 	fmt.Println("parsing files with go ast DONE")
 
-	mp, ch, total := 0, 0, 0
+	mp, ch, id, total := 0, 0, 0, 0
 	for k, v := range ast.stats {
 		total += v
 		switch k {
@@ -184,9 +186,13 @@ func doWork(sname string, gt GrammarType) error {
 			mp += v
 		case "chan":
 			ch += v
+		default:
+			if strings.Contains(k, "anon") {
+				id += v
+			}
 		}
 	}
-	fmt.Printf("map [%d] chan [%d] total [%d]\n", mp, ch, total)
+	fmt.Printf("id [%d] map [%d] chan [%d] total [%d]\n", id, mp, ch, total)
 	fmt.Printf("chan ratio: %.2f\n%%", float64(ch)/float64(total)*100)
 
 	a := &AnalyzerFuncStats{
