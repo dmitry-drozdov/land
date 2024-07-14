@@ -86,6 +86,6 @@ water_entity	=	Any
 }
 
 %markup {
-	land func_line type_def
+	land func_line type_def type_line
 	headercore(id) func_line type_def
 }
