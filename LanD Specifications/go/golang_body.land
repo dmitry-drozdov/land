@@ -1,0 +1,55 @@
+COMMENT		: COMMENT_L|COMMENT_ML
+COMMENT_L	: '//' ~[\n\r]*
+COMMENT_ML	: '/*' .*? '*/'
+
+ID			: '@'?[_a-zA-Z][_0-9a-zA-Z.]*
+
+ 
+CURVE_BRACKETED : %left '{' %right '}'
+ROUND_BRACKETED : %left '(' %right ')'
+SQUARE_BRACKETED : %left ('['|GENERAL_ATTRIBUTE_START) %right ']'
+
+NL			: '\n'
+
+content	=	entity*
+entity	= control | water_entity | block | switch | select
+
+control = call | if  | for 
+
+if = 'if' (call | Any)* block
+for = 'for' (call | Any)* block
+
+block = '{' (control | Any)* '}'
+
+call = ID '(' (call | Any)*  ')'
+
+water_entity	=	Any
+
+switch = 'switch' (call | Any)* block
+select = 'select' block
+
+%%
+
+%parsing {
+	recovery  
+	fragment STRING_INT_CODE
+	start content
+	skip COMMENT NL
+}
+
+%nodes {
+	ghost entity 
+	leaf 
+	void
+}
+
+%customblock {
+	start("//+")
+	end("//@")
+	basetoken COMMENT
+}
+
+%markup {
+	land func
+	headercore(f_name) func
+}
