@@ -40,10 +40,12 @@ water_entity	=	Any
 switch = 'switch' (call | Any)* block
 select = 'select' block
 
+// в секции recovery ничего не должно быть, чтобы мы могли восстанавливаться из любого места
+
 %%
 
 %parsing {
-	recovery  
+	recovery
 	fragment STRING_INT_CODE
 	start content
 	skip COMMENT NL STRING CHAR
