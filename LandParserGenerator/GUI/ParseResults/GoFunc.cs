@@ -40,4 +40,23 @@ namespace Land.GUI
 		}
 	}
 
+	internal class GoNode
+	{
+		public string Type { get; set; } = "";
+		public string Name { get; set; } = "";
+		public List<GoNode> Children { get; set; } = new List<GoNode>();
+
+		public bool Empty
+		{
+			get
+			{
+				return Name == "" && Type == "" && Children.Count == 0;
+			}
+		}
+		public GoNode(string type)
+		{
+			Type = type;
+		}
+	}
+
 }
