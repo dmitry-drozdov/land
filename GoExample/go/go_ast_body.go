@@ -9,6 +9,7 @@ import (
 	"runtime"
 	"strings"
 	"utils/filter"
+	"utils/inspect"
 
 	"golang.org/x/sync/errgroup"
 )
@@ -106,6 +107,8 @@ func (a *goAST) ParseFileBodies(path string) error {
 		if err != nil {
 			return false
 		}
+
+		_ = inspect.Inspect(x)
 
 		return true
 	})
