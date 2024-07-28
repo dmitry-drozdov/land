@@ -11,6 +11,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"utils/filter"
 
 	"golang.org/x/sync/errgroup"
 )
@@ -141,24 +142,14 @@ func (a *goAST) ParseFile(path string) (int, int, *ast.File, map[string]*FuncSta
 		return 0, 0, nil, nil, nil, err
 	}
 
-	type pair struct{ start, end token.Pos }
-	funcPos := make([]pair, 0, 100) // to filter type declared inside functions
-
-	checkInside := func(start, end token.Pos) bool {
-		for _, pos := range funcPos {
-			if start > pos.start && end < pos.end {
-				return true
-			}
-		}
-		return false
-	}
+	nested := filter.NewNestedFuncs()
 
 	allCnt := 0
 	reqCnt := 0
 
 	ast.Inspect(f, func(n ast.Node) bool {
 		allCnt++
-		if n != nil && checkInside(n.Pos(), n.End()) {
+		if n != nil && nested.Nested(n.Pos(), n.End()) {
 			return true
 		}
 
@@ -216,10 +207,10 @@ func (a *goAST) ParseFile(path string) (int, int, *ast.File, map[string]*FuncSta
 				ptr.NoBody = true
 			}
 
-			funcPos = append(funcPos, pair{x.Pos(), x.End()})
+			nested.Add(x)
 
 		case *ast.FuncLit:
-			funcPos = append(funcPos, pair{x.Pos(), x.End()})
+			nested.Add(x)
 		}
 		return true
 	})

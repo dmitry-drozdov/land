@@ -38,45 +38,6 @@ var folders = []string{
 }
 
 func main() {
-	// err := makeTestSet(40)
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// return
-
-	// err := GenerateLargeFile(`e:\phd\test_repos_light`, `e:\phd\large.go`)
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// return
-
-	// err := GenerateLargeFileStandard(`e:\phd\large\large`, "go")
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// return
-
-	// err = GenerateLargeFileStandardSharp(`e:\phd\large\large`, "cs")
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// return
-
-	// t0 := time.Now()
-	// fset := token.NewFileSet()
-	// _, err = parser.ParseFile(fset, `e:\phd\large.go`, nil, 0)
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// fmt.Println(time.Since(t0))
-	// return
-
-	// cnt, err := deleteDups(`e:\phd\test_repos`)
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// fmt.Printf("deleted %v duplicates\n", cnt)
-
 	for _, f := range folders {
 		if err := doWork(f, currentMode); err != nil {
 			fmt.Printf("[%v] <ERROR>: [%v]\n", f, err)
@@ -156,6 +117,16 @@ func makeTestSet(percent int) error {
 }
 
 func doWork(sname string, gt GrammarType) error {
+	source := fmt.Sprintf(`e:\phd\test_repos\%s\`, sname)
+	fmt.Println("parsing files bodies with go ast...")
+	ast := NewGoAST()
+	err := ast.ParseFilesBodies(source)
+	if err != nil {
+		return err
+	}
+	fmt.Println("parsing files with go ast DONE")
+	return nil
+
 	fmt.Printf("\n===== %s START =====\n", sname)
 	defer fmt.Printf("===== %s END =====\n", sname)
 
@@ -167,9 +138,9 @@ func doWork(sname string, gt GrammarType) error {
 	fmt.Println(len(lightStruct))
 	fmt.Println("reading results DONE")
 
-	source := fmt.Sprintf(`e:\phd\test_repos\%s\`, sname)
+	source = fmt.Sprintf(`e:\phd\test_repos\%s\`, sname)
 	fmt.Println("parsing files with go ast...")
-	ast := NewGoAST()
+	ast = NewGoAST()
 	fullFunc, fullStruct, duplicates, err := ast.ParseFiles(source)
 	if err != nil {
 		return err
