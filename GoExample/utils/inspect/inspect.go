@@ -5,11 +5,6 @@ import (
 	"go/ast"
 )
 
-type Node struct {
-	Type     string
-	Name     string
-	Children []*Node
-}
 
 func Inspect(x *ast.FuncDecl) *Node {
 	res := &Node{

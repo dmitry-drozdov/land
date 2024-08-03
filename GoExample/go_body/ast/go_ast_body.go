@@ -9,19 +9,18 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"utils/ast_type"
+	"utils/concurrency"
 	"utils/filter"
+	"utils/hash"
 	"utils/inspect"
 
-	"utils/concurrency"
-
-	"utils/ast_type"
-	"utils/hash"
-
+	"golang.org/x/exp/rand"
 	"golang.org/x/sync/errgroup"
 )
 
 const (
-	maxFuncs = 500 // 25000
+	maxFiles = 100 // 25000
 )
 
 type Parser struct {
@@ -32,44 +31,42 @@ func NewParser() *Parser {
 	return &Parser{ast_type.NewNameConverter()}
 }
 
-func (p *Parser) ParseFilesBodies(root string) error {
-	g := errgroup.Group{}
-	g.SetLimit(runtime.NumCPU() * 8)
-
-	nodes := concurrency.NewSaveMap[string, *inspect.Node](1000)
-
+func (p *Parser) ParseFilesBodies(root string) (map[string]*inspect.Node, error) {
+	paths := make([]string, 0, 1000)
 	err := filepath.Walk(root, func(path string, info os.FileInfo, _ error) error {
 		if info.IsDir() || filepath.Ext(info.Name()) != ".go" {
 			return nil
 		}
-
-		pathBk := path
-
-		g.Go(func() error {
-			if nodes.Len() > maxFuncs {
-				return nil
-			}
-
-			err := p.ParseFileBodies(pathBk, strings.Replace(pathBk, `\test_repos\`, `\test_repos_body\`, 1), nodes)
-			if err != nil {
-				return err
-			}
-
-			return nil
-		})
-
+		paths = append(paths, path)
 		return nil
 	})
-	if gErr := g.Wait(); gErr != nil {
-		return gErr
-	}
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	fmt.Println(nodes.Len())
+	rand.Seed(2024)
+	rand.Shuffle(len(paths), func(i, j int) {
+		paths[i], paths[j] = paths[j], paths[i]
+	})
+	paths = paths[:min(len(paths), maxFiles)]
 
-	return nil
+	nodes := concurrency.NewSaveMap[string, *inspect.Node](1000)
+
+	g := errgroup.Group{}
+	g.SetLimit(runtime.NumCPU() * 8)
+
+	for _, path := range paths {
+		pathBk := path
+		g.Go(func() error {
+			return p.ParseFileBodies(pathBk, strings.Replace(pathBk, `\test_repos\`, `\test_repos_body\`, 1), nodes)
+		})
+	}
+
+	if gErr := g.Wait(); gErr != nil {
+		return nil, gErr
+	}
+
+	return nodes.Unsafe(), nil
 }
 
 func (p *Parser) ParseFileBodies(path string, pathOut string, nodes *concurrency.SaveMap[string, *inspect.Node]) (err error) {
@@ -106,7 +103,7 @@ func (p *Parser) ParseFileBodies(path string, pathOut string, nodes *concurrency
 		}
 
 		suffix := fmt.Sprint("_", hash.HashStrings(p.HumanType(x.Recv.List[0].Type), x.Name.Name), ".go")
-		pathOut := strings.Replace(pathOut, ".go", suffix, 1)
+		pathOut := pathOut[:len(pathOut)-3] + suffix
 
 		start := fset.Position(x.Body.Pos())
 		end := fset.Position(x.Body.End())
@@ -135,7 +132,7 @@ func (p *Parser) ParseFileBodies(path string, pathOut string, nodes *concurrency
 		}
 
 		node := inspect.Inspect(x)
-		nodes.Set(pathOut, node)
+		nodes.Set(strings.TrimSuffix(pathOut, ".go"), node)
 
 		return true
 	})
