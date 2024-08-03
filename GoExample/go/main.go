@@ -118,15 +118,6 @@ func makeTestSet(percent int) error {
 
 func doWork(sname string, gt GrammarType) error {
 	source := fmt.Sprintf(`e:\phd\test_repos\%s\`, sname)
-	fmt.Println("parsing files bodies with go ast...")
-	ast := NewGoAST()
-	err := ast.ParseFilesBodies(source)
-	if err != nil {
-		return err
-	}
-	fmt.Println("parsing files with go ast DONE")
-	return nil
-
 	fmt.Printf("\n===== %s START =====\n", sname)
 	defer fmt.Printf("===== %s END =====\n", sname)
 
@@ -140,7 +131,7 @@ func doWork(sname string, gt GrammarType) error {
 
 	source = fmt.Sprintf(`e:\phd\test_repos\%s\`, sname)
 	fmt.Println("parsing files with go ast...")
-	ast = NewGoAST()
+	ast := NewGoAST()
 	fullFunc, fullStruct, duplicates, err := ast.ParseFiles(source)
 	if err != nil {
 		return err
@@ -149,7 +140,7 @@ func doWork(sname string, gt GrammarType) error {
 
 	total := 0
 	mp := map[string]int{}
-	for k, v := range ast.stats {
+	for k, v := range ast.Stats() {
 		total += v
 		switch k {
 		case "map":

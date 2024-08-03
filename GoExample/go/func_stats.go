@@ -8,8 +8,6 @@ import (
 	"golang.org/x/exp/constraints"
 )
 
-type TypeStats map[string]int
-
 type FuncStat struct {
 	Receiver           string
 	Name               string

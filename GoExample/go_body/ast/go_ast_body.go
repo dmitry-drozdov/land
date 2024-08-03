@@ -1,6 +1,7 @@
-package main
+package ast
 
 import (
+	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/token"
@@ -11,13 +12,31 @@ import (
 	"utils/filter"
 	"utils/inspect"
 
+	"utils/concurrency"
+
+	"utils/ast_type"
+	"utils/hash"
+
 	"golang.org/x/sync/errgroup"
 )
 
-func (a *goAST) ParseFilesBodies(root string) error {
+const (
+	maxFuncs = 500 // 25000
+)
+
+type Parser struct {
+	*ast_type.NameConverter
+}
+
+func NewParser() *Parser {
+	return &Parser{ast_type.NewNameConverter()}
+}
+
+func (p *Parser) ParseFilesBodies(root string) error {
 	g := errgroup.Group{}
 	g.SetLimit(runtime.NumCPU() * 8)
-	//l := sync.Mutex{}
+
+	nodes := concurrency.NewSaveMap[string, *inspect.Node](1000)
 
 	err := filepath.Walk(root, func(path string, info os.FileInfo, _ error) error {
 		if info.IsDir() || filepath.Ext(info.Name()) != ".go" {
@@ -27,7 +46,11 @@ func (a *goAST) ParseFilesBodies(root string) error {
 		pathBk := path
 
 		g.Go(func() error {
-			err := a.ParseFileBodies(pathBk)
+			if nodes.Len() > maxFuncs {
+				return nil
+			}
+
+			err := p.ParseFileBodies(pathBk, strings.Replace(pathBk, `\test_repos\`, `\test_repos_body\`, 1), nodes)
 			if err != nil {
 				return err
 			}
@@ -44,24 +67,24 @@ func (a *goAST) ParseFilesBodies(root string) error {
 		return err
 	}
 
+	fmt.Println(nodes.Len())
+
 	return nil
 }
 
-func (a *goAST) ParseFileBodies(path string) error {
+func (p *Parser) ParseFileBodies(path string, pathOut string, nodes *concurrency.SaveMap[string, *inspect.Node]) (err error) {
 	src, err := os.ReadFile(path)
 	if err != nil {
-		return err
+		return
 	}
 	fset := token.NewFileSet()
 
 	f, err := parser.ParseFile(fset, path, nil, 0)
 	if err != nil {
-		return err
+		return
 	}
 
 	nested := filter.NewNestedFuncs()
-
-	pathOut := strings.Replace(path, `\test_repos\`, `\test_repos_body\`, 1)
 
 	ast.Inspect(f, func(n ast.Node) bool {
 		if n != nil && nested.Nested(n.Pos(), n.End()) {
@@ -81,6 +104,9 @@ func (a *goAST) ParseFileBodies(path string) error {
 		if x.Recv == nil || len(x.Recv.List) == 0 {
 			return true
 		}
+
+		suffix := fmt.Sprint("_", hash.HashStrings(p.HumanType(x.Recv.List[0].Type), x.Name.Name), ".go")
+		pathOut := strings.Replace(pathOut, ".go", suffix, 1)
 
 		start := fset.Position(x.Body.Pos())
 		end := fset.Position(x.Body.End())
@@ -108,13 +134,14 @@ func (a *goAST) ParseFileBodies(path string) error {
 			return false
 		}
 
-		_ = inspect.Inspect(x)
+		node := inspect.Inspect(x)
+		nodes.Set(pathOut, node)
 
 		return true
 	})
 	if err != nil {
-		return err
+		return
 	}
 
-	return nil
+	return
 }

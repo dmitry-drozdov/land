@@ -19,6 +19,14 @@ func HashString(s string) uint64 {
 	return h.Sum64()
 }
 
+func HashStrings(ss ...string) uint64 {
+	h := fnv.New64a()
+	for _, s := range ss {
+		h.Write([]byte(s))
+	}
+	return h.Sum64()
+}
+
 func HashFile(bytes []byte) uint64 {
 	str := string(bytes)
 
