@@ -24,11 +24,19 @@ namespace Land.GUI.Serializers
 			foreach (var child in root.Children)
 			{
 				var str = child.ToString();
-				if (str == "call" || str == "if" || str == "switch" || str == "select")
+				if (str == "call")
+				{
+					var c = new GoNode(str, child.Children[0].ToString().Replace("ID: ", ""));
+					node.Children.Add(c);
+					ParseNode(child, c);
+					return;
+				}
+				if (str == "if" || str == "switch" || str == "select")
 				{
 					var c = new GoNode(str);
 					node.Children.Add(c);
 					ParseNode(child, c);
+					return;
 				}
 				if (str == "block" || str == "control")
 				{
@@ -36,6 +44,7 @@ namespace Land.GUI.Serializers
 					{
 						ParseNode(cblock, node);
 					}
+					return;
 				}
 			}
 

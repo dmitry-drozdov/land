@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media.Media3D;
+using System.Xml.Linq;
 
 namespace Land.GUI
 {
@@ -46,16 +47,21 @@ namespace Land.GUI
 		public string Name { get; set; } = "";
 		public List<GoNode> Children { get; set; } = new List<GoNode>();
 
-		public bool Empty
+		/*public bool Empty
 		{
 			get
 			{
 				return Name == "" && Type == "" && Children.Count == 0;
 			}
-		}
+		}*/
 		public GoNode(string type)
 		{
 			Type = type;
+		}
+		public GoNode(string type, string name)
+		{
+			Type = type;
+			Name = name;
 		}
 	}
 
