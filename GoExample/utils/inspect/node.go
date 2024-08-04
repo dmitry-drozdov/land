@@ -24,11 +24,11 @@ func (n *Node) Hash() uint64 {
 }
 
 func (n1 *Node) EqualTo(n2 *Node) error {
-	if n1.Name != n2.Name {
-		return fmt.Errorf("name mismatch: %v %v", n1.Name, n2.Name)
-	}
 	if n1.Type != n2.Type {
-		return fmt.Errorf("type mismatch: %v %v ", n1.Type, n2.Type)
+		return fmt.Errorf("type mismatch: [%v] [%v]", n1.Type, n2.Type)
+	}
+	if n1.Name != n2.Name {
+		return fmt.Errorf("name mismatch: [%v] [%v]", n1.Name, n2.Name)
 	}
 	if len(n1.Children) != len(n2.Children) {
 		if len(n1.Children) < len(n2.Children) {
