@@ -79,6 +79,7 @@ func compareMaps(m1, m2 map[string]*inspect.Node) (*stats.Stats, error) {
 		if err != nil {
 			b, _ := json.Marshal(v1)
 			fmt.Println(err, k1, string(b))
+			fmt.Println()
 			errs = append(errs, err)
 			st.Fail()
 			continue
