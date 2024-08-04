@@ -14,7 +14,11 @@ STRING_STD	: '"' ('\\"'|'\\\\'|.)*? '"'
 
 CHAR		: '\'' ('\\\''|'\\\\'|.)*? '\''
 
-ID			: '@'?[_a-zA-Z][_0-9a-zA-Z.]*
+// не распознавать var (...) и return (1+2) как вызовы
+WATER_KEYWORD: 'var' | 'return' 
+
+ID			: '@'?[_a-zA-Z\u0391-\u03A9\u03B1-\u03C9][_0-9a-zA-Z.\u0391-\u03A9\u03B1-\u03C9]*
+
 
  
 //CURVE_BRACKETED : %left '{' %right '}'
@@ -39,6 +43,7 @@ water_entity	=	Any
 
 switch = 'switch' (call | Any)* block
 select = 'select' block
+
 
 // в секции recovery ничего не должно быть, чтобы мы могли восстанавливаться из любого места
 
