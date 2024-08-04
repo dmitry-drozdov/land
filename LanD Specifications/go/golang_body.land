@@ -31,7 +31,7 @@ control = call | if  | for | switch | select
 if = 'if' (call | Any)* block
 for = 'for' (call | Any)* block
 
-block = '{' (control | Any)* '}'
+block = '{' (control | block | Any)* '}'
 
 call = ID '(' (call | block | Any)*  ')'
 
