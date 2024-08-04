@@ -16,38 +16,41 @@ namespace Land.GUI.Serializers
 		{
 			if (root == null || root.ToString() == "water_entity")
 				return;
-			if (root.ToString() == "content")
+
+			var str = root.ToString();
+			if (str == "content")
 			{
 				node.Type = "func_body";
 			}
 
-			foreach (var child in root.Children)
+			if (str == "call")
 			{
-				var str = child.ToString();
-				if (str == "call")
+				var c = new GoNode(str, root.Children[0].ToString().Replace("ID: ", ""));
+				node.Children.Add(c);
+				foreach (var child in root.Children)
 				{
-					var c = new GoNode(str, child.Children[0].ToString().Replace("ID: ", ""));
-					node.Children.Add(c);
 					ParseNode(child, c);
-					return;
 				}
-				if (str == "if" || str == "switch" || str == "select")
-				{
-					var c = new GoNode(str);
-					node.Children.Add(c);
-					ParseNode(child, c);
-					return;
-				}
-				if (str == "block" || str == "control")
-				{
-					foreach (var cblock in child.Children)
-					{
-						ParseNode(cblock, node);
-					}
-					return;
-				}
+				return;
 			}
-
+			if (str == "if" || str == "switch" || str == "select")
+			{
+				var c = new GoNode(str);
+				node.Children.Add(c);
+				foreach (var child in root.Children)
+				{
+					ParseNode(child, c);
+				}
+				return;
+			}
+			if (str == "block" || str == "control")
+			{
+				foreach (var cblock in root.Children)
+				{
+					ParseNode(cblock, node);
+				}
+				return;
+			}
 		}
 		internal static void Serialize(string path, Node root)
 		{
