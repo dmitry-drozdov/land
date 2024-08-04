@@ -33,7 +33,7 @@ namespace Land.GUI.Serializers
 				}
 				return;
 			}
-			if (str == "if" || str == "switch" || str == "select")
+			if (str == "if" || str == "switch" || str == "select" || str == "for")
 			{
 				var c = new GoNode(str);
 				node.Children.Add(c);

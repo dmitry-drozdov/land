@@ -88,10 +88,10 @@ func inspect(body ast.Node, node *Node) {
 			inspect(x.Body, child)
 			inspect(x.Cond, child)
 			inspect(x.Post, child)
-		// case *ast.RangeStmt:
-		// 	child.Type = "for"
-		// 	inspect(x.X, child) // range x.X { x.Body }
-		// 	inspect(x.Body, child)
+		case *ast.RangeStmt:
+			child.Type = "for"
+			inspect(x.X, child) // range x.X { x.Body }
+			inspect(x.Body, child)
 		case *ast.TypeSwitchStmt:
 			child.Type = "switch"
 			inspect(x.Init, child) // switch a := ssi.(gn) { x.Body}
