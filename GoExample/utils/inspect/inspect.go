@@ -70,6 +70,9 @@ func inspect(body ast.Node, node *Node) {
 		case *ast.CallExpr:
 			child.Type = "call"
 			child.Name = getExprName(x.Fun)
+			if child.Name == "" {
+				return true // not a function call
+			}
 			for _, arg := range x.Args {
 				inspect(arg, child)
 			}
