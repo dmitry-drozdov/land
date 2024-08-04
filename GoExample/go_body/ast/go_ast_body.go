@@ -20,7 +20,7 @@ import (
 )
 
 const (
-	maxFiles = 300
+	maxFiles = 350
 )
 
 type Parser struct {
