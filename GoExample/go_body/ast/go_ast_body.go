@@ -20,7 +20,7 @@ import (
 )
 
 const (
-	maxFiles = 100 // 25000
+	maxFiles = 300
 )
 
 type Parser struct {
@@ -48,7 +48,11 @@ func (p *Parser) ParseFilesBodies(root string) (map[string]*inspect.Node, error)
 	rand.Shuffle(len(paths), func(i, j int) {
 		paths[i], paths[j] = paths[j], paths[i]
 	})
-	paths = paths[:min(len(paths), maxFiles)]
+
+	ln := len(paths)
+	take := min(ln, maxFiles)
+	paths = paths[:take]
+	fmt.Printf("\t take %.2f%% of data\n", float64(take)/float64(ln)*100)
 
 	nodes := concurrency.NewSaveMap[string, *inspect.Node](1000)
 
