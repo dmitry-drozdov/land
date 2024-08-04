@@ -23,7 +23,7 @@ SQUARE_BRACKETED : %left ('['|GENERAL_ATTRIBUTE_START) %right ']'
 
 NL			: '\n'
 
-content	=	entity*
+content	=	('('? entity ')'?)*
 entity	= control | water_entity | block
 
 control = call | if  | for | switch | select
