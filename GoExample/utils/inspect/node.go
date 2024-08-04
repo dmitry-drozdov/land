@@ -31,6 +31,9 @@ func (n1 *Node) EqualTo(n2 *Node) error {
 		return fmt.Errorf("type mismatch: %v %v ", n1.Type, n2.Type)
 	}
 	if len(n1.Children) != len(n2.Children) {
+		if len(n1.Children) < len(n2.Children) {
+			//return nil // LanD can find more children
+		}
 		return fmt.Errorf("children len mismatch: %v %v", len(n1.Children), len(n2.Children))
 	}
 	sort.Slice(n1.Children, func(i, j int) bool {

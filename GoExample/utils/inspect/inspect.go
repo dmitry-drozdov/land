@@ -5,6 +5,52 @@ import (
 	"go/ast"
 )
 
+// func init() {
+// 	fset := token.NewFileSet()
+
+// 	f, err := parser.ParseFile(fset, "", []byte(`
+// 	package main
+// 	func main(){
+// 		//mapped := []Node{}
+// 		for _, node := range nodes {
+// 			switch v := node.(type) {
+// 			case Pattern:
+// 				if result := mapper.MapPattern(mapper, v.Value, v.Negated, v.Annotation); result != nil {
+// 					mapped = append(mapped, result)
+// 				}
+// 			case Parameter:
+// 				if result := mapper.MapParameter(mapper, v.Field, v.Value, v.Negated, v.Annotation); result != nil {
+// 					mapped = append(mapped, result)
+// 				}
+// 			case Operator:
+// 				if result := mapper.MapOperator(mapper, v.Kind, v.Operands); result != nil {
+// 					mapped = append(mapped, result...)
+// 				}
+// 			}
+// 		}
+// 	}
+// `), 0)
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	res := &Node{
+// 		Type: "func_body",
+// 	}
+// 	ast.Inspect(f, func(n ast.Node) bool {
+// 		x, ok := n.(*ast.FuncDecl)
+// 		if !ok {
+// 			return true
+// 		}
+
+// 		inspect(x, res)
+// 		return false
+// 	})
+
+// 	b, _ := json.Marshal(res)
+// 	fmt.Println(string(b))
+
+// 	os.Exit(1)
+// }
 
 func Inspect(x *ast.FuncDecl) *Node {
 	res := &Node{
@@ -39,6 +85,15 @@ func inspect(body ast.Node, node *Node) {
 			inspect(x.Body, child)
 			inspect(x.Cond, child)
 			inspect(x.Post, child)
+		// case *ast.RangeStmt:
+		// 	child.Type = "for"
+		// 	inspect(x.X, child) // range x.X { x.Body }
+		// 	inspect(x.Body, child)
+		case *ast.TypeSwitchStmt:
+			child.Type = "switch"
+			inspect(x.Init, child) // switch a := ssi.(gn) { x.Body}
+			inspect(x.Body, child)
+			inspect(x.Assign, child)
 		case *ast.SwitchStmt:
 			child.Type = "switch"
 			inspect(x.Init, child)
