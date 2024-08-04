@@ -25,6 +25,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GoPreprocessor", "Preproces
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NoGUI", "NoGUI\NoGUI.csproj", "{FB740BA3-1F7F-4942-A2CA-31A81165F601}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GoPreprocessorBody", "Preprocessors\Conditional compilation\GoPreprocessorBody\GoPreprocessorBody.csproj", "{7F05D143-4AD6-49FE-B898-F5B9FB8FFFF1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -63,6 +65,10 @@ Global
 		{FB740BA3-1F7F-4942-A2CA-31A81165F601}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FB740BA3-1F7F-4942-A2CA-31A81165F601}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FB740BA3-1F7F-4942-A2CA-31A81165F601}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7F05D143-4AD6-49FE-B898-F5B9FB8FFFF1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7F05D143-4AD6-49FE-B898-F5B9FB8FFFF1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7F05D143-4AD6-49FE-B898-F5B9FB8FFFF1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7F05D143-4AD6-49FE-B898-F5B9FB8FFFF1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -75,6 +81,7 @@ Global
 		{5BB7C445-36C4-4686-B17A-A163385848A5} = {2BBDC627-AFB5-44D0-BB15-F48D5FA699EF}
 		{CCB3A7C5-989C-4431-89D5-9909ADA6F765} = {373EC8C3-5355-4019-B833-E46A111B2E41}
 		{BC013148-FAF4-4BBE-8B12-FA9D840C643B} = {86500D9B-BDA6-4A54-B821-159F513B20EA}
+		{7F05D143-4AD6-49FE-B898-F5B9FB8FFFF1} = {86500D9B-BDA6-4A54-B821-159F513B20EA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CD7950FE-7FC3-4DA2-9B6B-4B3E76CBD3C2}

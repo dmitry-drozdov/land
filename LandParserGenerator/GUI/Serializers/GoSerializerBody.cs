@@ -43,14 +43,11 @@ namespace Land.GUI.Serializers
 				}
 				return;
 			}
-			if (str == "block" || str == "control")
+			foreach (var cblock in root.Children)
 			{
-				foreach (var cblock in root.Children)
-				{
-					ParseNode(cblock, node);
-				}
-				return;
+				ParseNode(cblock, node);
 			}
+			return;
 		}
 		internal static void Serialize(string path, Node root)
 		{
