@@ -38,12 +38,14 @@ for = 'for' (call | Any)* block
 
 block = '{' (control | block | Any)* '}'
 
-call = ID '(' (call | block | Any)*  ')'
+call = ID '(' (anon_func | call | block | Any)*  ')'
 
 water_entity	=	Any
 
 switch = 'switch' (call | Any)* block
 select = 'select' block
+
+anon_func = 'func' '(' Any ')' Any block?
 
 
 // в секции recovery ничего не должно быть, чтобы мы могли восстанавливаться из любого места

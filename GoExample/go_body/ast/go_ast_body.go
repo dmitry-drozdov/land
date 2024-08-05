@@ -34,7 +34,10 @@ func NewParser() *Parser {
 func (p *Parser) ParseFilesBodies(root string) (map[string]*inspect.Node, error) {
 	paths := make([]string, 0, 1000)
 	err := filepath.Walk(root, func(path string, info os.FileInfo, _ error) error {
-		if info.IsDir() || filepath.Ext(info.Name()) != ".go" {
+		if info.IsDir() || filepath.Ext(info.Name()) != ".go" ||
+			strings.Contains(path, `\mock\`) || strings.Contains(path, `\mocks\`) ||
+			strings.Contains(info.Name(), "_mock") || strings.Contains(info.Name(), "_mocks") ||
+			strings.Contains(info.Name(), "_test") {
 			return nil
 		}
 		paths = append(paths, path)
