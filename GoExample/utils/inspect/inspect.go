@@ -11,23 +11,7 @@ import (
 // 	f, err := parser.ParseFile(fset, "", []byte(`
 // 	package main
 // 	func main(){
-// 		//mapped := []Node{}
-// 		for _, node := range nodes {
-// 			switch v := node.(type) {
-// 			case Pattern:
-// 				if result := mapper.MapPattern(mapper, v.Value, v.Negated, v.Annotation); result != nil {
-// 					mapped = append(mapped, result)
-// 				}
-// 			case Parameter:
-// 				if result := mapper.MapParameter(mapper, v.Field, v.Value, v.Negated, v.Annotation); result != nil {
-// 					mapped = append(mapped, result)
-// 				}
-// 			case Operator:
-// 				if result := mapper.MapOperator(mapper, v.Kind, v.Operands); result != nil {
-// 					mapped = append(mapped, result...)
-// 				}
-// 			}
-// 		}
+// 		log.G(context.TODO()).Errorf("Could not resolve driver %s while handling driver table event: %v", n.networkType, err)
 // 	}
 // `), 0)
 // 	if err != nil {
@@ -73,6 +57,7 @@ func inspect(body ast.Node, node *Node) {
 			if child.Name == "" {
 				return true // not a function call
 			}
+			inspect(x.Fun, node)
 			for _, arg := range x.Args {
 				inspect(arg, child)
 			}
