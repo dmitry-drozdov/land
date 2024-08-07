@@ -18,7 +18,8 @@ CHAR		: '\'' ('\\\''|'\\\\'|.)*? '\''
 WATER_KEYWORD: 'var' | 'return' | 'func' | '[]byte'
 
 
-ID			: '@'?[_a-zA-Z.\u0391-\u03A9\u03B1-\u03C9][_0-9a-zA-Z.\u0391-\u03A9\u03B1-\u03C9]*
+// id не должен оканчиваться на точку, иначе это будет каст x.(type)
+ID			: '@'?[_a-zA-Z.\u0391-\u03A9\u03B1-\u03C9][_0-9a-zA-Z.\u0391-\u03A9\u03B1-\u03C9]*[_0-9a-zA-Z\u0391-\u03A9\u03B1-\u03C9] | '@'?[_a-zA-Z\u0391-\u03A9\u03B1-\u03C9]
 
 
  
@@ -31,7 +32,7 @@ NL			: '\n'
 content	= entity*
 entity	= control | water_entity | block
 
-control = call | if  | for | switch | select
+control = call | if  | for | switch | select 
 
 if = 'if' (call | Any)* block
 for = 'for' (call | Any)* block
