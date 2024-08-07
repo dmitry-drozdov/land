@@ -34,7 +34,7 @@ entity	= control | water_entity | block
 
 control = call | if  | for | switch | select 
 
-if = 'if' (call | Any)* block
+if = 'if' (call | Any)* block ('else' block)? // else должен быть в одной связке с if, как и в Go
 for = 'for' (call | Any)* block
 
 block = '{' (control | block | Any)* '}'
