@@ -12,12 +12,22 @@ var (
 	symbol   = "f(x);"
 )
 
-func generateCombinations() []string {
-
+func generateCombinations() map[string]string { // file name => code text
 	countF := strings.Count(template, "F")
 	totalCombinations := 1 << countF
 
-	res := make([]string, 0, totalCombinations*2)
+	mp := make(map[string]string, totalCombinations*2)
+	dups := make(map[string]struct{}, totalCombinations*2)
+
+	add := func(s string, code string) {
+		if s != "" {
+			_, ok := dups[s]
+			if !ok {
+				mp[code] = s
+			}
+			dups[s] = struct{}{}
+		}
+	}
 
 	for i := 0; i < totalCombinations; i++ {
 		bitMask := fmt.Sprintf("%07b", i)
@@ -34,15 +44,15 @@ func generateCombinations() []string {
 		result = strings.Replace(result, "  ", " ", -1)
 		result = strings.TrimSpace(result)
 
-		if strings.Contains(result, "{ }") {
-			res = append(res, result)
+		code := bitMask
+		add(result, code)
 
-			resultWithoutBraces := strings.Replace(result, "{ }", "", -1)
-			resultWithoutBraces = strings.Replace(resultWithoutBraces, "  ", " ", -1)
-			resultWithoutBraces = strings.TrimSpace(resultWithoutBraces)
-			res = append(res, resultWithoutBraces)
-		} else {
-			res = append(res, result)
+		for strings.Contains(result, "{ }") {
+			result = strings.Replace(result, "{ }", "", -1)
+			result = strings.Replace(result, "  ", " ", -1)
+			result = strings.TrimSpace(result)
+			code += "9" // means remove { }
+			add(result, code)
 		}
 	}
 
@@ -50,5 +60,5 @@ func generateCombinations() []string {
 	// 	res[i] = strings.ReplaceAll(r, " ", "\n")
 	// }
 
-	return res
+	return mp
 }

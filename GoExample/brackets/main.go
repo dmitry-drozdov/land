@@ -3,8 +3,11 @@ package main
 import "fmt"
 
 func main() {
+	root := `e:\phd\test_repos_brackets\`
 	comb := generateCombinations()
-	for _, c := range comb {
-		fmt.Println(c)
+	fmt.Println(len(comb))
+	err := Dump(root, comb)
+	if err != nil {
+		panic(err)
 	}
 }
