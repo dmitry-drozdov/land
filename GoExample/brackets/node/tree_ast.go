@@ -43,6 +43,7 @@ func ParseAst(s string) (*Node, error) {
 		node.Children = node.Children[0].Children
 	}
 
+	node.processAny()
 	return node, nil
 }
 
