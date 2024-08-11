@@ -5,9 +5,11 @@ CURVE_BRACKETED : %left '{' %right '}'
 
 
 content	= entity*
-entity	= curve | Any
+entity	= block | water_entity
 
-curve = '{' (curve | Any)*  '}'
+block = '{' (block | water_entity)*  '}'
+
+water_entity = Any
 
 
 %%
