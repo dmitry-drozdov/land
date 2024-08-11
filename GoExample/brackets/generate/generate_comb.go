@@ -1,33 +1,20 @@
-package main
+package generate
 
 import (
 	"fmt"
 	"strings"
 )
 
-// F { F } F { F { F } F } F
-
 var (
 	template = "F { F } F { F { F } F } F"
 	symbol   = "f(x);"
 )
 
-func generateCombinations() map[string]string { // file name => code text
+func GenerateCombinations() (*GenerateRes, error) {
 	countF := strings.Count(template, "F")
 	totalCombinations := 1 << countF
 
-	mp := make(map[string]string, totalCombinations*2)
-	dups := make(map[string]struct{}, totalCombinations*2)
-
-	add := func(s string, code string) {
-		if s != "" {
-			_, ok := dups[s]
-			if !ok {
-				mp[code] = s
-			}
-			dups[s] = struct{}{}
-		}
-	}
+	res := NewGenerateRes(totalCombinations * 2)
 
 	for i := 0; i < totalCombinations; i++ {
 		bitMask := fmt.Sprintf("%07b", i)
@@ -45,14 +32,18 @@ func generateCombinations() map[string]string { // file name => code text
 		result = strings.TrimSpace(result)
 
 		code := bitMask
-		add(result, code)
+		if err := res.Add(result, code); err != nil {
+			return nil, err
+		}
 
 		for strings.Contains(result, "{ }") {
 			result = strings.Replace(result, "{ }", "", -1)
 			result = strings.Replace(result, "  ", " ", -1)
 			result = strings.TrimSpace(result)
-			code += "9" // means remove { }
-			add(result, code)
+			code += "9" // means "removed { }"
+			if err := res.Add(result, code); err != nil {
+				return nil, err
+			}
 		}
 	}
 
@@ -60,5 +51,5 @@ func generateCombinations() map[string]string { // file name => code text
 	// 	res[i] = strings.ReplaceAll(r, " ", "\n")
 	// }
 
-	return mp
+	return res, nil
 }

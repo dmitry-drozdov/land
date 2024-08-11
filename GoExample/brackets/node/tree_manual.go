@@ -1,21 +1,8 @@
-package main
+package node
 
 import (
-	"encoding/json"
-	"fmt"
 	"strings"
 )
-
-func init() {
-	n := Parse("{ } f(x); { f(x); } f(x); { f(x); { f(x); } f(x); } f(x);")
-	b, _ := json.Marshal(n)
-	fmt.Println(string(b))
-}
-
-type Node struct {
-	Type     string
-	Children []*Node
-}
 
 func Parse(s string) *Node {
 	n := &Node{
@@ -39,7 +26,7 @@ func parse(tokens []string, pos int, node *Node) int {
 		case "}":
 			return i
 		default:
-			node.Children = append(node.Children, &Node{Type: "Any"})
+			node.Children = append(node.Children, &Node{Type: "any"})
 		}
 	}
 	return len(tokens) // inf
