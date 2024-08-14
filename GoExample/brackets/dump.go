@@ -3,16 +3,13 @@ package main
 import (
 	"os"
 	"path/filepath"
+	"utils/worker"
 )
 
 func Dump(root string, mp map[string]string) error {
-	for k, v := range mp {
-		err := writeFile(root+k+".go", v)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
+	return worker.IterateMap(mp, 6, func(k string, v string) error {
+		return writeFile(root+k+".go", v)
+	})
 }
 
 func writeFile(pathOut string, content string) error {

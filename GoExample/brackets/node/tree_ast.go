@@ -5,7 +5,6 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
-	"strings"
 )
 
 // func init() {
@@ -22,7 +21,7 @@ func ParseAst(s string) (*Node, error) {
 		Type:     "root",
 		Children: nil,
 	}
-	s = strings.ReplaceAll(s, " ", "\n")
+
 	s = fmt.Sprintf(`
 		package main
 		func main() {

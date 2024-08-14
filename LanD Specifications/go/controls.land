@@ -1,0 +1,37 @@
+
+CURVE_BRACKETED : %left '{' %right '}'
+//ROUND_BRACKETED : %left '(' %right ')'
+//SQUARE_BRACKETED : %left ('['|GENERAL_ATTRIBUTE_START) %right ']'
+
+
+content	= entity*
+entity	= if | block | water_entity
+
+block = '{' (if | block | water_entity)*  '}'
+
+if = 'if' water_entity block ('else' block)?
+
+water_entity = Any
+
+
+%%
+
+%parsing {
+	recovery
+	fragment 
+	start content
+	skip 
+}
+
+%nodes {
+	ghost entity 
+	leaf 
+	void
+}
+
+
+
+%markup {
+	land 
+	headercore(f_name) 
+}

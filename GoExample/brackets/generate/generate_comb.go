@@ -1,23 +1,21 @@
 package generate
 
 import (
-	"fmt"
+	"strconv"
 	"strings"
 )
 
-var (
-	template = "F { F } F { F { F } F } F"
-	symbol   = "f(x);"
-)
-
-func GenerateCombinations() (*GenerateRes, error) {
+func GenerateCombinations(template string, symbol string) (*GenerateRes, error) {
 	countF := strings.Count(template, "F")
 	totalCombinations := 1 << countF
 
-	res := NewGenerateRes(totalCombinations * 2)
+	res := NewGenerateRes(totalCombinations)
 
 	for i := 0; i < totalCombinations; i++ {
-		bitMask := fmt.Sprintf("%07b", i)
+		bitMask := strconv.FormatInt(int64(i), 2)
+		for len(bitMask) < countF {
+			bitMask = "0" + bitMask
+		}
 		result := template
 
 		for j := 0; j < countF; j++ {
@@ -46,10 +44,6 @@ func GenerateCombinations() (*GenerateRes, error) {
 			}
 		}
 	}
-
-	// for i, r := range res {
-	// 	res[i] = strings.ReplaceAll(r, " ", "\n")
-	// }
 
 	return res, nil
 }
