@@ -40,7 +40,27 @@ namespace Land.GUI.Serializers
 				}
 				return;
 			}
-			
+			if (str == "if")
+			{
+				var c = new GoNode(str);
+				node.Children.Add(c);
+				foreach (var child in root.Children)
+				{
+					if (child.ToString() == "block") // проваливаемся внутрь block, это д.б. часть if-а
+					{
+						foreach (var subchild in child.Children)
+						{
+							ParseNode(subchild, c);
+						}
+					}
+					else
+					{
+						ParseNode(child, c);
+					}
+				}
+				return;
+			}
+
 			foreach (var subchild in root.Children)
 			{
 				ParseNode(subchild, node);

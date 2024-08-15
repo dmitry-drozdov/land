@@ -47,6 +47,9 @@ func ParseAst(s string) (*Node, error) {
 }
 
 func inspect(root ast.Node, node *Node) {
+	if root == nil {
+		return
+	}
 	ast.Inspect(root, func(n ast.Node) bool {
 		switch y := n.(type) {
 		case *ast.BlockStmt:
@@ -54,6 +57,13 @@ func inspect(root ast.Node, node *Node) {
 			for _, yy := range y.List {
 				inspect(yy, n)
 			}
+			node.Children = append(node.Children, n)
+			return false
+		case *ast.IfStmt:
+			n := &Node{Type: "if"}
+			n.Children = append(n.Children, &Node{Type: "any"}) // if cond
+			inspect(y.Body, n)
+			inspect(y.Else, n)
 			node.Children = append(node.Children, n)
 			return false
 		case *ast.CallExpr:

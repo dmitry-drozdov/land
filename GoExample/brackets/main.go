@@ -38,6 +38,15 @@ func Controls() {
 		panic(err)
 	}
 	fmt.Printf("dump to %v\n", root)
+
+	resFolder := root + `results\`
+	landNodes, err := provider.ReadFolder(resFolder)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("read %v land nodes\n", len(landNodes))
+
+	_ = node.CompareMaps(landNodes, orig.CodeToNode)
 }
 
 func Brackets() {

@@ -1,6 +1,7 @@
 package node
 
 import (
+	"encoding/json"
 	"fmt"
 	"sort"
 	"utils/hash"
@@ -9,6 +10,11 @@ import (
 type Node struct {
 	Type     string
 	Children []*Node
+}
+
+func (n *Node) String() string {
+	b, _ := json.Marshal(n)
+	return string(b)
 }
 
 func (n *Node) Hash() uint64 {

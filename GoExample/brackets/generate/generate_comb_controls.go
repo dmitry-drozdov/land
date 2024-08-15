@@ -21,6 +21,9 @@ func GenerateControlCombinations(template string) (*GenerateRes, error) {
 	templates := make([]string, 0, subCombinations)
 
 	for i := 0; i < subCombinations; i++ {
+		if i > 7 {
+			continue // shrink test data
+		}
 		mask := strconv.FormatInt(int64(i), 4)
 		mask = fmt.Sprintf("%07s", mask)
 

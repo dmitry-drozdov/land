@@ -12,6 +12,10 @@ func GenerateCombinations(template string, symbol string) (*GenerateRes, error) 
 	res := NewGenerateRes(totalCombinations)
 
 	for i := 0; i < totalCombinations; i++ {
+		if i > 7 {
+			continue // shrink test data
+		}
+
 		bitMask := strconv.FormatInt(int64(i), 2)
 		for len(bitMask) < countF {
 			bitMask = "0" + bitMask
