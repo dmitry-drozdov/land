@@ -1,33 +1,46 @@
 package node
 
 import (
+	"fmt"
 	"strings"
 )
 
-func Parse(s string) *Node {
-	n := &Node{
+func ParseBracketSequence(s string) (*Node, error) {
+	tokens := strings.Split(s, " ")
+
+	stack := make([]*Node, 0, len(tokens))
+	root := &Node{
 		Type:     "root",
 		Children: nil,
 	}
-	tokens := strings.Split(s, " ")
+	current := root
 
-	parse(tokens, 0, n)
-	return n
-}
-
-func parse(tokens []string, pos int, node *Node) int {
-	for i := pos; i < len(tokens); i++ {
-		token := tokens[i]
+	for _, token := range tokens {
 		switch token {
 		case "{":
-			n := &Node{Type: "block"}
-			node.Children = append(node.Children, n)
-			i = parse(tokens, i+1, n)
+			newNode := &Node{Type: "block"}
+			current.Children = append(current.Children, newNode)
+			stack = append(stack, current)
+			current = newNode
 		case "}":
-			return i
+			if len(stack) == 0 {
+				return nil, fmt.Errorf("redundant closing bracket")
+			}
+			current = stack[len(stack)-1]
+			stack = stack[:len(stack)-1]
+		case "f(x);":
+			newNode := &Node{Type: "any"}
+			current.Children = append(current.Children, newNode)
+		case "", " ":
+			// do nothing
 		default:
-			node.Children = append(node.Children, &Node{Type: "any"})
+			return nil, fmt.Errorf("unknown token: [%s]", token)
 		}
 	}
-	return len(tokens) // inf
+
+	if len(stack) != 0 {
+		return nil, fmt.Errorf("redundant opening bracket")
+	}
+
+	return root, nil
 }

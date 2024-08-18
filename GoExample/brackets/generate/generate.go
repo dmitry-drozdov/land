@@ -22,6 +22,27 @@ func NewGenerateRes(len int) *GenerateRes {
 	}
 }
 
+func (g *GenerateRes) AddV2(s string, code string) error {
+	if s == "" {
+		return nil
+	}
+	if _, ok := g.dups[s]; ok {
+		return nil
+	}
+
+	g.CodeToText[code] = s
+
+	n, err := node.ParseBracketSequence(s)
+	if err != nil {
+		return err
+	}
+	g.CodeToNode[code] = n
+
+	g.dups[s] = struct{}{}
+
+	return nil
+}
+
 func (g *GenerateRes) Add(s string, code string) error {
 	if s == "" {
 		return nil

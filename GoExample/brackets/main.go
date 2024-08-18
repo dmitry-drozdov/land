@@ -11,23 +11,17 @@ import (
 	_ "net/http/pprof"
 )
 
-var (
-	templateControl = "G_{_G_}_G_{_G_{_G_}_G_}_G"
-	template        = "F_{_F_}_F_{_F_{_F_}_F_}_F"
-	symbol          = "f(x);"
-)
-
 func main() {
 	go func() {
 		log.Println("Starting pprof server on :6060")
 		log.Println(http.ListenAndServe("localhost:6060", nil))
 	}()
-	Controls()
+	Brackets()
 }
 
 func Controls() {
 	root := `e:\phd\test_repos_controls\`
-	orig, err := generate.GenerateControlCombinations(templateControl)
+	orig, err := generate.GenerateControlCombinations(generate.TemplateControl)
 	if err != nil {
 		panic(err)
 	}
@@ -51,7 +45,7 @@ func Controls() {
 
 func Brackets() {
 	root := `e:\phd\test_repos_brackets\`
-	orig, err := generate.GenerateCombinations(template, symbol)
+	orig, err := generate.GenerateCombinations(generate.Template, generate.Symbol)
 	if err != nil {
 		panic(err)
 	}

@@ -5,6 +5,12 @@ import (
 	"strings"
 )
 
+var (
+	TemplateControl = "G { G } G { G { G } G } G"
+	Template        = "F { F } F { F { F } F } F"
+	Symbol          = "f(x);"
+)
+
 func GenerateCombinations(template string, symbol string) (*GenerateRes, error) {
 	countF := strings.Count(template, "F")
 	totalCombinations := 1 << countF
@@ -12,10 +18,6 @@ func GenerateCombinations(template string, symbol string) (*GenerateRes, error) 
 	res := NewGenerateRes(totalCombinations)
 
 	for i := 0; i < totalCombinations; i++ {
-		if i > 7 {
-			continue // shrink test data
-		}
-
 		bitMask := strconv.FormatInt(int64(i), 2)
 		for len(bitMask) < countF {
 			bitMask = "0" + bitMask
@@ -34,18 +36,8 @@ func GenerateCombinations(template string, symbol string) (*GenerateRes, error) 
 		result = strings.TrimSpace(result)
 
 		code := bitMask
-		if err := res.Add(result, code); err != nil {
+		if err := res.AddV2(result, code); err != nil {
 			return nil, err
-		}
-
-		for strings.Contains(result, "{ }") {
-			result = strings.Replace(result, "{ }", "", -1)
-			result = strings.Replace(result, "  ", " ", -1)
-			result = strings.TrimSpace(result)
-			code += "9" // means "removed { }"
-			if err := res.Add(result, code); err != nil {
-				return nil, err
-			}
 		}
 	}
 
