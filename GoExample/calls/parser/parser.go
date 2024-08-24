@@ -7,14 +7,11 @@ import (
 	"go/token"
 	"os"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"utils/ast_type"
 	"utils/concurrency"
 	"utils/filter"
 	"utils/hash"
-
-	"golang.org/x/sync/errgroup"
 )
 
 type Parser struct {
@@ -29,9 +26,6 @@ func NewParser() *Parser {
 func (p *Parser) ParseFiles(root string) (map[string]int, error) {
 	res := concurrency.NewSaveMap[string, int](1000)
 
-	g := errgroup.Group{}
-	g.SetLimit(runtime.NumCPU() * 8)
-
 	err := filepath.Walk(root, func(path string, info os.FileInfo, _ error) error {
 		if info.IsDir() || filepath.Ext(info.Name()) != ".go" ||
 			strings.Contains(path, `\mock\`) || strings.Contains(path, `\mocks\`) ||
@@ -43,20 +37,13 @@ func (p *Parser) ParseFiles(root string) (map[string]int, error) {
 			return nil
 		}
 
-		pathBk := path
-
-		g.Go(func() error {
-			return p.ParseFile(pathBk, strings.Replace(pathBk, `\test_repos\`, `\test_repos_calls\`, 1), res)
-		})
-
-		return nil
+		return p.ParseFile(path, strings.Replace(path, `\test_repos\`, `\test_repos_calls\`, 1), res)
 	})
-	g.Wait()
 	if err != nil {
 		return nil, err
 	}
 
-	return res.Unsafe(), g.Wait()
+	return res.Unsafe(), nil
 }
 
 func (p *Parser) ParseFile(path string, pathOut string, res *concurrency.SaveMap[string, int]) error {

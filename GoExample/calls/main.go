@@ -3,6 +3,7 @@ package main
 import (
 	"calls/parser"
 	"fmt"
+	"sync"
 )
 
 var folders = []string{
@@ -25,26 +26,29 @@ var folders = []string{
 }
 
 func main() {
+	var wg sync.WaitGroup
+	wg.Add(len(folders))
 	for _, f := range folders {
-		if err := doWork(f); err != nil {
-			fmt.Printf("[%v] <ERROR>: [%v]\n", f, err)
-		}
+		go func() {
+			defer wg.Done()
+			if err := doWork(f); err != nil {
+				fmt.Printf("[%v] <ERROR>: [%v]\n", f, err)
+			}
+		}()
 	}
+	wg.Wait()
 }
 
 func doWork(sname string) error {
-	fmt.Printf("\n===== %s START =====\n", sname)
-	defer fmt.Printf("===== %s END =====\n", sname)
+	fmt.Printf("===== %s START =====\n", sname)
 
 	source := fmt.Sprintf(`e:\phd\test_repos\%s\`, sname)
-	fmt.Println("parsing files with go ast...")
 	res, err := parser.NewParser().ParseFiles(source)
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("parsing files with go ast DONE: %v\n", sum(res))
-
+	fmt.Printf("===== %s END [%v]=====\n", sname, sum(res))
 	return nil
 }
 
