@@ -846,11 +846,12 @@ namespace Land.GUI
 
 						if (file.EndsWith(".go"))
 						{
-							var oldPath = @"E:\phd\test_repos_brackets";
-							var newPath = @"E:\phd\test_repos_brackets\results";
+							var oldPath = @"E:\phd\test_repos_calls";
+							var newPath = @"E:\phd\test_repos_calls\results";
 							var path = Path.ChangeExtension(file.Replace(oldPath, newPath), ".json");
 							//GoSerializerBody.Serialize(path, root);
-							GoSerializerBrakcets.Serialize(path, root);
+							//GoSerializerBrakcets.Serialize(path, root);
+							GoSerializerCalls.Serialize(path, root);
 						}
 						if (file.EndsWith(".graphql"))
 						{

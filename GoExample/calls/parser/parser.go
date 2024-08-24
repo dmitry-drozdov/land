@@ -19,10 +19,11 @@ import (
 
 type Parser struct {
 	*ast_type.NameConverter
+	Balancer *concurrency.Balancer
 }
 
 func NewParser() *Parser {
-	return &Parser{ast_type.NewNameConverter()}
+	return &Parser{ast_type.NewNameConverter(), &concurrency.Balancer{}}
 }
 
 func (p *Parser) ParseFiles(root string) (map[string]int, error) {
@@ -32,7 +33,13 @@ func (p *Parser) ParseFiles(root string) (map[string]int, error) {
 	g.SetLimit(runtime.NumCPU() * 8)
 
 	err := filepath.Walk(root, func(path string, info os.FileInfo, _ error) error {
-		if info.IsDir() || filepath.Ext(info.Name()) != ".go" {
+		if info.IsDir() || filepath.Ext(info.Name()) != ".go" ||
+			strings.Contains(path, `\mock\`) || strings.Contains(path, `\mocks\`) ||
+			strings.Contains(path, `\generated\`) ||
+			strings.Contains(path, `\fake\`) ||
+			strings.Contains(info.Name(), "generated") ||
+			strings.Contains(info.Name(), "_mock") || strings.Contains(info.Name(), "_mocks") ||
+			strings.Contains(info.Name(), "_test") {
 			return nil
 		}
 
@@ -115,7 +122,7 @@ func (p *Parser) ParseFile(path string, pathOut string, res *concurrency.SaveMap
 		})
 		res.Set(strings.TrimSuffix(pathOut, ".go"), allCnt)
 
-		if allCnt == 0 {
+		if allCnt == 0 && !p.Balancer.CanSubAction() {
 			return true
 		}
 
@@ -143,6 +150,10 @@ func (p *Parser) ParseFile(path string, pathOut string, res *concurrency.SaveMap
 		_, err = file.WriteString(nodeText)
 		if err != nil {
 			return false
+		}
+
+		if allCnt > 0 {
+			p.Balancer.MainAction()
 		}
 
 		return true

@@ -1,14 +1,30 @@
+COMMENT		: COMMENT_L|COMMENT_ML
+COMMENT_L	: '//' ~[\n\r]*
+COMMENT_ML	: '/*' .*? '*/'
+
+ITALIC_QUOTE : '`' .*? '`'
+
+QUOTE		: '"'
+SPREAD 		: '...'
+
+// важно пропускать строки и символы, так как в них могут быть [{(, что нарушит парность скобок
+
+STRING		: STRING_STD
+STRING_STD	: '"' ('\\"'|'\\\\'|.)*? '"'
+
+CHAR		: '\'' ('\\\''|'\\\\'|.)*? '\''
 
 CURVE_BRACKETED : %left '{' %right '}'
 ROUND_BRACKETED : %left '(' %right ')'
 //SQUARE_BRACKETED : %left ('['|GENERAL_ATTRIBUTE_START) %right ']'
 
 
-content	= (Any | anon_func)*
+content	= entity*
+
+entity = Any | anon_func | '{' entity* '}' |  '(' entity* ')'
 
 anon_func = //'func' '(' Any ')' '(' Any ')' Any '(' Any ')' |
 			'func' '(' Any ')'  (Any|struct|interface)* '{' Any '}' '(' Any ')' 
-			| '(' anon_func ')'
 
 struct = 'struct' '{' Any '}'
 interface = 'interface' '{' Any '}'
@@ -19,11 +35,11 @@ interface = 'interface' '{' Any '}'
 	recovery
 	fragment 
 	start content
-	skip 
+	skip COMMENT STRING CHAR
 }
 
 %nodes {
-	ghost  
+	ghost entity 
 	leaf 
 	void
 }
