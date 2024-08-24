@@ -1,0 +1,36 @@
+
+CURVE_BRACKETED : %left '{' %right '}'
+ROUND_BRACKETED : %left '(' %right ')'
+//SQUARE_BRACKETED : %left ('['|GENERAL_ATTRIBUTE_START) %right ']'
+
+
+content	= (Any | anon_func)*
+
+anon_func = //'func' '(' Any ')' '(' Any ')' Any '(' Any ')' |
+			'func' '(' Any ')'  (Any|struct|interface)* '{' Any '}' '(' Any ')' 
+			| '(' anon_func ')'
+
+struct = 'struct' '{' Any '}'
+interface = 'interface' '{' Any '}'
+
+%%
+
+%parsing {
+	recovery
+	fragment 
+	start content
+	skip 
+}
+
+%nodes {
+	ghost  
+	leaf 
+	void
+}
+
+
+
+%markup {
+	land 
+	headercore(f_name) 
+}
