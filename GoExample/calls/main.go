@@ -2,8 +2,8 @@ package main
 
 import (
 	"calls/parser"
+	"calls/provider"
 	"fmt"
-	"sync"
 )
 
 var folders = []string{
@@ -26,29 +26,34 @@ var folders = []string{
 }
 
 func main() {
-	var wg sync.WaitGroup
-	wg.Add(len(folders))
 	for _, f := range folders {
-		go func() {
-			defer wg.Done()
-			if err := doWork(f); err != nil {
-				fmt.Printf("[%v] <ERROR>: [%v]\n", f, err)
-			}
-		}()
+		if err := doWork(f); err != nil {
+			fmt.Printf("[%v] <ERROR>: [%v]\n", f, err)
+		}
 	}
-	wg.Wait()
 }
 
 func doWork(sname string) error {
 	fmt.Printf("===== %s START =====\n", sname)
 
 	source := fmt.Sprintf(`e:\phd\test_repos\%s\`, sname)
-	res, err := parser.NewParser().ParseFiles(source)
+	orig, err := parser.NewParser().ParseFiles(source)
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("===== %s END [%v]=====\n", sname, sum(res))
+	resFolder := fmt.Sprintf(`e:\phd\test_repos_calls\results\%s\`, sname)
+	land, err := provider.ReadFolder(resFolder)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("===== %s END [%v] [%v]=====\n", sname, sum(orig), sum(land))
+
+	if err := compareMaps(orig, land); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -58,4 +63,28 @@ func sum(mp map[string]int) int {
 		res += v
 	}
 	return res
+}
+
+func compareMaps(orig, land map[string]int) error {
+	if len(orig) != len(land) {
+		fmt.Printf("len mismatch %v %v\n", len(orig), len(land))
+	}
+
+	okCnt := 0
+	for origK, origV := range orig {
+		landV, ok := land[origK]
+		if !ok {
+			fmt.Printf("key not found %v\n", origK)
+			continue
+		}
+		if landV != origV {
+			fmt.Printf("val mismatch %v %v\n", landV, origV)
+			continue
+		}
+		okCnt++
+	}
+
+	fmt.Printf("ratio: %.2f\n", float64(okCnt)/float64(len(orig))*100)
+
+	return nil
 }

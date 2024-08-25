@@ -24,7 +24,7 @@ func NewParser() *Parser {
 }
 
 func (p *Parser) ParseFiles(root string) (map[string]int, error) {
-	res := concurrency.NewSaveMap[string, int](1000)
+	res := concurrency.NewSaveMap[string, int](20000)
 
 	err := filepath.Walk(root, func(path string, info os.FileInfo, _ error) error {
 		if info.IsDir() || filepath.Ext(info.Name()) != ".go" ||
@@ -107,7 +107,6 @@ func (p *Parser) ParseFile(path string, pathOut string, res *concurrency.SaveMap
 				return true // continue
 			}
 		})
-		res.Set(strings.TrimSuffix(pathOut, ".go"), allCnt)
 
 		if allCnt == 0 && !p.Balancer.CanSubAction() {
 			return true
@@ -142,6 +141,9 @@ func (p *Parser) ParseFile(path string, pathOut string, res *concurrency.SaveMap
 		if allCnt > 0 {
 			p.Balancer.MainAction()
 		}
+
+		key := strings.Split(strings.TrimSuffix(pathOut, ".go"), "\\")
+		res.Set(key[len(key)-1], allCnt)
 
 		return true
 	})
