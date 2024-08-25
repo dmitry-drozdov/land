@@ -5,6 +5,7 @@ import (
 	"calls/provider"
 	"errors"
 	"fmt"
+	"utils/concurrency"
 )
 
 var folders = []string{
@@ -32,21 +33,23 @@ var stats = struct {
 }{}
 
 func main() {
+	b := &concurrency.Balancer{}
 	for _, f := range folders {
-		if err := doWork(f); err != nil {
+		if err := doWork(f, b); err != nil {
 			fmt.Printf("[%v] <ERROR>: [%v]\n", f, err)
-			//panic(-1)
+			panic(-1)
 		}
 	}
 
+	fmt.Printf("TOTAL anon func call: %v, bodies: %v\n", b.CntMain(), b.CntSub())
 	fmt.Printf("TOTAL ratio: %.3f\n", float64(stats.ok)/float64(stats.total)*100)
 }
 
-func doWork(sname string) error {
+func doWork(sname string, balancer *concurrency.Balancer) error {
 	fmt.Printf("===== %s START =====\n", sname)
 
 	source := fmt.Sprintf(`e:\phd\test_repos\%s\`, sname)
-	orig, err := parser.NewParser().ParseFiles(source)
+	orig, err := parser.NewParser(balancer).ParseFiles(source)
 	if err != nil {
 		return err
 	}

@@ -5,22 +5,31 @@ import (
 )
 
 type Balancer struct {
-	cnt int
-	mx  sync.Mutex
+	cntMain int
+	cntSub  int
+	mx      sync.Mutex
 }
 
-func (b *Balancer) MainAction() {
+func (b *Balancer) MainAction(points int) {
 	b.mx.Lock()
 	defer b.mx.Unlock()
-	b.cnt++
+	b.cntMain += points
 }
 
 func (b *Balancer) CanSubAction() bool {
 	b.mx.Lock()
 	defer b.mx.Unlock()
-	if b.cnt > 0 {
-		b.cnt--
+	if b.cntSub < b.cntMain {
+		b.cntSub++
 		return true
 	}
 	return false
+}
+
+func (b *Balancer) CntMain() int {
+	return b.cntMain
+}
+
+func (b *Balancer) CntSub() int {
+	return b.cntSub
 }

@@ -19,8 +19,8 @@ type Parser struct {
 	Balancer *concurrency.Balancer
 }
 
-func NewParser() *Parser {
-	return &Parser{ast_type.NewNameConverter(), &concurrency.Balancer{}}
+func NewParser(balancer *concurrency.Balancer) *Parser {
+	return &Parser{ast_type.NewNameConverter(), balancer}
 }
 
 func (p *Parser) ParseFiles(root string) (map[string]int, error) {
@@ -70,8 +70,12 @@ func (p *Parser) ParseFile(path string, pathOut string, res *concurrency.SaveMap
 
 	nested := filter.NewNestedFuncs()
 
+	ai := 0
+	autoInc := func() int { ai++; return ai }
+
 	// проход по файлу в поисках МЕТОДОВ
 	ast.Inspect(f, func(n ast.Node) bool {
+
 		if n != nil && nested.Nested(n.Pos(), n.End()) {
 			return true
 		}
@@ -86,11 +90,24 @@ func (p *Parser) ParseFile(path string, pathOut string, res *concurrency.SaveMap
 			return true
 		}
 
-		if x.Recv == nil || len(x.Recv.List) == 0 {
-			return true
+		if x.Body == nil {
+			return true // функция без тела
 		}
 
-		suffix := fmt.Sprint("_", hash.HashStrings(p.HumanType(x.Recv.List[0].Type), x.Name.Name), ".go")
+		start := fset.Position(x.Body.Pos())
+		end := fset.Position(x.Body.End())
+		nodeText := string(src()[start.Offset:end.Offset])
+		if len(nodeText) < 3 {
+			return true // функция с пустым телом
+		}
+
+		var suffix string
+		if x.Recv != nil && len(x.Recv.List) > 0 {
+			suffix = fmt.Sprint("_", hash.HashStrings(p.HumanType(x.Recv.List[0].Type), x.Name.Name), ".go")
+		} else {
+			suffix = fmt.Sprint("_", hash.HashString(x.Name.Name), autoInc(), ".go")
+		}
+
 		pathOut := pathOut[:len(pathOut)-3] + suffix
 
 		// проход по МЕТОДУ в поиске АНОНИМНЫХ ФУНКЦИЙ
@@ -116,13 +133,6 @@ func (p *Parser) ParseFile(path string, pathOut string, res *concurrency.SaveMap
 			return true
 		}
 
-		start := fset.Position(x.Body.Pos())
-		end := fset.Position(x.Body.End())
-		nodeText := string(src()[start.Offset:end.Offset])
-		if len(nodeText) < 3 {
-			return true
-		}
-
 		nodeText = nodeText[1 : len(nodeText)-2]
 
 		err = os.MkdirAll(filepath.Dir(pathOut), 0755)
@@ -142,9 +152,7 @@ func (p *Parser) ParseFile(path string, pathOut string, res *concurrency.SaveMap
 			return false
 		}
 
-		if allCnt > 0 {
-			p.Balancer.MainAction()
-		}
+		p.Balancer.MainAction(allCnt)
 
 		key := strings.Split(strings.TrimSuffix(pathOut, ".go"), "\\")
 		res.Set(key[len(key)-1], allCnt)
