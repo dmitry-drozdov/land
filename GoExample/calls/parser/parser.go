@@ -27,13 +27,15 @@ func (p *Parser) ParseFiles(root string) (map[string]int, error) {
 	res := concurrency.NewSaveMap[string, int](20000)
 
 	err := filepath.Walk(root, func(path string, info os.FileInfo, _ error) error {
-		if info.IsDir() || filepath.Ext(info.Name()) != ".go" ||
-			strings.Contains(path, `\mock\`) || strings.Contains(path, `\mocks\`) ||
-			strings.Contains(path, `\generated\`) ||
-			strings.Contains(path, `\fake\`) ||
-			strings.Contains(info.Name(), "generated") ||
-			strings.Contains(info.Name(), "_mock") || strings.Contains(info.Name(), "_mocks") ||
-			strings.Contains(info.Name(), "_test") {
+		if info.IsDir() || filepath.Ext(info.Name()) != ".go" { /* ||
+			strings.Contains(path, `\mock`) ||
+			strings.Contains(path, `\generate`) ||
+			strings.Contains(path, `\fake`) ||
+			strings.Contains(path, `test\`) ||
+			strings.Contains(info.Name(), "mock") ||
+			strings.Contains(info.Name(), "generate") ||
+			strings.Contains(info.Name(), `fake`) ||
+			strings.Contains(info.Name(), "test") {*/
 			return nil
 		}
 
@@ -103,6 +105,8 @@ func (p *Parser) ParseFile(path string, pathOut string, res *concurrency.SaveMap
 				}
 				allCnt++
 				return false // interrupt
+			case *ast.FuncLit:
+				return false // interrupt, не анализируем тела вложенных функций (это не вызов, а переменная)
 			default:
 				return true // continue
 			}

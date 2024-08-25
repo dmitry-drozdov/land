@@ -23,8 +23,10 @@ content	= entity*
 
 entity = Any | anon_func | '{' entity* '}' |  '(' entity* ')'
 
-anon_func = //'func' '(' Any ')' '(' Any ')' Any '(' Any ')' |
-			'func' '(' Any ')'  (Any|struct|interface)* '{' Any '}' '(' Any ')' 
+anon_func = 'func' '(' Any ')'  (AnyAvoid('\n')|struct|interface)* '{' Any '}' '(' Any ')' 
+			
+			// \n нужно для кейса когда есть строка var unpackWrapper func(f images.Handler) images.Handler
+
 
 struct = 'struct' '{' Any '}'
 interface = 'interface' '{' Any '}'

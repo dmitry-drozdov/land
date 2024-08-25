@@ -3,6 +3,7 @@ package main
 import (
 	"calls/parser"
 	"calls/provider"
+	"errors"
 	"fmt"
 )
 
@@ -15,7 +16,7 @@ var folders = []string{
 	"go-ethereum",
 	"grafana",
 	"gvisor",
-	//"test",
+	"test",
 	"backend",
 	"azure-service-operator",
 	"kubernetes",
@@ -25,12 +26,20 @@ var folders = []string{
 	"moby",
 }
 
+var stats = struct {
+	ok    int
+	total int
+}{}
+
 func main() {
 	for _, f := range folders {
 		if err := doWork(f); err != nil {
 			fmt.Printf("[%v] <ERROR>: [%v]\n", f, err)
+			//panic(-1)
 		}
 	}
+
+	fmt.Printf("TOTAL ratio: %.3f\n", float64(stats.ok)/float64(stats.total)*100)
 }
 
 func doWork(sname string) error {
@@ -50,7 +59,8 @@ func doWork(sname string) error {
 
 	fmt.Printf("===== %s END [%v] [%v]=====\n", sname, sum(orig), sum(land))
 
-	if err := compareMaps(orig, land); err != nil {
+	err = compareMaps(orig, land)
+	if err != nil {
 		return err
 	}
 
@@ -66,25 +76,28 @@ func sum(mp map[string]int) int {
 }
 
 func compareMaps(orig, land map[string]int) error {
+	var errs []error
 	if len(orig) != len(land) {
-		fmt.Printf("len mismatch %v %v\n", len(orig), len(land))
+		errs = append(errs, fmt.Errorf("len mismatch %v %v", len(orig), len(land)))
 	}
 
 	okCnt := 0
 	for origK, origV := range orig {
 		landV, ok := land[origK]
 		if !ok {
-			fmt.Printf("key not found %v\n", origK)
+			errs = append(errs, fmt.Errorf("key not found %v", origK))
 			continue
 		}
 		if landV != origV {
-			fmt.Printf("val mismatch %v %v\n", landV, origV)
+			errs = append(errs, fmt.Errorf("val mismatch [%v] [%v] [%v]", landV, origV, origK))
 			continue
 		}
 		okCnt++
 	}
 
 	fmt.Printf("ratio: %.2f\n", float64(okCnt)/float64(len(orig))*100)
+	stats.ok += okCnt
+	stats.total += len(orig)
 
-	return nil
+	return errors.Join(errs...)
 }
