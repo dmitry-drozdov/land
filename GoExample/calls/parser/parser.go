@@ -113,10 +113,14 @@ func (p *Parser) ParseFile(path string, pathOut string, res *concurrency.SaveMap
 		// проход по МЕТОДУ в поиске АНОНИМНЫХ ФУНКЦИЙ или обычных вызовов
 
 		allCnt := 0
+		canSkip := true
 		ast.Inspect(x.Body, func(n ast.Node) bool {
 			switch x := n.(type) {
 			case *ast.CallExpr:
 				_, anonFunc := x.Fun.(*ast.FuncLit)
+				if anonFunc {
+					canSkip = false
+				}
 				_, id := x.Fun.(*ast.Ident)
 				_, pkgId := x.Fun.(*ast.SelectorExpr)
 				if !anonFunc && !id && !pkgId {
@@ -135,7 +139,7 @@ func (p *Parser) ParseFile(path string, pathOut string, res *concurrency.SaveMap
 			return true
 		}
 
-		if allCnt%5 == 1 {
+		if allCnt%5 == 1 && canSkip {
 			return true // reduce test data set
 		}
 
