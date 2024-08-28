@@ -5,9 +5,14 @@ import (
 )
 
 type Balancer struct {
+	k       int // вес sub action
 	cntMain int
 	cntSub  int
 	mx      sync.Mutex
+}
+
+func NewBalancer(k int) *Balancer {
+	return &Balancer{k: k}
 }
 
 func (b *Balancer) MainAction(points int) {
@@ -20,7 +25,7 @@ func (b *Balancer) CanSubAction() bool {
 	b.mx.Lock()
 	defer b.mx.Unlock()
 	if b.cntSub < b.cntMain {
-		b.cntSub++
+		b.cntSub += b.k
 		return true
 	}
 	return false
@@ -31,5 +36,5 @@ func (b *Balancer) CntMain() int {
 }
 
 func (b *Balancer) CntSub() int {
-	return b.cntSub
+	return b.cntSub / b.k
 }

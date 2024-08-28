@@ -19,7 +19,7 @@ namespace Land.GUI.Serializers
 				return 0;
 
 			var str = root.ToString();
-			if (str == "anon_func")
+			if (str == "anon_func_call" || str=="call")
 			{
 				return 1;
 			}

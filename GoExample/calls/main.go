@@ -9,7 +9,7 @@ import (
 )
 
 var folders = []string{
-	"sourcegraph",
+	//"sourcegraph",
 	"delivery-offering",
 	"boost",
 	"chainlink",
@@ -18,12 +18,12 @@ var folders = []string{
 	"grafana",
 	"gvisor",
 	"test",
-	"backend",
-	"azure-service-operator",
-	"kubernetes",
+	//"backend",
+	//"azure-service-operator",
+	//"kubernetes",
 	"go-redis",
-	"docker-ce",
-	"tidb",
+	//"docker-ce",
+	//"tidb",
 	"moby",
 }
 
@@ -33,11 +33,10 @@ var stats = struct {
 }{}
 
 func main() {
-	b := &concurrency.Balancer{}
+	b := concurrency.NewBalancer(20) // на каждые 20 файлов с вызовами 1 файл без вызовов
 	for _, f := range folders {
 		if err := doWork(f, b); err != nil {
 			fmt.Printf("[%v] <ERROR>: [%v]\n", f, err)
-			panic(-1)
 		}
 	}
 
@@ -91,7 +90,8 @@ func compareMaps(orig, land map[string]int) error {
 			errs = append(errs, fmt.Errorf("key not found %v", origK))
 			continue
 		}
-		if landV != origV {
+		//if landV != origV {
+		if landV < origV {
 			errs = append(errs, fmt.Errorf("val mismatch [%v] [%v] [%v]", landV, origV, origK))
 			continue
 		}

@@ -7,6 +7,9 @@ ITALIC_QUOTE : '`' .*? '`'
 QUOTE		: '"'
 SPREAD 		: '...'
 
+// чтобы пропускать этот токен
+IF : 'if' 
+
 // важно пропускать строки и символы, так как в них могут быть [{(, что нарушит парность скобок
 
 STRING		: STRING_STD
@@ -18,15 +21,19 @@ CURVE_BRACKETED : %left '{' %right '}'
 ROUND_BRACKETED : %left '(' %right ')'
 //SQUARE_BRACKETED : %left ('['|GENERAL_ATTRIBUTE_START) %right ']'
 
+ID: [a-zA-Z_][a-zA-Z0-9_]*
+
 
 content	= entity*
 
-entity = Any | anon_func | '{' entity* '}' |  '(' entity* ')'
+entity = Any | anon_func_call | call | '{' entity* '}' |  '(' entity* ')'
 
-anon_func = 'func' '(' Any ')'  (AnyAvoid('\n')|struct|interface)* '{' Any '}' '(' Any ')' 
-			
+anon_func_call = 'func' '(' Any ')'  (AnyAvoid('\n')|struct|interface)* '{' Any '}' '(' Any ')' 
+			// ввели детализацию конструкций со скобками {}, которые мб в возвращаемом значении
 			// \n нужно для кейса когда есть строка var unpackWrapper func(f images.Handler) images.Handler
 
+call = selector '(' Any ')'
+selector = ID | ID '.' selector // чтобы исключить кейс с if (true), добавили токен выше
 
 struct = 'struct' '{' Any '}'
 interface = 'interface' '{' Any '}'
