@@ -111,15 +111,10 @@ func (p *Parser) ParseFile(path string, pathOut string, res *concurrency.SaveMap
 		pathOut := pathOut[:len(pathOut)-3] + suffix
 
 		// проход по МЕТОДУ в поиске АНОНИМНЫХ ФУНКЦИЙ или обычных вызовов
-
 		allCnt := p.innerInspect(x.Body)
 
-		if allCnt == 0 && !p.Balancer.CanSubAction() {
-			return true
-		}
-
-		if allCnt%5 == 1 {
-			return true // reduce test data set
+		if allCnt == 0 {
+			_ = p.Balancer.CanSubAction() // track code without calls
 		}
 
 		nodeText = nodeText[1 : len(nodeText)-2]

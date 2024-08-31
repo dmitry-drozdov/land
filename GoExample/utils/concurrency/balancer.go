@@ -36,5 +36,8 @@ func (b *Balancer) CntMain() int {
 }
 
 func (b *Balancer) CntSub() int {
+	if b.k == 0 {
+		return b.cntSub
+	}
 	return b.cntSub / b.k
 }

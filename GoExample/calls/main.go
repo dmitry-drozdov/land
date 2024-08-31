@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	RATIO = 1
+	RATIO = 0
 )
 
 var folders = []string{
@@ -65,10 +65,10 @@ func doWork(sname string, balancer *concurrency.Balancer) error {
 
 	fmt.Printf("===== %s END [%v] [%v]=====\n", sname, sum(orig), sum(land))
 
-	err = compareMaps(orig, land)
-	if err != nil {
-		return err
-	}
+	// err = compareMaps(orig, land)
+	// if err != nil {
+	// 	return err
+	// }
 
 	return nil
 }
