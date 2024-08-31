@@ -8,6 +8,10 @@ import (
 	"utils/concurrency"
 )
 
+const (
+	RATIO = 1
+)
+
 var folders = []string{
 	//"sourcegraph",
 	"delivery-offering",
@@ -33,7 +37,7 @@ var stats = struct {
 }{}
 
 func main() {
-	b := concurrency.NewBalancer(20) // на каждые 20 файлов с вызовами 1 файл без вызовов
+	b := concurrency.NewBalancer(RATIO) // на каждые RATIO файлов с вызовами 1 файл без вызовов
 	for _, f := range folders {
 		if err := doWork(f, b); err != nil {
 			fmt.Printf("[%v] <ERROR>: [%v]\n", f, err)
@@ -90,9 +94,8 @@ func compareMaps(orig, land map[string]int) error {
 			errs = append(errs, fmt.Errorf("key not found %v", origK))
 			continue
 		}
-		//if landV != origV {
-		if landV < origV {
-			errs = append(errs, fmt.Errorf("val mismatch [%v] [%v] [%v]", landV, origV, origK))
+		if landV != origV {
+			errs = append(errs, fmt.Errorf("val mismatch [land=%v] [go=%v] [%v]", landV, origV, origK))
 			continue
 		}
 		okCnt++

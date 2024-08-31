@@ -8,18 +8,13 @@ QUOTE		: '"'
 SPREAD 		: '...'
 
 // чтобы пропускать этот токен
-
 VAR: 'var'
 CONST: 'const'
-
-
 IF : 'if' 
 CASE: 'case'
-
 RETURN: 'return'
 
 // важно пропускать строки и символы, так как в них могут быть [{(, что нарушит парность скобок
-
 STRING		: STRING_STD
 STRING_STD	: '"' ('\\"'|'\\\\'|.)*? '"'
 
@@ -27,24 +22,20 @@ CHAR		: '\'' ('\\\''|'\\\\'|.)*? '\''
 
 CURVE_BRACKETED : %left '{' %right '}'
 ROUND_BRACKETED : %left '(' %right ')'
-//SQUARE_BRACKETED : %left ('['|GENERAL_ATTRIBUTE_START) %right ']'
 
 ID: [a-zA-Z_][a-zA-Z0-9_\u1684-\u1697]*
 
 
 content	= entity*
 
-entity = Any | anon_func_call | func_variable | call | '{' entity* '}' |  '(' entity* ')'
+entity = Any | anon_func_call  | '{' entity* '}' |  '(' entity* ')'
 
-anon_func_call = func_base '(' Any ')'
-func_variable = func_base
-func_base = 'func' '(' Any ')'  (AnyAvoid('\n')|struct|interface)* '{' (Any|call)* '}'
+
+anon_func_call = 'func' '(' Any ')'  (AnyAvoid('\n')|struct|interface)* '{' Any '}' '(' Any ')'
 			// ввели детализацию конструкций со скобками {}, которые мб в возвращаемом значении
 			// \n нужно для кейса когда есть строка var unpackWrapper func(f images.Handler) images.Handler
 			// func_variable нужно для кейса когда есть слайс функций
 
-call = selector '(' Any ')'
-selector = ID | ID '.' selector // чтобы исключить кейс с if (true) / return ..., добавили токены выше
 
 struct = 'struct' '{' Any '}'
 interface = 'interface' '{' Any '}'

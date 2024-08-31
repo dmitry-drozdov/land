@@ -112,34 +112,13 @@ func (p *Parser) ParseFile(path string, pathOut string, res *concurrency.SaveMap
 
 		// проход по МЕТОДУ в поиске АНОНИМНЫХ ФУНКЦИЙ или обычных вызовов
 
-		allCnt := 0
-		canSkip := true
-		ast.Inspect(x.Body, func(n ast.Node) bool {
-			switch x := n.(type) {
-			case *ast.CallExpr:
-				_, anonFunc := x.Fun.(*ast.FuncLit)
-				if anonFunc {
-					canSkip = false
-				}
-				_, id := x.Fun.(*ast.Ident)
-				_, pkgId := x.Fun.(*ast.SelectorExpr)
-				if !anonFunc && !id && !pkgId {
-					return true // continue
-				}
-				allCnt++
-				return false // interrupt
-			case *ast.FuncLit:
-				return false // interrupt, не анализируем тела вложенных функций (это не вызов, а переменная)
-			default:
-				return true // continue
-			}
-		})
+		allCnt := p.innerInspect(x.Body)
 
 		if allCnt == 0 && !p.Balancer.CanSubAction() {
 			return true
 		}
 
-		if allCnt%5 == 1 && canSkip {
+		if allCnt%5 == 1 {
 			return true // reduce test data set
 		}
 
@@ -171,4 +150,26 @@ func (p *Parser) ParseFile(path string, pathOut string, res *concurrency.SaveMap
 	})
 
 	return nil
+}
+
+func (p *Parser) innerInspect(root ast.Node) int {
+	cnt := 0
+	ast.Inspect(root, func(n ast.Node) bool {
+		switch x := n.(type) {
+		case *ast.CallExpr:
+			fn, ok := x.Fun.(*ast.FuncLit)
+			if ok {
+				cnt++
+				if fn.Type != nil && fn.Type.Results != nil {
+					cnt += p.innerInspect(fn.Type.Results)
+				}
+			}
+			return true // interrupt
+		case *ast.FuncLit:
+			return false // interrupt, не анализируем тела вложенных функций (это не вызов, а переменная)
+		default:
+			return true // continue
+		}
+	})
+	return cnt
 }
