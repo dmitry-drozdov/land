@@ -9,11 +9,11 @@ import (
 )
 
 const (
-	RATIO = 0
+	RATIO = 1
 )
 
 var folders = []string{
-	//"sourcegraph",
+	"sourcegraph",
 	"delivery-offering",
 	"boost",
 	"chainlink",
@@ -22,12 +22,12 @@ var folders = []string{
 	"grafana",
 	"gvisor",
 	"test",
-	//"backend",
-	//"azure-service-operator",
-	//"kubernetes",
+	"backend",
+	"azure-service-operator",
+	"kubernetes",
 	"go-redis",
-	//"docker-ce",
-	//"tidb",
+	"docker-ce",
+	"tidb",
 	"moby",
 }
 
@@ -45,7 +45,7 @@ func main() {
 	}
 
 	fmt.Printf("TOTAL anon func call: %v, bodies: %v\n", b.CntMain(), b.CntSub())
-	fmt.Printf("TOTAL ratio: %.3f\n", float64(stats.ok)/float64(stats.total)*100)
+	fmt.Printf("TOTAL ratio: %.3f [bad=%v]\n", float64(stats.ok)/float64(stats.total)*100, stats.total-stats.ok)
 }
 
 func doWork(sname string, balancer *concurrency.Balancer) error {
