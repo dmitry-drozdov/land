@@ -11,9 +11,11 @@ SPREAD 		: '...'
 VAR: 'var'
 CONST: 'const'
 IF : 'if' 
+SWITCH: 'switch'
 CASE: 'case'
 RETURN: 'return'
 NL: '\n'
+GO: 'go'
 
 
 // важно пропускать строки и символы, так как в них могут быть [{(, что нарушит парность скобок
@@ -33,7 +35,7 @@ ID: [a-zA-Z_][a-zA-Z0-9_\u1684-\u1697]*
 content	= entity*
 
 entity =  base | generic 
-		 | funcs | interfaces // rubbish
+		 | func | interface // rubbish
 		 | '(' entity* ')'
 		 | any
 
@@ -42,13 +44,15 @@ base = selector generic
 		| selector call
 call = '(' any ')'
 
-generic = '[' (any|base)* ']'
+cast = '(' any ')'
 
-selector = ID | ID '.' selector
+generic = '[' entity* ']'
+
+selector = ID | ID '.' (selector | cast)
 
 
-funcs = 'func' ID '(' any ')'
-interfaces = 'interface' '{' any '}'
+func = 'func' selector '(' any ')'
+interface = 'interface' '{' any '}'
 
 any = Any
 
@@ -64,7 +68,7 @@ any = Any
 %nodes {
 	ghost entity 
 	leaf
-	void funcs interfaces any
+	void 
 }
 
 

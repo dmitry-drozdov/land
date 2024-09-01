@@ -16,7 +16,7 @@ var folders = []string{
 	// "sourcegraph",
 	// "delivery-offering",
 	// "boost",
-	// "chainlink",
+	// "chainlink", //-- кандидат
 	"modules",
 	// "go-ethereum",
 	// "grafana",
@@ -27,7 +27,7 @@ var folders = []string{
 	// "kubernetes",
 	// "go-redis",
 	// "docker-ce",
-	//"tidb",
+	"tidb",
 	// "moby",
 }
 

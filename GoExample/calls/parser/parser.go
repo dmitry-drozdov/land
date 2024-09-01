@@ -116,11 +116,11 @@ func (p *Parser) ParseFile(path string, pathOut string, res *concurrency.SaveMap
 		// проход по МЕТОДУ в поиске ОБЫЧНЫХ ВЫЗОВОВ
 		allCnt := p.innerInspectPureCalls(x.Body)
 
-		if allCnt == 0 && !p.Balancer.CanSubAction() {
+		if allCnt == 0 /*&& !p.Balancer.CanSubAction() */ {
 			return true
 		}
 
-		// if suffix == "_2271423108252276541.go" {
+		// if suffix == "_8427744486847186509.go" {
 		// 	ast.Print(fset, x.Body)
 		// }
 
@@ -194,7 +194,10 @@ func (p *Parser) innerInspectPureCalls(root ast.Node) int {
 
 			_, ok = x.Fun.(*ast.ParenExpr)
 			if ok {
-				return false // interrupt, кейс (*int)(&c)
+				for _, arg := range x.Args {
+					cnt += p.innerInspectPureCalls(arg)
+				}
+				return false // interrupt, кейс *(*uint64)(unsafe.Pointer(&c.elemBuf[0]))
 			}
 
 			sel, ok := x.Fun.(*ast.SelectorExpr)
