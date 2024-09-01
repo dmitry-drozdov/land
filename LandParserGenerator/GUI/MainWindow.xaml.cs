@@ -694,7 +694,7 @@ namespace Land.GUI
 			{
 				foreach (var child in node.Children)
 				{
-					if (child.Symbol == Grammar.ANY_TOKEN_NAME)
+					if (child.Symbol == "call"/*Grammar.ANY_TOKEN_NAME*/)
 					{
 						if (child.Location != null)
 							AnySegments.Add(new Tuple<int, int>(child.Location.Start.Offset, child.Location.End.Offset));

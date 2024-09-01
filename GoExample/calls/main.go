@@ -13,22 +13,22 @@ const (
 )
 
 var folders = []string{
-	"sourcegraph",
-	"delivery-offering",
-	"boost",
-	"chainlink",
+	// "sourcegraph",
+	// "delivery-offering",
+	// "boost",
+	// "chainlink",
 	"modules",
-	"go-ethereum",
-	"grafana",
-	"gvisor",
+	// "go-ethereum",
+	// "grafana",
+	// "gvisor",
 	"test",
-	"backend",
-	"azure-service-operator",
-	"kubernetes",
-	"go-redis",
-	"docker-ce",
-	"tidb",
-	"moby",
+	//"backend",
+	// "azure-service-operator",
+	// "kubernetes",
+	// "go-redis",
+	// "docker-ce",
+	//"tidb",
+	// "moby",
 }
 
 var stats = struct {

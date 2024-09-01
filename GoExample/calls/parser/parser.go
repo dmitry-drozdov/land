@@ -105,19 +105,23 @@ func (p *Parser) ParseFile(path string, pathOut string, res *concurrency.SaveMap
 		if x.Recv != nil && len(x.Recv.List) > 0 {
 			suffix = fmt.Sprint("_", hash.HashStrings(p.HumanType(x.Recv.List[0].Type), x.Name.Name), ".go")
 		} else {
-			suffix = fmt.Sprint("_", hash.HashString(x.Name.Name), autoInc(), ".go")
+			suffix = fmt.Sprint("_", hash.HashString(x.Name.Name), "_", autoInc(), ".go")
 		}
 
 		pathOut := pathOut[:len(pathOut)-3] + suffix
 
 		//проход по МЕТОДУ в поиске АНОНИМНЫХ ФУНКЦИЙ
-		allCnt := p.innerInspectAnonCalls(x.Body)
+		//allCnt := p.innerInspectAnonCalls(x.Body)
 
 		// проход по МЕТОДУ в поиске ОБЫЧНЫХ ВЫЗОВОВ
-		// allCnt := p.innerInspectPureCalls(x.Body)
+		allCnt := p.innerInspectPureCalls(x.Body)
 
-		// if allCnt == 0 && !p.Balancer.CanSubAction() {
-		// 	return true
+		if allCnt == 0 && !p.Balancer.CanSubAction() {
+			return true
+		}
+
+		// if suffix == "_2271423108252276541.go" {
+		// 	ast.Print(fset, x.Body)
 		// }
 
 		nodeText = nodeText[1 : len(nodeText)-2]
@@ -150,27 +154,27 @@ func (p *Parser) ParseFile(path string, pathOut string, res *concurrency.SaveMap
 	return nil
 }
 
-func (p *Parser) innerInspectAnonCalls(root ast.Node) int {
-	cnt := 0
-	ast.Inspect(root, func(n ast.Node) bool {
-		switch x := n.(type) {
-		case *ast.CallExpr:
-			fn, ok := x.Fun.(*ast.FuncLit)
-			if ok {
-				cnt++
-				if fn.Type != nil && fn.Type.Results != nil {
-					cnt += p.innerInspectAnonCalls(fn.Type.Results)
-				}
-			}
-			return true // continue
-		case *ast.FuncLit:
-			return false // interrupt, не анализируем тела вложенных функций (это не вызов, а переменная)
-		default:
-			return true // continue
-		}
-	})
-	return cnt
-}
+// func (p *Parser) innerInspectAnonCalls(root ast.Node) int {
+// 	cnt := 0
+// 	ast.Inspect(root, func(n ast.Node) bool {
+// 		switch x := n.(type) {
+// 		case *ast.CallExpr:
+// 			fn, ok := x.Fun.(*ast.FuncLit)
+// 			if ok {
+// 				cnt++
+// 				if fn.Type != nil && fn.Type.Results != nil {
+// 					cnt += p.innerInspectAnonCalls(fn.Type.Results)
+// 				}
+// 			}
+// 			return true // continue
+// 		case *ast.FuncLit:
+// 			return false // interrupt, не анализируем тела вложенных функций (это не вызов, а переменная)
+// 		default:
+// 			return true // continue
+// 		}
+// 	})
+// 	return cnt
+// }
 
 func (p *Parser) innerInspectPureCalls(root ast.Node) int {
 	cnt := 0
@@ -179,8 +183,26 @@ func (p *Parser) innerInspectPureCalls(root ast.Node) int {
 		case *ast.CallExpr:
 			_, ok := x.Fun.(*ast.FuncLit)
 			if ok {
-				return false // interrupt, вызовы анон функций отдельно
+				return true // тело внутри анонимной функции тоже просматриваем для удобства тестирования
 			}
+
+			_, ok = x.Fun.(*ast.CallExpr)
+			if ok {
+				cnt++
+				return false // interrupt, кейс f()()()
+			}
+
+			_, ok = x.Fun.(*ast.ParenExpr)
+			if ok {
+				return false // interrupt, кейс (*int)(&c)
+			}
+
+			sel, ok := x.Fun.(*ast.SelectorExpr)
+			if ok {
+				cnt += 1 + p.innerInspectPureCalls(sel.X)
+				return false // interrupt, кейс a.f(x).g(y)
+			}
+
 			cnt++
 			return false // interrupt, внутренние вызовы нам не интересны
 		case *ast.FuncLit:

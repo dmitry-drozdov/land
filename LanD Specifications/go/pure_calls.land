@@ -13,6 +13,7 @@ CONST: 'const'
 IF : 'if' 
 CASE: 'case'
 RETURN: 'return'
+NL: '\n'
 
 
 // важно пропускать строки и символы, так как в них могут быть [{(, что нарушит парность скобок
@@ -21,22 +22,35 @@ STRING_STD	: '"' ('\\"'|'\\\\'|.)*? '"'
 
 CHAR		: '\'' ('\\\''|'\\\\'|.)*? '\''
 
-CURVE_BRACKETED : %left '{' %right '}'
+//CURVE_BRACKETED : %left '{' %right '}'
 ROUND_BRACKETED : %left '(' %right ')'
+SQUARE_BRACKETED : %left '[' %right ']'
 
 ID: [a-zA-Z_][a-zA-Z0-9_\u1684-\u1697]*
 
 
+
 content	= entity*
 
-entity = Any | call | funcs
+entity =  base | generic 
+		 | funcs | interfaces // rubbish
+		 | '(' entity* ')'
+		 | any
 
-call = selector '(' Any ')'
+base = selector generic 
+		| selector generic call
+		| selector call
+call = '(' any ')'
+
+generic = '[' (any|base)* ']'
 
 selector = ID | ID '.' selector
 
-funcs = 'func' ID '(' Any ')'
 
+funcs = 'func' ID '(' any ')'
+interfaces = 'interface' '{' any '}'
+
+any = Any
 
 %%
 
@@ -49,8 +63,8 @@ funcs = 'func' ID '(' Any ')'
 
 %nodes {
 	ghost entity 
-	leaf 
-	void funcs
+	leaf
+	void funcs interfaces any
 }
 
 
