@@ -16,7 +16,7 @@ func NewQueue() *Queue {
 		ch: make(chan F, 1024),
 		wg: sync.WaitGroup{},
 	}
-	for range 4 {
+	for range 8 {
 		q.wg.Add(1)
 		go func() {
 			defer q.wg.Done()
