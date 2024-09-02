@@ -16,12 +16,18 @@ import (
 
 type Parser struct {
 	*ast_type.NameConverter
+	Queue    *concurrency.Queue
 	Balancer *concurrency.Balancer
 	Counter  int // for funcs (not method)
 }
 
 func NewParser(balancer *concurrency.Balancer) *Parser {
-	return &Parser{ast_type.NewNameConverter(), balancer, 0}
+	return &Parser{
+		ast_type.NewNameConverter(),
+		concurrency.NewQueue(),
+		balancer,
+		0,
+	}
 }
 
 func (p *Parser) ParseFiles(root string) (map[string]int, error) {
@@ -42,6 +48,7 @@ func (p *Parser) ParseFiles(root string) (map[string]int, error) {
 
 		return p.ParseFile(path, strings.Replace(path, `\test_repos\`, `\test_repos_calls\`, 1), res)
 	})
+	p.Queue.Wait()
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +80,6 @@ func (p *Parser) ParseFile(path string, pathOut string, res *concurrency.SaveMap
 
 	// проход по файлу в поисках МЕТОДОВ
 	ast.Inspect(f, func(n ast.Node) bool {
-
 		if n != nil && nested.Nested(n.Pos(), n.End()) {
 			return true
 		}
@@ -114,37 +120,41 @@ func (p *Parser) ParseFile(path string, pathOut string, res *concurrency.SaveMap
 		// проход по МЕТОДУ в поиске ОБЫЧНЫХ ВЫЗОВОВ
 		allCnt := p.innerInspectPureCalls(x.Body)
 
-		if allCnt == 0 && !p.Balancer.CanSubAction() {
-			return true
-		}
+		// if allCnt == 0 && !p.Balancer.CanSubAction() {
+		// 	return true
+		// }
 
 		// if suffix == "_15110003690449985479.go" {
 		// 	ast.Print(fset, x.Body)
 		// }
 
-		nodeText = nodeText[1 : len(nodeText)-2]
-
-		err = os.MkdirAll(filepath.Dir(pathOut), 0755)
-		if err != nil {
-			return false
-		}
-
-		var file *os.File
-		file, err = os.OpenFile(pathOut, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
-		if err != nil {
-			return false
-		}
-		defer file.Close()
-
-		_, err = file.WriteString(nodeText)
-		if err != nil {
-			return false
-		}
-
 		p.Balancer.MainAction(allCnt)
 
 		key := strings.Split(strings.TrimSuffix(pathOut, ".go"), "\\")
 		res.Set(key[len(key)-1], allCnt)
+
+		p.Queue.Add(func() error {
+			nodeText = nodeText[1 : len(nodeText)-2]
+
+			err = os.MkdirAll(filepath.Dir(pathOut), 0755)
+			if err != nil {
+				return err
+			}
+
+			var file *os.File
+			file, err = os.OpenFile(pathOut, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+			if err != nil {
+				return err
+			}
+			defer file.Close()
+
+			_, err = file.WriteString(nodeText)
+			if err != nil {
+				return err
+			}
+
+			return nil
+		})
 
 		return true
 	})
