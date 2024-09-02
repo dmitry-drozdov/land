@@ -114,11 +114,11 @@ func (p *Parser) ParseFile(path string, pathOut string, res *concurrency.SaveMap
 		// проход по МЕТОДУ в поиске ОБЫЧНЫХ ВЫЗОВОВ
 		allCnt := p.innerInspectPureCalls(x.Body)
 
-		if allCnt == 0 /*&& !p.Balancer.CanSubAction() */ {
+		if allCnt == 0 && !p.Balancer.CanSubAction() {
 			return true
 		}
 
-		// if suffix == "_14698114347841764541_4.go" {
+		// if suffix == "_15110003690449985479.go" {
 		// 	ast.Print(fset, x.Body)
 		// }
 

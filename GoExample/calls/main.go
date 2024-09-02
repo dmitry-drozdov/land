@@ -13,7 +13,7 @@ const (
 )
 
 var folders = []string{
-	// "sourcegraph",
+	"sourcegraph",
 	// "delivery-offering",
 	// "boost",
 	"chainlink",

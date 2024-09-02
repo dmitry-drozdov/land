@@ -41,7 +41,7 @@ entity =  call | selector
 		 | '[' entity* ']'
 		 | any
 
-call = selector '(' Any ')'
+call = selector ('(' Any ')')+
 selector = ID 
 		| ID '.' selector
 		| ID ('[' entity* ']')+
