@@ -16,7 +16,7 @@ var folders = []string{
 	// "sourcegraph",
 	// "delivery-offering",
 	// "boost",
-	// "chainlink", //-- кандидат
+	"chainlink",
 	"modules",
 	// "go-ethereum",
 	// "grafana",
@@ -28,7 +28,7 @@ var folders = []string{
 	// "go-redis",
 	// "docker-ce",
 	"tidb",
-	// "moby",
+	"moby",
 }
 
 var stats = struct {

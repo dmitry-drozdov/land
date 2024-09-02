@@ -17,10 +17,11 @@ import (
 type Parser struct {
 	*ast_type.NameConverter
 	Balancer *concurrency.Balancer
+	Counter  int // for funcs (not method)
 }
 
 func NewParser(balancer *concurrency.Balancer) *Parser {
-	return &Parser{ast_type.NewNameConverter(), balancer}
+	return &Parser{ast_type.NewNameConverter(), balancer, 0}
 }
 
 func (p *Parser) ParseFiles(root string) (map[string]int, error) {
@@ -70,9 +71,6 @@ func (p *Parser) ParseFile(path string, pathOut string, res *concurrency.SaveMap
 
 	nested := filter.NewNestedFuncs()
 
-	ai := 0
-	autoInc := func() int { ai++; return ai }
-
 	// проход по файлу в поисках МЕТОДОВ
 	ast.Inspect(f, func(n ast.Node) bool {
 
@@ -105,7 +103,7 @@ func (p *Parser) ParseFile(path string, pathOut string, res *concurrency.SaveMap
 		if x.Recv != nil && len(x.Recv.List) > 0 {
 			suffix = fmt.Sprint("_", hash.HashStrings(p.HumanType(x.Recv.List[0].Type), x.Name.Name), ".go")
 		} else {
-			suffix = fmt.Sprint("_", hash.HashString(x.Name.Name), "_", autoInc(), ".go")
+			suffix = fmt.Sprint("_", hash.HashString(x.Name.Name), "_", p.AutoInc(), ".go")
 		}
 
 		pathOut := pathOut[:len(pathOut)-3] + suffix
@@ -120,9 +118,9 @@ func (p *Parser) ParseFile(path string, pathOut string, res *concurrency.SaveMap
 			return true
 		}
 
-		if suffix == "_5178746160375004791_28.go" {
-			ast.Print(fset, x.Body)
-		}
+		// if suffix == "_14698114347841764541_4.go" {
+		// 	ast.Print(fset, x.Body)
+		// }
 
 		nodeText = nodeText[1 : len(nodeText)-2]
 
@@ -216,4 +214,9 @@ func (p *Parser) innerInspectPureCalls(root ast.Node) int {
 		}
 	})
 	return cnt
+}
+
+func (p *Parser) AutoInc() int {
+	p.Counter++
+	return p.Counter
 }
