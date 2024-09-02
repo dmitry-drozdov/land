@@ -34,24 +34,20 @@ ID: [a-zA-Z_][a-zA-Z0-9_\u1684-\u1697]*
 
 content	= entity*
 
-entity =  base | generic 
+entity =  call | selector
 		 | func | interface // rubbish
 		 | '(' entity* ')'
+		 | '[' entity* ']'
 		 | any
 
-base = selector generic 
-		| selector generic call
-		| selector call
-call = '(' any ')'
-
-cast = '(' any ')'
-
-generic = '[' entity* ']'
-
-selector = ID | ID '.' (selector | cast)
+call = selector '(' Any ')'
+selector = ID 
+		| ID '.' selector
+		| ID ('[' entity* ']')+
+		| ID '.' '(' Any ')' // cast
 
 
-func = 'func' selector '(' any ')'
+func = 'func' ID '(' any ')'
 interface = 'interface' '{' any '}'
 
 any = Any

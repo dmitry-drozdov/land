@@ -120,9 +120,9 @@ func (p *Parser) ParseFile(path string, pathOut string, res *concurrency.SaveMap
 			return true
 		}
 
-		// if suffix == "_8427744486847186509.go" {
-		// 	ast.Print(fset, x.Body)
-		// }
+		if suffix == "_5178746160375004791_28.go" {
+			ast.Print(fset, x.Body)
+		}
 
 		nodeText = nodeText[1 : len(nodeText)-2]
 
@@ -192,11 +192,12 @@ func (p *Parser) innerInspectPureCalls(root ast.Node) int {
 				return false // interrupt, кейс f()()()
 			}
 
-			_, ok = x.Fun.(*ast.ParenExpr)
+			paren, ok := x.Fun.(*ast.ParenExpr)
 			if ok {
 				for _, arg := range x.Args {
 					cnt += p.innerInspectPureCalls(arg)
 				}
+				cnt += p.innerInspectPureCalls(paren.X)
 				return false // interrupt, кейс *(*uint64)(unsafe.Pointer(&c.elemBuf[0]))
 			}
 

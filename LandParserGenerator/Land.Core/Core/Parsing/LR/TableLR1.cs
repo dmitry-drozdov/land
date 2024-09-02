@@ -124,7 +124,7 @@ namespace Land.Core.Parsing.LR
 						Actions[i, j] = a[0];
 						continue;
 					}
-					Actions[i, j] = a.First(x => x.ActionType == 0);
+					Actions[i, j] = a.First(x => x.ActionType == 0); // ??? 
 					Conflicts[i, j] = true;
 				}
 			}
