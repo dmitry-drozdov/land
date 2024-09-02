@@ -14,18 +14,18 @@ const (
 
 var folders = []string{
 	"sourcegraph",
-	// "delivery-offering",
-	// "boost",
+	"delivery-offering",
+	"boost",
 	"chainlink",
 	"modules",
-	// "go-ethereum",
+	"go-ethereum",
 	// "grafana",
-	// "gvisor",
+	"gvisor",
 	"test",
-	//"backend",
+	"backend",
 	// "azure-service-operator",
 	// "kubernetes",
-	// "go-redis",
+	"go-redis",
 	// "docker-ce",
 	"tidb",
 	"moby",
@@ -44,7 +44,7 @@ func main() {
 		}
 	}
 
-	fmt.Printf("TOTAL anon func call: %v, bodies: %v\n", b.CntMain(), b.CntSub())
+	fmt.Printf("TOTAL func call: %v, bodies: %v\n", b.CntMain(), b.CntSub())
 	fmt.Printf("TOTAL ratio: %.3f [bad=%v]\n", float64(stats.ok)/float64(stats.total)*100, stats.total-stats.ok)
 }
 

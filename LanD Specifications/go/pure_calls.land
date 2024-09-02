@@ -25,7 +25,7 @@ STRING_STD	: '"' ('\\"'|'\\\\'|.)*? '"'
 
 CHAR		: '\'' ('\\\''|'\\\\'|.)*? '\''
 
-//CURVE_BRACKETED : %left '{' %right '}'
+CURVE_BRACKETED : %left '{' %right '}'
 ROUND_BRACKETED : %left '(' %right ')'
 SQUARE_BRACKETED : %left '[' %right ']'
 
@@ -39,6 +39,7 @@ entity =  call | selector
 		 | func | interface // rubbish
 		 | '(' entity* ')'
 		 | '[' entity* ']'
+		 | '{' entity* '}'
 		 | any
 
 call = selector ('(' Any ')')+
