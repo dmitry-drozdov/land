@@ -19,7 +19,7 @@ var folders = []string{
 	"chainlink",
 	"modules",
 	"go-ethereum",
-	// "grafana",
+	"grafana",
 	"gvisor",
 	"test",
 	"backend",
