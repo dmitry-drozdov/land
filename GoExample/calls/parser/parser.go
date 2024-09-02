@@ -149,11 +149,7 @@ func (p *Parser) ParseFile(path string, pathOut string, res *concurrency.SaveMap
 			defer file.Close()
 
 			_, err = file.WriteString(nodeText)
-			if err != nil {
-				return err
-			}
-
-			return nil
+			return err
 		})
 
 		return true

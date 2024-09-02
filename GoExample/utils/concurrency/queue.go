@@ -1,18 +1,28 @@
 package concurrency
 
+import (
+	"sync"
+)
+
 type F func() error
 
 type Queue struct {
-	ch   chan F
-	done chan struct{}
+	ch chan F
+	wg sync.WaitGroup
 }
 
 func NewQueue() *Queue {
 	q := &Queue{
-		ch:   make(chan F, 1024),
-		done: make(chan struct{}),
+		ch: make(chan F, 1024),
+		wg: sync.WaitGroup{},
 	}
-	go q.run()
+	for range 4 {
+		q.wg.Add(1)
+		go func() {
+			defer q.wg.Done()
+			q.run()
+		}()
+	}
 	return q
 }
 
@@ -22,7 +32,7 @@ func (q *Queue) Add(f F) {
 
 func (q *Queue) Wait() {
 	close(q.ch)
-	<-q.done
+	q.wg.Wait()
 }
 
 func (q *Queue) run() {
@@ -32,5 +42,4 @@ func (q *Queue) run() {
 			panic(err)
 		}
 	}
-	close(q.done)
 }
