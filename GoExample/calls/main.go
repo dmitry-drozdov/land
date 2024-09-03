@@ -32,8 +32,10 @@ var folders = []string{
 }
 
 var stats = struct {
-	ok    int
-	total int
+	hasCalls   int
+	hasNoCalls int
+	ok         int
+	total      int
 }{}
 
 func main() {
@@ -44,8 +46,14 @@ func main() {
 		}
 	}
 
+	totalFuncs := stats.hasCalls + stats.hasNoCalls
+	fmt.Printf(
+		"TOTAL has calls: %v (%.2f%%), has no calls: %v (%.2f%%)\n",
+		stats.hasCalls, ratio(stats.hasCalls, totalFuncs),
+		stats.hasNoCalls, ratio(stats.hasNoCalls, totalFuncs),
+	)
 	fmt.Printf("TOTAL func call: %v, bodies: %v\n", b.CntMain(), b.CntSub())
-	fmt.Printf("TOTAL ratio: %.3f [bad=%v]\n", float64(stats.ok)/float64(stats.total)*100, stats.total-stats.ok)
+	fmt.Printf("TOTAL ratio: %.3f [bad=%v]\n", ratio(stats.ok, stats.total), stats.total-stats.ok)
 }
 
 func doWork(sname string, balancer *concurrency.Balancer) error {
@@ -62,7 +70,7 @@ func doWork(sname string, balancer *concurrency.Balancer) error {
 	if err != nil {
 		return err
 	}
-
+	trackCalls(orig)
 	fmt.Printf("===== %s END [%v] [%v]=====\n", sname, sum(orig), sum(land))
 
 	err = compareMaps(orig, land)
@@ -79,6 +87,16 @@ func sum(mp map[string]int) int {
 		res += v
 	}
 	return res
+}
+
+func trackCalls(mp map[string]int) {
+	for _, v := range mp {
+		if v == 0 {
+			stats.hasNoCalls++
+		} else {
+			stats.hasCalls++
+		}
+	}
 }
 
 func compareMaps(orig, land map[string]int) error {
@@ -110,4 +128,8 @@ func compareMaps(orig, land map[string]int) error {
 	stats.total += len(orig)
 
 	return errors.Join(errs...)
+}
+
+func ratio(part, total int) float64 {
+	return float64(part) / float64(total) * 100
 }
