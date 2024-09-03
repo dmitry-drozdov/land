@@ -211,6 +211,15 @@ func (p *Parser) innerInspectPureCalls(root ast.Node) int {
 				return false // interrupt, кейс a.f(x).g(y)
 			}
 
+			_, ok = x.Fun.(*ast.MapType)
+			if ok {
+				return false // interrupt, кейс map[int]string(oldMap)
+			}
+			_, ok = x.Fun.(*ast.InterfaceType)
+			if ok {
+				return false // interrupt, кейс interface{}(oldMap)
+			}
+
 			cnt++
 			return false // interrupt, внутренние вызовы нам не интересны
 		case *ast.FuncLit:

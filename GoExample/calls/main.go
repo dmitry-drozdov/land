@@ -94,8 +94,12 @@ func compareMaps(orig, land map[string]int) error {
 			errs = append(errs, fmt.Errorf("key not found %v", origK))
 			continue
 		}
-		if landV != origV {
-			errs = append(errs, fmt.Errorf("val mismatch [land=%v] [go=%v] [%v]", landV, origV, origK))
+		if landV > origV {
+			errs = append(errs, fmt.Errorf("val mismatch [land=%v]>[go=%v] [%v]", landV, origV, origK))
+			continue
+		}
+		if landV < origV {
+			errs = append(errs, fmt.Errorf("!!!val mismatch [land=%v]<[go=%v] [%v]", landV, origV, origK))
 			continue
 		}
 		okCnt++
