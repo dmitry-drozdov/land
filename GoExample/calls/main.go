@@ -13,6 +13,10 @@ const (
 )
 
 var folders = []string{
+	"azure-service-operator",
+	"kubernetes",
+	"docker-ce",
+
 	"sourcegraph",
 	"delivery-offering",
 	"boost",
@@ -23,10 +27,7 @@ var folders = []string{
 	"gvisor",
 	"test",
 	"backend",
-	// "azure-service-operator",
-	// "kubernetes",
 	"go-redis",
-	// "docker-ce",
 	"tidb",
 	"moby",
 }
@@ -131,5 +132,8 @@ func compareMaps(orig, land map[string]int) error {
 }
 
 func ratio(part, total int) float64 {
+	if total == 0 {
+		return 0
+	}
 	return float64(part) / float64(total) * 100
 }

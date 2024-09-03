@@ -11,6 +11,7 @@ SPREAD 		: '...'
 VAR: 'var'
 CONST: 'const'
 IF : 'if' 
+FOR: 'for'
 SWITCH: 'switch'
 CASE: 'case'
 RETURN: 'return'
@@ -29,7 +30,7 @@ CURVE_BRACKETED : %left '{' %right '}'
 ROUND_BRACKETED : %left '(' %right ')'
 SQUARE_BRACKETED : %left '[' %right ']'
 
-ID: [a-zA-Z_][a-zA-Z0-9_\u1684-\u1697]*
+ID: [a-zA-Z_\u0192\u1684-\u1697\u0370-\u03FF][a-zA-Z0-9_\u0192\u1684-\u1697\u0370-\u03FF]*
 
 
 

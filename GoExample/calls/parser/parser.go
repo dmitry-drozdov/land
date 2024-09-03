@@ -134,7 +134,7 @@ func (p *Parser) ParseFile(path string, pathOut string, res *concurrency.SaveMap
 		res.Set(key[len(key)-1], allCnt)
 
 		p.Queue.Add(func() error {
-			nodeText = nodeText[1 : len(nodeText)-2]
+			nodeText = nodeText[1 : len(nodeText)-1]
 
 			err = os.MkdirAll(filepath.Dir(pathOut), 0755)
 			if err != nil {
