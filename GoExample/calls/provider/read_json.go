@@ -5,44 +5,53 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"utils/concurrency"
 
 	jsoniter "github.com/json-iterator/go"
+	"golang.org/x/sync/errgroup"
 )
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 func ReadFolder(root string) (map[string]int, error) {
-	res := make(map[string]int, 200000)
+	res := concurrency.NewSaveMap[string, int](200000)
+	g := errgroup.Group{}
+	g.SetLimit(8)
 
-	err := filepath.Walk(root, func(path string, info os.FileInfo, _ error) error {
+	_ = filepath.Walk(root, func(path string, info os.FileInfo, _ error) error {
 		if info == nil || info.IsDir() || filepath.Ext(info.Name()) != ".json" {
 			return nil
 		}
 
-		file, err := os.Open(path)
-		if err != nil {
-			return err
-		}
-		defer file.Close()
+		name, pathBk := info.Name(), path
 
-		bytes, err := io.ReadAll(file)
-		if err != nil {
-			return err
-		}
+		g.Go(func() error {
+			file, err := os.Open(pathBk)
+			if err != nil {
+				return err
+			}
+			defer file.Close()
 
-		var val int
-		err = json.Unmarshal(bytes, &val)
-		if err != nil {
-			return err
-		}
+			bytes, err := io.ReadAll(file)
+			if err != nil {
+				return err
+			}
 
-		res[strings.TrimSuffix(info.Name(), ".json")] = val
+			var val int
+			err = json.Unmarshal(bytes, &val)
+			if err != nil {
+				return err
+			}
+
+			res.Set(strings.TrimSuffix(name, ".json"), val)
+			return nil
+		})
 
 		return nil
 	})
-	if err != nil {
+	if err := g.Wait(); err != nil {
 		return nil, err
 	}
 
-	return res, nil
+	return res.Unsafe(), nil
 }

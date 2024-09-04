@@ -18,7 +18,7 @@ type Parser struct {
 	*ast_type.NameConverter
 	Queue    *concurrency.Queue
 	Balancer *concurrency.Balancer
-	Counter  int // for funcs (not method)
+	Counter  uint64 // for funcs (not method)
 }
 
 func NewParser(balancer *concurrency.Balancer) *Parser {
@@ -107,7 +107,7 @@ func (p *Parser) ParseFile(path string, pathOut string, res *concurrency.SaveMap
 
 		var suffix string
 		if x.Recv != nil && len(x.Recv.List) > 0 {
-			suffix = fmt.Sprint("_", hash.HashStrings(p.HumanType(x.Recv.List[0].Type), x.Name.Name), ".go")
+			suffix = fmt.Sprint("_", hash.HashStrings(p.HumanType(x.Recv.List[0].Type), x.Name.Name), "_", p.AutoInc(), ".go")
 		} else {
 			suffix = fmt.Sprint("_", hash.HashString(x.Name.Name), "_", p.AutoInc(), ".go")
 		}
@@ -231,7 +231,7 @@ func (p *Parser) innerInspectPureCalls(root ast.Node) int {
 	return cnt
 }
 
-func (p *Parser) AutoInc() int {
+func (p *Parser) AutoInc() uint64 {
 	p.Counter++
 	return p.Counter
 }
