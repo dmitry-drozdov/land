@@ -12,7 +12,7 @@ import (
 var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 func ReadFolder(root string) (map[string]int, error) {
-	res := make(map[string]int, 20000)
+	res := make(map[string]int, 200000)
 
 	err := filepath.Walk(root, func(path string, info os.FileInfo, _ error) error {
 		if info == nil || info.IsDir() || filepath.Ext(info.Name()) != ".json" {
@@ -36,7 +36,7 @@ func ReadFolder(root string) (map[string]int, error) {
 			return err
 		}
 
-		res[strings.TrimSuffix(info.Name(), filepath.Ext(info.Name()))] = val
+		res[strings.TrimSuffix(info.Name(), ".json")] = val
 
 		return nil
 	})
