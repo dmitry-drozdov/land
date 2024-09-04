@@ -18,12 +18,13 @@ namespace Land.GUI.Serializers
 			if (root == null)
 				return 0;
 
-			var str = root.ToString();
-			if (str == "anon_func_call" || str=="call")
-			{
-				return 1;
-			}
 			var sum = 0;
+			var str = root.ToString();
+			if (str == "anon_func_call" || str == "call")
+			{
+				sum = 1;
+			}
+
 			foreach (var cblock in root.Children)
 			{
 				sum += ParseNode(cblock);

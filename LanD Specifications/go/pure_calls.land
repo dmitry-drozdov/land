@@ -18,6 +18,7 @@ RETURN: 'return'
 NL: '\n'
 GO: 'go'
 RANGE: 'range'
+FUNC: 'func'
 
 
 // важно пропускать строки и символы, так как в них могут быть [{(, что нарушит парность скобок
@@ -36,24 +37,27 @@ ID: [a-zA-Z_\u0192\u1684-\u1697\u0370-\u03FF][a-zA-Z0-9_\u0192\u1684-\u1697\u037
 
 content	= entity*
 
-entity =  call | selector
-		 | func | interface // rubbish
+entity =  call | smth
+		 |  interface // rubbish
 		 | '(' entity* ')'
 		 | '[' entity* ']'
 		 | '{' entity* '}'
-		 | any
-
-call = selector ('(' Any ')')+
-selector = ID 
-		| ID '.' selector
-		| ID ('[' entity* ']')+
-		| ID '.' '(' Any ')' // cast
+		 | Any
 
 
-func = 'func' ID '(' any ')'
-interface = 'interface' '{' any '}'
+call = smth ('(' Any ')')+
 
-any = Any
+smth =  ID ('[' entity* ']')* ('.' smth2)?
+	
+	
+
+smth2 =  ID ('[' entity* ']')* ('.' smth2)?
+	| '(' Any ')'
+
+
+interface = 'interface' '{' Any '}'
+
+// TODO: добавить в файл tests тесты из PhD google doc
 
 %%
 

@@ -16,7 +16,6 @@ var folders = []string{
 	"azure-service-operator",
 	"kubernetes",
 	"docker-ce",
-
 	"sourcegraph",
 	"delivery-offering",
 	"boost",
