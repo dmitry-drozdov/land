@@ -124,8 +124,9 @@ func (p *Parser) ParseFile(path string, pathOut string, res *concurrency.SaveMap
 		// 	return true
 		// }
 
-		// if suffix == "_15110003690449985479.go" {
+		// if suffix == "_7879206507492481993_121853.go" {
 		// 	ast.Print(fset, x.Body)
+		// 	panic(0)
 		// }
 
 		p.Balancer.MainAction(allCnt)
@@ -189,6 +190,11 @@ func (p *Parser) innerInspectPureCalls(root ast.Node) int {
 			if ok {
 				return true // тело внутри анонимной функции тоже просматриваем для удобства тестирования
 			}
+
+			// _, ok = x.Fun.(*ast.IndexExpr)
+			// if ok {
+			// 	return true // тело внутри индекса тоже просматриваем для удобства тестирования
+			// }
 
 			_, ok = x.Fun.(*ast.CallExpr)
 			if ok {

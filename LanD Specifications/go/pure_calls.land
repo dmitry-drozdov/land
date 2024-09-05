@@ -10,6 +10,7 @@ SPREAD 		: '...'
 // чтобы пропускать этот токен
 VAR: 'var'
 CONST: 'const'
+TYPE: 'type'
 IF : 'if' 
 FOR: 'for'
 SWITCH: 'switch'
@@ -49,15 +50,13 @@ call = smth ('(' Any ')')+
 
 smth =  ID ('[' entity* ']')* ('.' smth2)?
 	
-	
-
-smth2 =  ID ('[' entity* ']')* ('.' smth2)?
-	| '(' Any ')'
+smth2 =  smth
+	| '(' Any ')' ('[' entity* ']')* ('.' smth2)?
 
 
 interface = 'interface' '{' Any '}'
 
-// TODO: добавить в файл tests тесты из PhD google doc
+
 
 %%
 
