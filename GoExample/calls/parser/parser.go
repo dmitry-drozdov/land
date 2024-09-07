@@ -124,7 +124,7 @@ func (p *Parser) ParseFile(path string, pathOut string, res *concurrency.SaveMap
 		// 	return true
 		// }
 
-		// if suffix == "_12802923683575499797_3629.go" {
+		// if suffix == "_10367583230383768386_1923.go" {
 		// 	ast.Print(fset, x.Body)
 		// 	panic(0)
 		// }
@@ -213,6 +213,9 @@ func (p *Parser) innerInspectPureCalls(root ast.Node) int {
 			case *ast.ArrayType:
 				if ident, ok := y.Elt.(*ast.Ident); ok && excluded[ident.Name] {
 					return true // внешний вызов нам не подошел - продолжаем внутри
+				}
+				if _, ok := y.Elt.(*ast.InterfaceType); ok {
+					return false // внутрь интерфейса не лезем, там нет вызовов, и []interface{}(smth) - это каст, а не вызов
 				}
 			}
 
