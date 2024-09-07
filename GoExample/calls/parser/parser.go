@@ -186,47 +186,30 @@ func (p *Parser) innerInspectPureCalls(root ast.Node) int {
 	ast.Inspect(root, func(n ast.Node) bool {
 		switch x := n.(type) {
 		case *ast.CallExpr:
-			_, ok := x.Fun.(*ast.FuncLit)
-			if ok {
+			switch y := x.Fun.(type) {
+			case *ast.FuncLit:
 				return true // тело внутри анонимной функции тоже просматриваем для удобства тестирования
-			}
-
-			_, ok = x.Fun.(*ast.CallExpr)
-			if ok {
+			case *ast.CallExpr:
 				cnt++
 				return false // interrupt, кейс f()()()
-			}
-
-			paren, ok := x.Fun.(*ast.ParenExpr)
-			if ok {
+			case *ast.ParenExpr:
 				for _, arg := range x.Args {
 					cnt += p.innerInspectPureCalls(arg)
 				}
-				cnt += p.innerInspectPureCalls(paren.X)
+				cnt += p.innerInspectPureCalls(y.X)
 				return false // interrupt, кейс *(*uint64)(unsafe.Pointer(&c.elemBuf[0]))
-			}
-
-			sel, ok := x.Fun.(*ast.SelectorExpr)
-			if ok {
-				if !excluded[sel.Sel.Name] {
+			case *ast.SelectorExpr:
+				if !excluded[y.Sel.Name] {
 					cnt++
 				}
-				cnt += p.innerInspectPureCalls(sel.X)
+				cnt += p.innerInspectPureCalls(y.X)
 				return false // interrupt, кейс a.f(x).g(y)
-			}
-
-			_, ok = x.Fun.(*ast.MapType)
-			if ok {
-				return false // interrupt, кейс map[int]string(oldMap)
-			}
-			_, ok = x.Fun.(*ast.InterfaceType)
-			if ok {
-				return false // interrupt, кейс interface{}(oldMap)
-			}
-
-			f, ok := x.Fun.(*ast.Ident)
-			if ok && excluded[f.Name] {
-				return true // внешний вызов нам не подошел - продолжаем внутри
+			case *ast.MapType, *ast.InterfaceType:
+				return false // interrupt, кейс map[int]string(oldMap) и interface{}(oldMap)
+			case *ast.Ident:
+				if excluded[y.Name] {
+					return true // внешний вызов нам не подошел - продолжаем внутри
+				}
 			}
 
 			cnt++
