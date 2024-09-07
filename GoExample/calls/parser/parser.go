@@ -124,7 +124,7 @@ func (p *Parser) ParseFile(path string, pathOut string, res *concurrency.SaveMap
 		// 	return true
 		// }
 
-		// if suffix == "_7879206507492481993_121853.go" {
+		// if suffix == "_12802923683575499797_3629.go" {
 		// 	ast.Print(fset, x.Body)
 		// 	panic(0)
 		// }
@@ -199,15 +199,19 @@ func (p *Parser) innerInspectPureCalls(root ast.Node) int {
 				cnt += p.innerInspectPureCalls(y.X)
 				return false // interrupt, кейс *(*uint64)(unsafe.Pointer(&c.elemBuf[0]))
 			case *ast.SelectorExpr:
-				if !excluded[y.Sel.Name] {
-					cnt++
+				if excluded[y.Sel.Name] {
+					return true
 				}
-				cnt += p.innerInspectPureCalls(y.X)
+				cnt += 1 + p.innerInspectPureCalls(y.X)
 				return false // interrupt, кейс a.f(x).g(y)
 			case *ast.MapType, *ast.InterfaceType:
 				return false // interrupt, кейс map[int]string(oldMap) и interface{}(oldMap)
 			case *ast.Ident:
 				if excluded[y.Name] {
+					return true // внешний вызов нам не подошел - продолжаем внутри
+				}
+			case *ast.ArrayType:
+				if ident, ok := y.Elt.(*ast.Ident); ok && excluded[ident.Name] {
 					return true // внешний вызов нам не подошел - продолжаем внутри
 				}
 			}
@@ -229,5 +233,38 @@ func (p *Parser) AutoInc() uint64 {
 }
 
 var excluded = map[string]bool{
-	"len": true,
+	"bool":       true,
+	"string":     true,
+	"int":        true,
+	"int8":       true,
+	"int16":      true,
+	"int32":      true,
+	"int64":      true,
+	"uint":       true,
+	"uint8":      true,
+	"uint16":     true,
+	"uint32":     true,
+	"uint64":     true,
+	"uintptr":    true,
+	"byte":       true,
+	"rune":       true,
+	"float32":    true,
+	"float64":    true,
+	"complex64":  true,
+	"complex128": true,
+	"close":      true,
+	"len":        true,
+	"cap":        true,
+	"copy":       true,
+	"delete":     true,
+	"complex":    true,
+	"real":       true,
+	"imag":       true,
+	"new":        true,
+	"make":       true,
+	"append":     true,
+	"panic":      true,
+	"recover":    true,
+	"print":      true,
+	"println":    true,
 }

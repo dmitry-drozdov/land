@@ -5,7 +5,10 @@ import (
 	"calls/provider"
 	"errors"
 	"fmt"
+	"time"
 	"utils/concurrency"
+
+	"github.com/fatih/color"
 )
 
 const (
@@ -39,25 +42,27 @@ var stats = struct {
 }{}
 
 func main() {
+	color.New(color.FgRed, color.Bold).Printf("START %v\n", time.Now().Format(time.DateTime))
+
 	b := concurrency.NewBalancer(RATIO) // на каждые RATIO файлов с вызовами 1 файл без вызовов
 	for _, f := range folders {
 		if err := doWork(f, b); err != nil {
-			fmt.Printf("[%v] <ERROR>: [%v]\n", f, err)
+			color.New(color.FgBlack, color.Bold).Printf("[%v] <ERROR>: [%v]\n", f, err)
 		}
 	}
 
 	totalFuncs := stats.hasCalls + stats.hasNoCalls
-	fmt.Printf(
+	color.Green(
 		"TOTAL has calls: %v (%.2f%%), has no calls: %v (%.2f%%)\n",
 		stats.hasCalls, ratio(stats.hasCalls, totalFuncs),
 		stats.hasNoCalls, ratio(stats.hasNoCalls, totalFuncs),
 	)
-	fmt.Printf("TOTAL func call: %v, bodies: %v\n", b.CntMain(), b.CntSub())
-	fmt.Printf("TOTAL ratio: %.3f [bad=%v]\n", ratio(stats.ok, stats.total), stats.total-stats.ok)
+	color.Green("TOTAL func call: %v, bodies: %v\n", b.CntMain(), b.CntSub())
+	color.Green("TOTAL ratio: %.3f [bad=%v]\n", ratio(stats.ok, stats.total), stats.total-stats.ok)
 }
 
 func doWork(sname string, balancer *concurrency.Balancer) error {
-	fmt.Printf("===== %s START =====\n", sname)
+	color.Cyan("===== %s START =====\n", sname)
 
 	source := fmt.Sprintf(`e:\phd\test_repos\%s\`, sname)
 	orig, err := parser.NewParser(balancer).ParseFiles(source)
@@ -71,7 +76,7 @@ func doWork(sname string, balancer *concurrency.Balancer) error {
 		return err
 	}
 	trackCalls(orig)
-	fmt.Printf("===== %s END [%v] [%v]=====\n", sname, sum(orig), sum(land))
+	color.Cyan("===== %s END [%v] [%v]=====\n", sname, sum(orig), sum(land))
 
 	err = compareMaps(orig, land)
 	if err != nil {
