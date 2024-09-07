@@ -191,11 +191,6 @@ func (p *Parser) innerInspectPureCalls(root ast.Node) int {
 				return true // тело внутри анонимной функции тоже просматриваем для удобства тестирования
 			}
 
-			// _, ok = x.Fun.(*ast.IndexExpr)
-			// if ok {
-			// 	return true // тело внутри индекса тоже просматриваем для удобства тестирования
-			// }
-
 			_, ok = x.Fun.(*ast.CallExpr)
 			if ok {
 				cnt++
@@ -213,7 +208,10 @@ func (p *Parser) innerInspectPureCalls(root ast.Node) int {
 
 			sel, ok := x.Fun.(*ast.SelectorExpr)
 			if ok {
-				cnt += 1 + p.innerInspectPureCalls(sel.X)
+				if !excluded[sel.Sel.Name] {
+					cnt++
+				}
+				cnt += p.innerInspectPureCalls(sel.X)
 				return false // interrupt, кейс a.f(x).g(y)
 			}
 
@@ -224,6 +222,11 @@ func (p *Parser) innerInspectPureCalls(root ast.Node) int {
 			_, ok = x.Fun.(*ast.InterfaceType)
 			if ok {
 				return false // interrupt, кейс interface{}(oldMap)
+			}
+
+			f, ok := x.Fun.(*ast.Ident)
+			if ok && excluded[f.Name] {
+				return true // внешний вызов нам не подошел - продолжаем внутри
 			}
 
 			cnt++
@@ -240,4 +243,8 @@ func (p *Parser) innerInspectPureCalls(root ast.Node) int {
 func (p *Parser) AutoInc() uint64 {
 	p.Counter++
 	return p.Counter
+}
+
+var excluded = map[string]bool{
+	"len": true,
 }
