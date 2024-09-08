@@ -190,6 +190,9 @@ func (p *Parser) innerInspectPureCalls(root ast.Node) int {
 		switch x := n.(type) {
 		case *ast.CallExpr:
 			switch y := x.Fun.(type) {
+			case *ast.IndexExpr:
+				cnt += 1 + p.innerInspectPureCalls(y.Index)
+				return false //array[GetIndex()]()
 			case *ast.FuncLit:
 				return true // тело внутри анонимной функции тоже просматриваем для удобства тестирования
 			case *ast.CallExpr:
