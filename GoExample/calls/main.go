@@ -59,7 +59,7 @@ func main() {
 		stats.hasNoCalls, ratio(stats.hasNoCalls, totalFuncs),
 	)
 	color.Green("TOTAL func call: %v, bodies: %v\n", b.CntMain(), b.CntSub())
-	color.Green("TOTAL ratio: %.3f [bad=%v]\n", ratio(stats.ok, stats.total), stats.total-stats.ok)
+	color.Green("TOTAL ratio: %.5f [bad=%v]\n", ratio(stats.ok, stats.total), stats.total-stats.ok)
 }
 
 func doWork(sname string, balancer *concurrency.Balancer, fc map[string]struct{}) error {
