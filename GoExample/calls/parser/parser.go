@@ -7,6 +7,7 @@ import (
 	"go/token"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"utils/ast_type"
 	"utils/concurrency"
@@ -16,16 +17,20 @@ import (
 
 type Parser struct {
 	*ast_type.NameConverter
-	Queue    *concurrency.Queue
-	Balancer *concurrency.Balancer
-	Counter  uint64 // for funcs (not method)
+	Queue      *concurrency.Queue
+	Balancer   *concurrency.Balancer
+	Counter    uint64
+	FilesCache map[string]struct{}
+	Dups       uint64
 }
 
-func NewParser(balancer *concurrency.Balancer) *Parser {
+func NewParser(balancer *concurrency.Balancer, fc map[string]struct{}) *Parser {
 	return &Parser{
 		ast_type.NewNameConverter(),
 		concurrency.NewQueue(),
 		balancer,
+		0,
+		fc,
 		0,
 	}
 }
@@ -57,21 +62,14 @@ func (p *Parser) ParseFiles(root string) (map[string]int, error) {
 }
 
 func (p *Parser) ParseFile(path string, pathOut string, res *concurrency.SaveMap[string, int]) error {
-	var cache []byte
-	src := func() []byte {
-		if cache == nil {
-			src, err := os.ReadFile(path)
-			if err != nil {
-				panic(err)
-			}
-			cache = src
-		}
-		return cache
+	src, err := os.ReadFile(path)
+	if err != nil {
+		return err
 	}
 
 	fset := token.NewFileSet()
 
-	f, err := parser.ParseFile(fset, path, nil, 0)
+	f, err := parser.ParseFile(fset, "", src, 0)
 	if err != nil {
 		return err
 	}
@@ -100,19 +98,26 @@ func (p *Parser) ParseFile(path string, pathOut string, res *concurrency.SaveMap
 
 		start := fset.Position(x.Body.Pos())
 		end := fset.Position(x.Body.End())
-		nodeText := string(src()[start.Offset:end.Offset])
+		nodeText := string(src[start.Offset:end.Offset])
 		if len(nodeText) < 3 {
 			return true // функция с пустым телом
 		}
 
-		var suffix string
+		var suffix uint64
 		if x.Recv != nil && len(x.Recv.List) > 0 {
-			suffix = fmt.Sprint("_", hash.HashStrings(p.HumanType(x.Recv.List[0].Type), x.Name.Name), "_", p.AutoInc(), ".go")
+			suffix = hash.HashStrings(p.HumanType(x.Recv.List[0].Type), x.Name.Name)
 		} else {
-			suffix = fmt.Sprint("_", hash.HashString(x.Name.Name), "_", p.AutoInc(), ".go")
+			suffix = hash.HashString(x.Name.Name)
 		}
 
-		pathOut := pathOut[:len(pathOut)-3] + suffix
+		if p.Dub(nodeText) {
+			return true
+		}
+
+		pathOut := fmt.Sprint(pathOut[:len(pathOut)-3], "_", suffix, "_", p.AutoInc(), ".go")
+
+		key := strings.Split(strings.TrimSuffix(pathOut, ".go"), "\\")
+		fname := key[len(key)-1]
 
 		//проход по МЕТОДУ в поиске АНОНИМНЫХ ФУНКЦИЙ
 		//allCnt := p.innerInspectAnonCalls(x.Body)
@@ -130,9 +135,7 @@ func (p *Parser) ParseFile(path string, pathOut string, res *concurrency.SaveMap
 		// }
 
 		p.Balancer.MainAction(allCnt)
-
-		key := strings.Split(strings.TrimSuffix(pathOut, ".go"), "\\")
-		res.Set(key[len(key)-1], allCnt)
+		res.Set(fname, allCnt)
 
 		p.Queue.Add(func() error {
 			nodeText = nodeText[1 : len(nodeText)-1]
@@ -233,6 +236,18 @@ func (p *Parser) innerInspectPureCalls(root ast.Node) int {
 func (p *Parser) AutoInc() uint64 {
 	p.Counter++
 	return p.Counter
+}
+
+func (p *Parser) Dub(str string) bool {
+	re := regexp.MustCompile(`[\s]`) // to unify files formatting
+	str = re.ReplaceAllString(str, "")
+
+	if _, ok := p.FilesCache[str]; ok {
+		p.Dups++
+		return true
+	}
+	p.FilesCache[str] = struct{}{}
+	return false
 }
 
 var excluded = map[string]bool{

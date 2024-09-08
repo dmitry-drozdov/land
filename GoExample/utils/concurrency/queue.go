@@ -27,7 +27,7 @@ func NewQueue() *Queue {
 }
 
 func (q *Queue) Add(f F) {
-	//q.ch <- f
+	q.ch <- f
 }
 
 func (q *Queue) Wait() {

@@ -45,8 +45,9 @@ func main() {
 	color.New(color.FgRed, color.Bold).Printf("START %v\n", time.Now().Format(time.DateTime))
 
 	b := concurrency.NewBalancer(RATIO) // на каждые RATIO файлов с вызовами 1 файл без вызовов
+	fc := make(map[string]struct{}, 1_900_000)
 	for _, f := range folders {
-		if err := doWork(f, b); err != nil {
+		if err := doWork(f, b, fc); err != nil {
 			color.New(color.FgBlack, color.Bold).Printf("[%v] <ERROR>: [%v]\n", f, err)
 		}
 	}
@@ -61,11 +62,12 @@ func main() {
 	color.Green("TOTAL ratio: %.3f [bad=%v]\n", ratio(stats.ok, stats.total), stats.total-stats.ok)
 }
 
-func doWork(sname string, balancer *concurrency.Balancer) error {
+func doWork(sname string, balancer *concurrency.Balancer, fc map[string]struct{}) error {
 	color.Cyan("===== %s START =====\n", sname)
 
 	source := fmt.Sprintf(`e:\phd\test_repos\%s\`, sname)
-	orig, err := parser.NewParser(balancer).ParseFiles(source)
+	p := parser.NewParser(balancer, fc)
+	orig, err := p.ParseFiles(source)
 	if err != nil {
 		return err
 	}
@@ -76,7 +78,7 @@ func doWork(sname string, balancer *concurrency.Balancer) error {
 		return err
 	}
 	trackCalls(orig)
-	color.Cyan("===== %s END [%v] [%v]=====\n", sname, sum(orig), sum(land))
+	color.Cyan("===== %s END [%v] [%v] [dups %v]=====\n", sname, sum(orig), sum(land), p.Dups)
 
 	err = compareMaps(orig, land)
 	if err != nil {
