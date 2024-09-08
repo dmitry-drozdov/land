@@ -16,6 +16,7 @@ const (
 )
 
 var folders = []string{
+	"Lp",
 	"azure-service-operator",
 	"kubernetes",
 	"docker-ce",
