@@ -65,4 +65,23 @@ namespace Land.GUI
 		}
 	}
 
+	internal class GoBlock
+	{
+		public int Depth { get; set; } = 0;
+		public List<GoBlock> Children { get; set; } = new List<GoBlock>();
+
+		/*public bool Empty
+		{
+			get
+			{
+				return Name == "" && Type == "" && Children.Count == 0;
+			}
+		}*/
+		public GoBlock(int depth)
+		{
+			Depth = depth;
+		}
+	}
+
+
 }
