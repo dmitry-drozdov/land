@@ -201,12 +201,41 @@ func (p *Parser) innerInspectPureCalls(root ast.Node, brackets *datatype.Bracket
 			}
 			return false
 
+		case *ast.TypeSwitchStmt:
+			child := &datatype.Brackets{Depth: brackets.Depth + 1}
+			brackets.Children = append(brackets.Children, child)
+			p.innerInspectPureCalls(x.Body, child)
+
+			if x.Init != nil {
+				child := &datatype.Brackets{Depth: brackets.Depth + 1}
+				brackets.Children = append(brackets.Children, child)
+				p.innerInspectPureCalls(x.Init, child)
+			}
+			return false
+
 		case *ast.CompositeLit:
 			child := &datatype.Brackets{Depth: brackets.Depth + 1}
 			brackets.Children = append(brackets.Children, child)
 			for _, elt := range x.Elts {
 				p.innerInspectPureCalls(elt, child)
 			}
+			p.innerInspectPureCalls(x.Type, brackets)
+			return false
+
+		case *ast.FuncLit:
+			child := &datatype.Brackets{Depth: brackets.Depth + 1}
+			brackets.Children = append(brackets.Children, child)
+			p.innerInspectPureCalls(x.Body, child)
+			return false
+
+		case *ast.StructType:
+			child := &datatype.Brackets{Depth: brackets.Depth + 1}
+			brackets.Children = append(brackets.Children, child)
+			return false
+
+		case *ast.InterfaceType:
+			child := &datatype.Brackets{Depth: brackets.Depth + 1}
+			brackets.Children = append(brackets.Children, child)
 			return false
 		default:
 			return true // continue
