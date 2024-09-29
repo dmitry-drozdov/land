@@ -51,7 +51,11 @@ func (p *Parser) ParseFiles(root string) (map[string]*datatype.Brackets, error) 
 			return nil
 		}
 
-		return p.ParseFile(path, strings.Replace(path, `\test_repos\`, `\test_repos_calls\`, 1), res)
+		err := p.ParseFile(path, strings.Replace(path, `\test_repos\`, `\test_repos_calls\`, 1), res)
+		if err != nil {
+			return fmt.Errorf("%v: %w", path, err)
+		}
+		return nil
 	})
 	p.Queue.Wait()
 	if err != nil {
