@@ -118,17 +118,17 @@ func (p *Parser) ParseFile(path string, pathOut string, res *concurrency.SaveMap
 		key := strings.Split(strings.TrimSuffix(pathOut, ".go"), "\\")
 		fname := key[len(key)-1]
 
-		brackets := &datatype.Brackets{}
-		p.innerInspectPureCalls(x.Body, brackets)
-
-		// if suffix == "_10367583230383768386_1923.go" {
-		// 	ast.Print(fset, x.Body)
-		// 	panic(0)
-		// }
-
-		res.Set(fname, brackets)
-
 		p.Queue.Add(func() error {
+			brackets := &datatype.Brackets{}
+			p.innerInspectPureCalls(x.Body, brackets)
+
+			// if suffix == "_10367583230383768386_1923.go" {
+			// 	ast.Print(fset, x.Body)
+			// 	panic(0)
+			// }
+
+			res.Set(fname, brackets)
+
 			nodeText = nodeText[1 : len(nodeText)-1]
 
 			err = os.MkdirAll(filepath.Dir(pathOut), 0755)
@@ -160,45 +160,52 @@ func (p *Parser) innerInspectPureCalls(root ast.Node, brackets *datatype.Bracket
 	ast.Inspect(root, func(n ast.Node) bool {
 		switch x := n.(type) {
 		case *ast.IfStmt:
+			p.innerInspectPureCalls(x.Init, brackets)
+			p.innerInspectPureCalls(x.Cond, brackets)
+
 			child := &datatype.Brackets{Depth: brackets.Depth + 1}
 			brackets.Children = append(brackets.Children, child)
 			p.innerInspectPureCalls(x.Body, child)
 
 			if x.Else != nil {
-				child := &datatype.Brackets{Depth: brackets.Depth + 1}
-				brackets.Children = append(brackets.Children, child)
-				p.innerInspectPureCalls(x.Else, child)
+				if _, ok := x.Else.(*ast.IfStmt); ok {
+					p.innerInspectPureCalls(x.Else, brackets)
+				} else {
+					child := &datatype.Brackets{Depth: brackets.Depth + 1}
+					brackets.Children = append(brackets.Children, child)
+					p.innerInspectPureCalls(x.Else, child)
+				}
 			}
-
-			p.innerInspectPureCalls(x.Cond, brackets)
-			p.innerInspectPureCalls(x.Init, brackets)
 			return false
+
 		case *ast.ForStmt:
-			child := &datatype.Brackets{Depth: brackets.Depth + 1}
-			brackets.Children = append(brackets.Children, child)
-			p.innerInspectPureCalls(x.Body, child)
-
-			p.innerInspectPureCalls(x.Cond, brackets)
 			p.innerInspectPureCalls(x.Init, brackets)
+			p.innerInspectPureCalls(x.Cond, brackets)
 			p.innerInspectPureCalls(x.Post, brackets)
+
+			child := &datatype.Brackets{Depth: brackets.Depth + 1}
+			brackets.Children = append(brackets.Children, child)
+			p.innerInspectPureCalls(x.Body, child)
 			return false
+
 		case *ast.RangeStmt:
-			child := &datatype.Brackets{Depth: brackets.Depth + 1}
-			brackets.Children = append(brackets.Children, child)
-			p.innerInspectPureCalls(x.Body, child)
-
 			p.innerInspectPureCalls(x.X, brackets)
-			return false
-		case *ast.SwitchStmt:
+
 			child := &datatype.Brackets{Depth: brackets.Depth + 1}
 			brackets.Children = append(brackets.Children, child)
 			p.innerInspectPureCalls(x.Body, child)
+			return false
 
+		case *ast.SwitchStmt:
 			if x.Init != nil {
 				child := &datatype.Brackets{Depth: brackets.Depth + 1}
 				brackets.Children = append(brackets.Children, child)
 				p.innerInspectPureCalls(x.Init, child)
 			}
+
+			child := &datatype.Brackets{Depth: brackets.Depth + 1}
+			brackets.Children = append(brackets.Children, child)
+			p.innerInspectPureCalls(x.Body, child)
 			return false
 
 		case *ast.TypeSwitchStmt:
@@ -214,12 +221,13 @@ func (p *Parser) innerInspectPureCalls(root ast.Node, brackets *datatype.Bracket
 			return false
 
 		case *ast.CompositeLit:
+			p.innerInspectPureCalls(x.Type, brackets)
+
 			child := &datatype.Brackets{Depth: brackets.Depth + 1}
 			brackets.Children = append(brackets.Children, child)
 			for _, elt := range x.Elts {
 				p.innerInspectPureCalls(elt, child)
 			}
-			p.innerInspectPureCalls(x.Type, brackets)
 			return false
 
 		case *ast.FuncLit:
@@ -237,6 +245,7 @@ func (p *Parser) innerInspectPureCalls(root ast.Node, brackets *datatype.Bracket
 			child := &datatype.Brackets{Depth: brackets.Depth + 1}
 			brackets.Children = append(brackets.Children, child)
 			return false
+
 		default:
 			return true // continue
 		}
