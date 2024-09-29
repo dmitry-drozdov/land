@@ -23,24 +23,18 @@ namespace Land.GUI.Serializers
 				return;
 			}
 
+			var blockCopy = block;
 			if (str == "block")
 			{
 				var c = new GoBlock(block.Depth+1);
 				block.Children.Add(c);
-				foreach (var child in root.Children)
-				{
-					ParseNode(child, c);
-				}
-				return;
+				blockCopy = c;
 			}
 			
-
-
 			foreach (var subchild in root.Children)
 			{
-				ParseNode(subchild, block);
+				ParseNode(subchild, blockCopy);
 			}
-			return;
 		}
 		internal static void Serialize(string path, Node root)
 		{

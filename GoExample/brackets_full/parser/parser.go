@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"go/ast"
 	"go/parser"
+	"go/scanner"
 	"go/token"
 	"os"
 	"path/filepath"
@@ -119,8 +120,11 @@ func (p *Parser) ParseFile(path string, pathOut string, res *concurrency.SaveMap
 		fname := key[len(key)-1]
 
 		p.Queue.Add(func() error {
-			brackets := &datatype.Brackets{}
-			p.innerInspectPureCalls(x.Body, brackets)
+			//brackets := &datatype.Brackets{}
+			//p.innerInspectPureCalls(x.Body, brackets)
+
+			nodeText = nodeText[1 : len(nodeText)-1]
+			brackets := p.innerInspectPureCallsV2(nodeText)
 
 			// if suffix == "_10367583230383768386_1923.go" {
 			// 	ast.Print(fset, x.Body)
@@ -128,8 +132,6 @@ func (p *Parser) ParseFile(path string, pathOut string, res *concurrency.SaveMap
 			// }
 
 			res.Set(fname, brackets)
-
-			nodeText = nodeText[1 : len(nodeText)-1]
 
 			err = os.MkdirAll(filepath.Dir(pathOut), 0755)
 			if err != nil {
@@ -153,103 +155,47 @@ func (p *Parser) ParseFile(path string, pathOut string, res *concurrency.SaveMap
 	return nil
 }
 
-func (p *Parser) innerInspectPureCalls(root ast.Node, brackets *datatype.Brackets) {
-	if root == nil {
-		return
+func (p *Parser) innerInspectPureCallsV2(nodeText string) *datatype.Brackets {
+	fset := token.NewFileSet()
+	file := fset.AddFile("example.go", fset.Base(), len(nodeText))
+
+	var s scanner.Scanner
+	s.Init(file, []byte(nodeText), nil, scanner.ScanComments)
+
+	root := &datatype.Brackets{
+		Depth:    0,
+		Children: []*datatype.Brackets{},
 	}
-	ast.Inspect(root, func(n ast.Node) bool {
-		switch x := n.(type) {
-		case *ast.IfStmt:
-			p.innerInspectPureCalls(x.Init, brackets)
-			p.innerInspectPureCalls(x.Cond, brackets)
 
-			child := &datatype.Brackets{Depth: brackets.Depth + 1}
-			brackets.Children = append(brackets.Children, child)
-			p.innerInspectPureCalls(x.Body, child)
+	stack := []*datatype.Brackets{root}
 
-			if x.Else != nil {
-				if _, ok := x.Else.(*ast.IfStmt); ok {
-					p.innerInspectPureCalls(x.Else, brackets)
-				} else {
-					child := &datatype.Brackets{Depth: brackets.Depth + 1}
-					brackets.Children = append(brackets.Children, child)
-					p.innerInspectPureCalls(x.Else, child)
-				}
-			}
-			return false
-
-		case *ast.ForStmt:
-			p.innerInspectPureCalls(x.Init, brackets)
-			p.innerInspectPureCalls(x.Cond, brackets)
-			p.innerInspectPureCalls(x.Post, brackets)
-
-			child := &datatype.Brackets{Depth: brackets.Depth + 1}
-			brackets.Children = append(brackets.Children, child)
-			p.innerInspectPureCalls(x.Body, child)
-			return false
-
-		case *ast.RangeStmt:
-			p.innerInspectPureCalls(x.X, brackets)
-
-			child := &datatype.Brackets{Depth: brackets.Depth + 1}
-			brackets.Children = append(brackets.Children, child)
-			p.innerInspectPureCalls(x.Body, child)
-			return false
-
-		case *ast.SwitchStmt:
-			if x.Init != nil {
-				child := &datatype.Brackets{Depth: brackets.Depth + 1}
-				brackets.Children = append(brackets.Children, child)
-				p.innerInspectPureCalls(x.Init, child)
-			}
-
-			child := &datatype.Brackets{Depth: brackets.Depth + 1}
-			brackets.Children = append(brackets.Children, child)
-			p.innerInspectPureCalls(x.Body, child)
-			return false
-
-		case *ast.TypeSwitchStmt:
-			child := &datatype.Brackets{Depth: brackets.Depth + 1}
-			brackets.Children = append(brackets.Children, child)
-			p.innerInspectPureCalls(x.Body, child)
-
-			if x.Init != nil {
-				child := &datatype.Brackets{Depth: brackets.Depth + 1}
-				brackets.Children = append(brackets.Children, child)
-				p.innerInspectPureCalls(x.Init, child)
-			}
-			return false
-
-		case *ast.CompositeLit:
-			p.innerInspectPureCalls(x.Type, brackets)
-
-			child := &datatype.Brackets{Depth: brackets.Depth + 1}
-			brackets.Children = append(brackets.Children, child)
-			for _, elt := range x.Elts {
-				p.innerInspectPureCalls(elt, child)
-			}
-			return false
-
-		case *ast.FuncLit:
-			child := &datatype.Brackets{Depth: brackets.Depth + 1}
-			brackets.Children = append(brackets.Children, child)
-			p.innerInspectPureCalls(x.Body, child)
-			return false
-
-		case *ast.StructType:
-			child := &datatype.Brackets{Depth: brackets.Depth + 1}
-			brackets.Children = append(brackets.Children, child)
-			return false
-
-		case *ast.InterfaceType:
-			child := &datatype.Brackets{Depth: brackets.Depth + 1}
-			brackets.Children = append(brackets.Children, child)
-			return false
-
-		default:
-			return true // continue
+	for {
+		_, tok, _ := s.Scan()
+		if tok == token.EOF {
+			break
 		}
-	})
+		if tok == token.LBRACE {
+			depth := len(stack)
+			bracket := &datatype.Brackets{
+				Depth:    depth,
+				Children: make([]*datatype.Brackets, 0, 4),
+			}
+
+			current := stack[len(stack)-1]
+			current.Children = append(current.Children, bracket)
+
+			stack = append(stack, bracket)
+
+		} else if tok == token.RBRACE {
+			if len(stack) > 1 {
+				stack = stack[:len(stack)-1]
+			} else {
+				fmt.Println("Несоответствующая закрывающая скобка на позиции")
+			}
+		}
+	}
+
+	return root
 }
 
 func (p *Parser) AutoInc() uint64 {

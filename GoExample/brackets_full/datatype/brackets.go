@@ -14,6 +14,17 @@ func (b *Brackets) ControlNumber() (int, int) {
 	return b.maxDepth(), b.count()
 }
 
+func (b *Brackets) MaxChildrenCount() int {
+	if b == nil {
+		return 0
+	}
+	mx := len(b.Children)
+	for _, c := range b.Children {
+		mx = max(mx, c.MaxChildrenCount())
+	}
+	return mx
+}
+
 func (b *Brackets) maxDepth() int {
 	if b == nil {
 		return 0
@@ -29,7 +40,7 @@ func (b *Brackets) count() int {
 	if b == nil {
 		return 0
 	}
-	cnt := 0
+	cnt := 1
 	for _, c := range b.Children {
 		cnt += c.count()
 	}

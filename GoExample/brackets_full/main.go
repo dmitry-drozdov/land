@@ -69,6 +69,7 @@ func doWork(sname string, fc map[string]struct{}) error {
 		return err
 	}
 
+	color.Cyan("===== %s avg max children count  [%v] =====\n", sname, childrenCount(orig))
 	color.Cyan("===== %s END [%v] [%v] [dups %v]=====\n", sname, control(orig), control(land), p.Dups)
 
 	err = compareMaps(orig, land)
@@ -86,6 +87,15 @@ func control(mp map[string]*datatype.Brackets) int {
 		res += cnt
 	}
 	return res
+}
+
+func childrenCount(mp map[string]*datatype.Brackets) map[int]int {
+	stats := map[int]int{}
+	for _, v := range mp {
+		cnt := v.MaxChildrenCount()
+		stats[cnt]++
+	}
+	return stats
 }
 
 func compareMaps(orig, land map[string]*datatype.Brackets) error {
