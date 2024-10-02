@@ -852,7 +852,8 @@ namespace Land.GUI
 							//GoSerializerBody.Serialize(path, root);
 							//GoSerializerBrakcets.Serialize(path, root);
 							//GoSerializerCalls.Serialize(path, root);
-							GoSerializerBlocks.Serialize(path, root);
+							//GoSerializerBlocks.Serialize(path, root);
+							GoSerializerControl.Serialize(path, root);
 						}
 						if (file.EndsWith(".graphql"))
 						{

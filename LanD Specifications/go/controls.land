@@ -1,18 +1,38 @@
+COMMENT		: COMMENT_L|COMMENT_ML
+COMMENT_L	: '//' ~[\n\r]*
+COMMENT_ML	: '/*' .*? '*/'
 
+ITALIC_QUOTE : '`' .*? '`'
+
+QUOTE		: '"'
+SPREAD 		: '...'
 CURVE_BRACKETED : %left '{' %right '}'
-//ROUND_BRACKETED : %left '(' %right ')'
+ROUND_BRACKETED : %left '(' %right ')'
 //SQUARE_BRACKETED : %left ('['|GENERAL_ATTRIBUTE_START) %right ']'
+
+// важно пропускать строки и символы, так как в них могут быть [{(, что нарушит парность скобок
+STRING		: STRING_STD
+STRING_STD	: '"' ('\\"'|'\\\\'|.)*? '"'
+
+CHAR		: '\'' ('\\\''|'\\\\'|.)*? '\''
+ID			: '@'?[_a-zA-Z\u0430-\u044F\u0410-\u042F\u0192\u06F0\u03A9][_0-9a-zA-Z\u0430-\u044F\u0410-\u042F.\u0192\u06F0\u03A9\u1600-\u1700]*
+
 
 
 content	= entity*
-entity	= if | block | water_entity
+entity	= if | block | Any | '(' entity* ')' | anon_func
 
-block = '{' (if | block | water_entity)*  '}'
+block = '{' (entity )*  '}'
 
-if = 'if' water_entity block ('else' block)?
+if = 'if' cond* block 
 
-water_entity = Any
+cond = Any | '(' (cond)* ')' | init | anon_func 
+init =  anon_struct '{' Any '}'
+	| ('[' Any ']')+ ID (Any|anon_struct) ('{' Any '}')? // либо ID либо struct!!!
 
+anon_struct = 'struct' '{' Any '}'
+
+anon_func = 'func' '(' Any ')' AnyAvoid('\n') block ('(' Any ')')?
 
 %%
 
@@ -20,7 +40,7 @@ water_entity = Any
 	recovery
 	fragment 
 	start content
-	skip 
+	skip COMMENT STRING CHAR
 }
 
 %nodes {

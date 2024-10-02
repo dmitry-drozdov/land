@@ -96,6 +96,7 @@
     <Compile Include="ParseResults\GraphqlParseResult.cs" />
     <Compile Include="ParseResults\GoFunc.cs" />
     <Compile Include="Serializers\GoSerializerBlocks.cs" />
+    <Compile Include="Serializers\GoSerializerControl.cs" />
     <Compile Include="Serializers\GoSerializerCalls.cs" />
     <Compile Include="Serializers\GoSerializerBrackets.cs" />
     <Compile Include="Serializers\GoSerializerBody.cs" />

@@ -83,5 +83,25 @@ namespace Land.GUI
 		}
 	}
 
+	internal class GoControl
+	{
+		public string Type { get; set; } = "root";
+		public int Depth { get; set; } = 0;
+		public List<GoControl> Children { get; set; } = new List<GoControl>();
+
+		/*public bool Empty
+		{
+			get
+			{
+				return Name == "" && Type == "" && Children.Count == 0;
+			}
+		}*/
+		public GoControl(string type, int depth)
+		{
+			Type = type;
+			Depth = depth;
+		}
+	}
+
 
 }

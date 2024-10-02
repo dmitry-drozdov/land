@@ -1,0 +1,124 @@
+package main
+
+import (
+	"controls/datatype"
+	"controls/parser"
+	"controls/provider"
+	"errors"
+	"fmt"
+	"time"
+	"utils/concurrency"
+
+	"github.com/fatih/color"
+)
+
+const (
+	RATIO = 1
+)
+
+var folders = []string{
+	"Lp",
+	"azure-service-operator",
+	"kubernetes",
+	"docker-ce",
+	"sourcegraph",
+	"delivery-offering",
+	"boost",
+	"chainlink",
+	"modules",
+	"go-ethereum",
+	"grafana",
+	"gvisor",
+	"test",
+	"backend",
+	"go-redis",
+	"tidb",
+	"moby",
+}
+
+var stats = struct {
+	hasCalls   int
+	hasNoCalls int
+	ok         int
+	total      int
+}{}
+
+func main() {
+	color.New(color.FgRed, color.Bold).Printf("START %v\n", time.Now().Format(time.DateTime))
+
+	b := concurrency.NewBalancer(RATIO) // на каждые RATIO файлов с вызовами 1 файл без вызовов
+	fc := make(map[string]struct{}, 1_900_000)
+	for _, f := range folders {
+		if err := doWork(f, b, fc); err != nil {
+			color.New(color.FgBlack, color.Bold).Printf("[%v] <ERROR>: [%v]\n", f, err)
+		}
+	}
+
+	totalFuncs := stats.hasCalls + stats.hasNoCalls
+	color.Green(
+		"TOTAL has calls: %v (%.2f%%), has no calls: %v (%.2f%%)\n",
+		stats.hasCalls, ratio(stats.hasCalls, totalFuncs),
+		stats.hasNoCalls, ratio(stats.hasNoCalls, totalFuncs),
+	)
+	color.Green("TOTAL func call: %v, bodies: %v\n", b.CntMain(), b.CntSub())
+	color.Green("TOTAL ratio: %.5f [bad=%v]\n", ratio(stats.ok, stats.total), stats.total-stats.ok)
+}
+
+func doWork(sname string, balancer *concurrency.Balancer, fc map[string]struct{}) error {
+	color.Cyan("===== %s START =====\n", sname)
+
+	source := fmt.Sprintf(`e:\phd\test_repos\%s\`, sname)
+	p := parser.NewParser(balancer, fc)
+	orig, err := p.ParseFiles(source)
+	if err != nil {
+		return err
+	}
+
+	resFolder := fmt.Sprintf(`e:\phd\test_repos_calls\results\%s\`, sname)
+	land, err := provider.ReadFolder(resFolder)
+	if err != nil {
+		return err
+	}
+	color.Cyan("===== %s END [%v] [%v] [dups %v]=====\n", sname, -1, -1, p.Dups)
+
+	err = compareMaps(orig, land)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func compareMaps(orig, land map[string]*datatype.Control) error {
+	var errs []error
+	if len(orig) != len(land) {
+		errs = append(errs, fmt.Errorf("len mismatch %v %v", len(orig), len(land)))
+	}
+
+	okCnt := 0
+	for origK, origV := range orig {
+		landV, ok := land[origK]
+		if !ok {
+			errs = append(errs, fmt.Errorf("%v: key not found", origK))
+			continue
+		}
+		if err := landV.EqualTo(origV); err != nil {
+			errs = append(errs, fmt.Errorf("%v: %w", origK, err))
+			continue
+		}
+		okCnt++
+	}
+
+	fmt.Printf("ratio: %.2f\n", float64(okCnt)/float64(len(orig))*100)
+	stats.ok += okCnt
+	stats.total += len(orig)
+
+	return errors.Join(errs...)
+}
+
+func ratio(part, total int) float64 {
+	if total == 0 {
+		return 0
+	}
+	return float64(part) / float64(total) * 100
+}
