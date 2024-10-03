@@ -25,7 +25,7 @@ namespace Land.GUI.Serializers
 
 			if (str == "if")
 			{
-				var c = new GoControl(str, node.Depth+1);
+				var c = new GoControl(str, node.Depth + 1);
 				node.Children.Add(c);
 				foreach (var child in root.Children)
 				{
@@ -46,9 +46,16 @@ namespace Land.GUI.Serializers
 
 			using (StreamWriter sw = File.CreateText(path))
 			{
-				var n = new GoControl("root",0);
+				var n = new GoControl("root", 0);
 				ParseNode(root, n);
-				sw.WriteLine(JsonSerializer.Serialize(n));
+
+				JsonSerializerOptions options = new JsonSerializerOptions();
+
+				options.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+				options.WriteIndented = true;
+
+
+				sw.WriteLine(JsonSerializer.Serialize(n, options));
 			}
 
 		}

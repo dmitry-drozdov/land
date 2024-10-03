@@ -24,7 +24,9 @@ entity	= if | block | Any | '(' entity* ')' | anon_func
 
 block = '{' (entity )*  '}'
 
-if = 'if' cond* block 
+if = 'if' cond* block else?
+
+else = 'else' (if | block)
 
 cond = Any | '(' (cond)* ')' | init | anon_func 
 init =  anon_struct '{' Any '}'
