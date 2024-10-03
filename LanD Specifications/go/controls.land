@@ -28,7 +28,7 @@ if = 'if' cond* block else?
 
 else = 'else' (if | block)
 
-cond = Any | '(' (cond)* ')' | init | anon_func 
+cond = Any | '(' (cond | '{' cond* '}')* ')' | init | anon_func 
 init =  anon_struct '{' Any '}'
 	| ('[' Any ']')+ ID (Any|anon_struct) ('{' Any '}')? // либо ID либо struct!!!
 

@@ -165,9 +165,6 @@ func (p *Parser) ParseFile(path string, pathOut string, res *concurrency.SaveMap
 }
 
 func (p *Parser) innerInspectControls(root ast.Node, control *datatype.Control) {
-	if root == nil {
-		return
-	}
 	ast.Inspect(root, func(n ast.Node) bool {
 		switch x := n.(type) {
 		case *ast.IfStmt:
@@ -177,10 +174,16 @@ func (p *Parser) innerInspectControls(root ast.Node, control *datatype.Control) 
 				Children: make([]*datatype.Control, 0, 2),
 			}
 			control.Children = append(control.Children, child)
-			p.innerInspectControls(x.Init, child)
-			p.innerInspectControls(x.Cond, child)
+			if x.Init != nil {
+				p.innerInspectControls(x.Init, child)
+			}
+			if x.Cond != nil {
+				p.innerInspectControls(x.Cond, child)
+			}
 			p.innerInspectControls(x.Body, child)
-			p.innerInspectControls(x.Else, child) // temp until else implemented
+			if x.Else != nil {
+				p.innerInspectControls(x.Else, child)
+			}
 			return false
 		default:
 			return true // continue
@@ -193,10 +196,9 @@ func (p *Parser) AutoInc() uint64 {
 	return p.Counter
 }
 
+var re = regexp.MustCompile(`[\s]`) // to unify files formatting
 func (p *Parser) Dub(str string) bool {
-	re := regexp.MustCompile(`[\s]`) // to unify files formatting
 	str = re.ReplaceAllString(str, "")
-
 	if _, ok := p.FilesCache[str]; ok {
 		p.Dups++
 		return true
