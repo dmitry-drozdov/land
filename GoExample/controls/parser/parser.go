@@ -139,24 +139,24 @@ func (p *Parser) ParseFile(path string, pathOut string, res *concurrency.SaveMap
 		p.Balancer.MainAction(1)
 		res.Set(fname, controls)
 
-		// 	p.Queue.Add(func() error {
-		// 		nodeText = nodeText[1 : len(nodeText)-1]
+		p.Queue.Add(func() error {
+			nodeText = nodeText[1 : len(nodeText)-1]
 
-		// 		err = os.MkdirAll(filepath.Dir(pathOut), 0755)
-		// 		if err != nil {
-		// 			return err
-		// 		}
+			err = os.MkdirAll(filepath.Dir(pathOut), 0755)
+			if err != nil {
+				return err
+			}
 
-		// 		var file *os.File
-		// 		file, err = os.OpenFile(pathOut, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
-		// 		if err != nil {
-		// 			return err
-		// 		}
-		// 		defer file.Close()
+			var file *os.File
+			file, err = os.OpenFile(pathOut, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+			if err != nil {
+				return err
+			}
+			defer file.Close()
 
-		// 		_, err = file.WriteString(nodeText)
-		// 		return err
-		// 	})
+			_, err = file.WriteString(nodeText)
+			return err
+		})
 
 		return true
 	})
