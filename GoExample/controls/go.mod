@@ -8,6 +8,7 @@ require (
 	gitlab.services.mts.ru/LMI/go-libs v0.1.30
 	gitlab.services.mts.ru/lp/backend/libs/logger v0.0.4
 	gitlab.services.mts.ru/lp/backend/libs/tracer v0.0.4
+	go.opentelemetry.io/otel/trace v1.30.0
 	golang.org/x/sync v0.8.0
 	utils v0.0.0-00010101000000-000000000000
 )
@@ -44,7 +45,6 @@ require (
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.30.0 // indirect
 	go.opentelemetry.io/otel/metric v1.30.0 // indirect
 	go.opentelemetry.io/otel/sdk v1.30.0 // indirect
-	go.opentelemetry.io/otel/trace v1.30.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.3.1 // indirect
 	go.uber.org/automaxprocs v1.5.3 // indirect
 	go.uber.org/goleak v1.3.0 // indirect

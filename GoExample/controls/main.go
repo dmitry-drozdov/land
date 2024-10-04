@@ -12,6 +12,7 @@ import (
 
 	"github.com/fatih/color"
 	"gitlab.services.mts.ru/lp/backend/libs/tracer"
+	"go.opentelemetry.io/otel/trace"
 )
 
 const (
@@ -20,33 +21,33 @@ const (
 
 var folders = []string{
 	"Lp\\address-service",
-	// "Lp\\bitrix-adapter",
-	// "Lp\\channel-profile",
-	// "Lp\\delivery-offering",
-	// "Lp\\delivery-ordering",
-	// "Lp\\efin-courier",
-	// "Lp\\logportal-adapter",
-	// "Lp\\polygons",
-	// "Lp\\protovar-adapter",
-	// "Lp\\rtk-assembling-adapter",
-	// "Lp\\rtk-pickup",
-	// "Lp\\rtk-stock",
-	// "Lp\\rtk-stores-loader",
-	// "Lp\\stock-managment",
-	// "Lp\\warehouses",
-	// "azure-service-operator",
-	// "kubernetes",
-	// "docker-ce",
-	// "sourcegraph",
-	// "delivery-offering",
-	// "boost",
-	// "chainlink",
-	// "modules",
-	// "go-ethereum",
-	// "grafana",
-	// "gvisor",
-	// "test",
-	// "backend",
+	"Lp\\bitrix-adapter",
+	"Lp\\channel-profile",
+	"Lp\\delivery-offering",
+	"Lp\\delivery-ordering",
+	"Lp\\efin-courier",
+	"Lp\\logportal-adapter",
+	"Lp\\polygons",
+	"Lp\\protovar-adapter",
+	"Lp\\rtk-assembling-adapter",
+	"Lp\\rtk-pickup",
+	"Lp\\rtk-stock",
+	"Lp\\rtk-stores-loader",
+	"Lp\\stock-managment",
+	"Lp\\warehouses",
+	"azure-service-operator",
+	"kubernetes",
+	"docker-ce",
+	"sourcegraph",
+	"delivery-offering",
+	"boost",
+	"chainlink",
+	"modules",
+	"go-ethereum",
+	"grafana",
+	"gvisor",
+	"test",
+	"backend",
 	"go-redis",
 	"tidb",
 	"moby",
@@ -61,16 +62,17 @@ var stats = struct {
 
 func main() {
 	ctx := context.Background()
-	cancel := tracer.NewTracer(ctx,
-		tracer.WithInsecure(true),
-		tracer.WithServiceName("phd"),
-		tracer.WithEndpoint("localhost:4317"),
-	)
-	defer func() {
-		if err := cancel(); err != nil {
-			panic(err)
-		}
-	}()
+	// cancel := tracer.NewTracer(ctx,
+	// 	tracer.WithInsecure(true),
+	// 	tracer.WithServiceName("phd"),
+	// 	tracer.WithEndpoint("localhost:4317"),
+	// )
+	// defer func() {
+	// 	if err := cancel(); err != nil {
+	// 		panic(err)
+	// 	}
+	// }()
+	tracer.ReplaceGlobals(&tracer.Tracer{T: trace.NewNoopTracerProvider().Tracer("phd")})
 
 	ctx, end := tracer.Start(ctx, "main")
 	defer end(nil)
