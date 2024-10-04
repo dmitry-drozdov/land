@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"bufio"
 	"context"
 	"controls/datatype"
 	"fmt"
@@ -11,6 +12,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"sync"
 	"utils/ast_type"
 	"utils/concurrency"
 	"utils/filter"
@@ -93,6 +95,8 @@ func (p *Parser) ParseFile(
 
 	nested := filter.NewNestedFuncs()
 
+	once := sync.Once{}
+
 	// проход по файлу в поисках МЕТОДОВ
 	ast.Inspect(f, func(n ast.Node) bool {
 		if n != nil && nested.Nested(n.Pos(), n.End()) {
@@ -131,6 +135,18 @@ func (p *Parser) ParseFile(
 			return true
 		}
 
+		once.Do(func() {
+			dir := filepath.Dir(pathOut)
+			if pathCache.Ok(dir) {
+				return
+			}
+			err = os.MkdirAll(dir, 0755)
+			if err != nil {
+				panic(err)
+			}
+			pathCache.Set(dir, struct{}{})
+		})
+
 		pathOut := fmt.Sprint(pathOut[:len(pathOut)-3], "_", suffix, "_", p.AutoInc(), ".go")
 
 		key := strings.Split(strings.TrimSuffix(pathOut, ".go"), "\\")
@@ -161,23 +177,19 @@ func (p *Parser) ParseFile(
 
 			nodeText = nodeText[1 : len(nodeText)-1]
 
-			dir := filepath.Dir(pathOut)
-			if !pathCache.Ok(dir) {
-				err = os.MkdirAll(dir, 0755)
-				if err != nil {
-					return err
-				}
-				pathCache.Set(dir, struct{}{})
-			}
-
 			file, err := os.OpenFile(pathOut, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 			if err != nil {
 				return err
 			}
 			defer file.Close()
 
-			_, err = file.WriteString(nodeText)
-			return err
+			writer := bufio.NewWriter(file)
+
+			_, err = writer.WriteString(nodeText)
+			if err != nil {
+				return err
+			}
+			return writer.Flush()
 		})
 
 		return true

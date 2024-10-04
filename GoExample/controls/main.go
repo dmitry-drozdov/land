@@ -115,7 +115,7 @@ func doWork(ctx context.Context, sname string, balancer *concurrency.Balancer, f
 	}
 	color.Cyan("===== %s END [%v] [%v] [dups %v]=====\n", sname, -1, -1, p.Dups)
 
-	err = compareMaps(orig, land)
+	err = compareMaps(ctx, orig, land)
 	if err != nil {
 		return err
 	}
@@ -123,7 +123,10 @@ func doWork(ctx context.Context, sname string, balancer *concurrency.Balancer, f
 	return nil
 }
 
-func compareMaps(orig, land map[string]*datatype.Control) error {
+func compareMaps(ctx context.Context, orig, land map[string]*datatype.Control) error {
+	_, end := tracer.Start(ctx, "compareMaps")
+	defer end(nil)
+
 	var errs []error
 	if len(orig) != len(land) {
 		errs = append(errs, fmt.Errorf("len mismatch %v %v", len(orig), len(land)))
