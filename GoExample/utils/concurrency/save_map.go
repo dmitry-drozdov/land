@@ -23,6 +23,13 @@ func (m *SaveMap[K, V]) Set(k K, v V) {
 	m.m[k] = v
 }
 
+func (m *SaveMap[K, V]) Ok(k K) bool {
+	m.mx.Lock()
+	defer m.mx.Unlock()
+	_, ok := m.m[k]
+	return ok
+}
+
 func (m *SaveMap[K, V]) Unsafe() map[K]V {
 	m.mx.Lock()
 	defer m.mx.Unlock()

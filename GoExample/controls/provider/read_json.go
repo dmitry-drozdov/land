@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"context"
 	"controls/datatype"
 	"io"
 	"os"
@@ -9,12 +10,16 @@ import (
 	"utils/concurrency"
 
 	jsoniter "github.com/json-iterator/go"
+	"gitlab.services.mts.ru/lp/backend/libs/tracer"
 	"golang.org/x/sync/errgroup"
 )
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
-func ReadFolder(root string) (map[string]*datatype.Control, error) {
+func ReadFolder(ctx context.Context, root string) (map[string]*datatype.Control, error) {
+	_, end := tracer.Start(ctx, "ReadFolder")
+	defer end(nil)
+
 	res := concurrency.NewSaveMap[string, *datatype.Control](200000)
 	g := errgroup.Group{}
 	g.SetLimit(8)

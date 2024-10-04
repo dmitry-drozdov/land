@@ -31,7 +31,7 @@ else = 'else' (if | block)
 
 cond = Any | '(' (cond | '{' cond* '}')* ')' | init | anon_func 
 init =  anon_struct '{' Any '}'
-	| ('[' Any ']')+  ((ID Any) | anon_struct) ('{' Any '}')? // либо ID либо struct!!!
+	| ('[' Any ']')+  ((ID Any) | anon_struct) ('{' Any '}')? 
 
 
 anon_struct = '&'? 'struct' '{' Any '}'

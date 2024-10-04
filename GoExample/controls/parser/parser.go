@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"context"
 	"controls/datatype"
 	"fmt"
 	"go/ast"
@@ -14,6 +15,8 @@ import (
 	"utils/concurrency"
 	"utils/filter"
 	"utils/hash"
+
+	"gitlab.services.mts.ru/lp/backend/libs/tracer"
 )
 
 type Parser struct {
@@ -36,8 +39,12 @@ func NewParser(balancer *concurrency.Balancer, fc map[string]struct{}) *Parser {
 	}
 }
 
-func (p *Parser) ParseFiles(root string) (map[string]*datatype.Control, error) {
+func (p *Parser) ParseFiles(ctx context.Context, root string) (map[string]*datatype.Control, error) {
+	ctx, end := tracer.Start(ctx, "ParseFiles")
+	defer end(nil)
+
 	res := concurrency.NewSaveMap[string, *datatype.Control](20000)
+	pathCache := concurrency.NewSaveMap[string, struct{}](20000)
 
 	err := filepath.Walk(root, func(path string, info os.FileInfo, _ error) error {
 		if info.IsDir() || filepath.Ext(info.Name()) != ".go" { /* ||
@@ -52,7 +59,7 @@ func (p *Parser) ParseFiles(root string) (map[string]*datatype.Control, error) {
 			return nil
 		}
 
-		return p.ParseFile(path, strings.Replace(path, `\test_repos\`, `\test_repos_calls\`, 1), res)
+		return p.ParseFile(ctx, path, strings.Replace(path, `\test_repos\`, `\test_repos_calls\`, 1), res, pathCache)
 	})
 	p.Queue.Wait()
 	if err != nil {
@@ -62,7 +69,16 @@ func (p *Parser) ParseFiles(root string) (map[string]*datatype.Control, error) {
 	return res.Unsafe(), nil
 }
 
-func (p *Parser) ParseFile(path string, pathOut string, res *concurrency.SaveMap[string, *datatype.Control]) error {
+func (p *Parser) ParseFile(
+	ctx context.Context,
+	path string,
+	pathOut string,
+	res *concurrency.SaveMap[string, *datatype.Control],
+	pathCache *concurrency.SaveMap[string, struct{}],
+) error {
+	ctx, end := tracer.Start(ctx, "ParseFile")
+	defer end(nil)
+
 	src, err := os.ReadFile(path)
 	if err != nil {
 		return err
@@ -140,15 +156,21 @@ func (p *Parser) ParseFile(path string, pathOut string, res *concurrency.SaveMap
 		res.Set(fname, controls)
 
 		p.Queue.Add(func() error {
+			_, end := tracer.Start(ctx, "write to file")
+			defer end(nil)
+
 			nodeText = nodeText[1 : len(nodeText)-1]
 
-			err = os.MkdirAll(filepath.Dir(pathOut), 0755)
-			if err != nil {
-				return err
+			dir := filepath.Dir(pathOut)
+			if !pathCache.Ok(dir) {
+				err = os.MkdirAll(dir, 0755)
+				if err != nil {
+					return err
+				}
+				pathCache.Set(dir, struct{}{})
 			}
 
-			var file *os.File
-			file, err = os.OpenFile(pathOut, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+			file, err := os.OpenFile(pathOut, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 			if err != nil {
 				return err
 			}

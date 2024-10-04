@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"controls/datatype"
 	"controls/parser"
 	"controls/provider"
@@ -10,6 +11,7 @@ import (
 	"utils/concurrency"
 
 	"github.com/fatih/color"
+	"gitlab.services.mts.ru/lp/backend/libs/tracer"
 )
 
 const (
@@ -17,20 +19,34 @@ const (
 )
 
 var folders = []string{
-	"Lp",
-	"azure-service-operator",
-	"kubernetes",
-	"docker-ce",
-	"sourcegraph",
-	"delivery-offering",
-	"boost",
-	"chainlink",
-	"modules",
-	"go-ethereum",
-	"grafana",
-	"gvisor",
-	"test",
-	"backend",
+	"Lp\\address-service",
+	// "Lp\\bitrix-adapter",
+	// "Lp\\channel-profile",
+	// "Lp\\delivery-offering",
+	// "Lp\\delivery-ordering",
+	// "Lp\\efin-courier",
+	// "Lp\\logportal-adapter",
+	// "Lp\\polygons",
+	// "Lp\\protovar-adapter",
+	// "Lp\\rtk-assembling-adapter",
+	// "Lp\\rtk-pickup",
+	// "Lp\\rtk-stock",
+	// "Lp\\rtk-stores-loader",
+	// "Lp\\stock-managment",
+	// "Lp\\warehouses",
+	// "azure-service-operator",
+	// "kubernetes",
+	// "docker-ce",
+	// "sourcegraph",
+	// "delivery-offering",
+	// "boost",
+	// "chainlink",
+	// "modules",
+	// "go-ethereum",
+	// "grafana",
+	// "gvisor",
+	// "test",
+	// "backend",
 	"go-redis",
 	"tidb",
 	"moby",
@@ -44,12 +60,27 @@ var stats = struct {
 }{}
 
 func main() {
+	ctx := context.Background()
+	cancel := tracer.NewTracer(ctx,
+		tracer.WithInsecure(true),
+		tracer.WithServiceName("phd"),
+		tracer.WithEndpoint("localhost:4317"),
+	)
+	defer func() {
+		if err := cancel(); err != nil {
+			panic(err)
+		}
+	}()
+
+	ctx, end := tracer.Start(ctx, "main")
+	defer end(nil)
+
 	color.New(color.FgRed, color.Bold).Printf("START %v\n", time.Now().Format(time.DateTime))
 
 	b := concurrency.NewBalancer(RATIO) // на каждые RATIO файлов с вызовами 1 файл без вызовов
 	fc := make(map[string]struct{}, 1_900_000)
 	for _, f := range folders {
-		if err := doWork(f, b, fc); err != nil {
+		if err := doWork(ctx, f, b, fc); err != nil {
 			color.New(color.FgBlack, color.Bold).Printf("[%v] <ERROR>: [%v]\n", f, err)
 		}
 	}
@@ -64,18 +95,21 @@ func main() {
 	color.Green("TOTAL ratio: %.5f [bad=%v]\n", ratio(stats.ok, stats.total), stats.total-stats.ok)
 }
 
-func doWork(sname string, balancer *concurrency.Balancer, fc map[string]struct{}) error {
+func doWork(ctx context.Context, sname string, balancer *concurrency.Balancer, fc map[string]struct{}) error {
+	ctx, end := tracer.Start(ctx, "doWork "+sname)
+	defer end(nil)
+
 	color.Cyan("===== %s START =====\n", sname)
 
 	source := fmt.Sprintf(`e:\phd\test_repos\%s\`, sname)
 	p := parser.NewParser(balancer, fc)
-	orig, err := p.ParseFiles(source)
+	orig, err := p.ParseFiles(ctx, source)
 	if err != nil {
 		return err
 	}
 
 	resFolder := fmt.Sprintf(`e:\phd\test_repos_calls\results\%s\`, sname)
-	land, err := provider.ReadFolder(resFolder)
+	land, err := provider.ReadFolder(ctx, resFolder)
 	if err != nil {
 		return err
 	}
