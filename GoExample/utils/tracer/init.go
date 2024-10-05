@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
+	"time"
 
 	"gitlab.services.mts.ru/lp/backend/libs/logger"
 	"go.opentelemetry.io/otel"
@@ -49,10 +50,16 @@ func NewTracer(ctx context.Context, opts ...Option) func() error {
 		logger.Fatalf(ctx, "failed to create span exporter: %w", err)
 	}
 
+	bsp := sdktrace.NewBatchSpanProcessor(
+		exporter,
+		sdktrace.WithMaxQueueSize(8192),
+		sdktrace.WithBatchTimeout(10*time.Second),
+	)
+
 	tracerProvider := sdktrace.NewTracerProvider(
 		sdktrace.WithSampler(sdktrace.AlwaysSample()),
 		sdktrace.WithResource(res),
-		sdktrace.WithBatcher(exporter),
+		sdktrace.WithSpanProcessor(bsp),
 	)
 
 	otel.SetTracerProvider(tracerProvider)
