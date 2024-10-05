@@ -18,7 +18,7 @@ import (
 	"utils/concurrency"
 	"utils/hash"
 
-	"gitlab.services.mts.ru/lp/backend/libs/tracer"
+	"utils/tracer"
 )
 
 type Parser struct {

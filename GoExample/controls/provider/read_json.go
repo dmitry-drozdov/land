@@ -9,8 +9,9 @@ import (
 	"strings"
 	"utils/concurrency"
 
+	"utils/tracer"
+
 	jsoniter "github.com/json-iterator/go"
-	"gitlab.services.mts.ru/lp/backend/libs/tracer"
 	"golang.org/x/sync/errgroup"
 )
 
