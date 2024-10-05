@@ -13,9 +13,9 @@ import (
 	"regexp"
 	"strings"
 	"sync"
+	"unsafe"
 	"utils/ast_type"
 	"utils/concurrency"
-	"utils/filter"
 	"utils/hash"
 
 	"gitlab.services.mts.ru/lp/backend/libs/tracer"
@@ -93,21 +93,10 @@ func (p *Parser) ParseFile(
 		return err
 	}
 
-	nested := filter.NewNestedFuncs()
-
 	once := sync.Once{}
 
 	// проход по файлу в поисках МЕТОДОВ
 	ast.Inspect(f, func(n ast.Node) bool {
-		if n != nil && nested.Nested(n.Pos(), n.End()) {
-			return true
-		}
-
-		switch n.(type) {
-		case *ast.FuncDecl, *ast.FuncLit:
-			nested.Add(n)
-		}
-
 		x, ok := n.(*ast.FuncDecl)
 		if !ok {
 			return true
@@ -119,7 +108,9 @@ func (p *Parser) ParseFile(
 
 		start := fset.Position(x.Body.Pos())
 		end := fset.Position(x.Body.End())
-		nodeText := string(src[start.Offset:end.Offset])
+
+		// более быстрый вариант nodeText := string(src[start.Offset+1:end.Offset-1])
+		nodeText := unsafe.String(&src[start.Offset+1], end.Offset-start.Offset-2)
 		if len(nodeText) < 3 {
 			return true // функция с пустым телом
 		}
@@ -147,37 +138,22 @@ func (p *Parser) ParseFile(
 			pathCache.Set(dir, struct{}{})
 		})
 
-		pathOut := fmt.Sprint(pathOut[:len(pathOut)-3], "_", suffix, "_", p.AutoInc(), ".go")
+		pathOut := fmt.Sprint(pathOut[:len(pathOut)-3], "_", suffix, "_", p.AutoInc())
 
-		key := strings.Split(strings.TrimSuffix(pathOut, ".go"), "\\")
+		key := strings.Split(pathOut, "\\") // trim .go
 		fname := key[len(key)-1]
-
-		//проход по МЕТОДУ в поиске АНОНИМНЫХ ФУНКЦИЙ
-		//allCnt := p.innerInspectAnonCalls(x.Body)
 
 		// проход по МЕТОДУ в поиске if/for/else
 		controls := &datatype.Control{Type: "root"}
 		p.innerInspectControls(x.Body, controls)
 
-		// if allCnt == 0 && !p.Balancer.CanSubAction() {
-		// 	return true
-		// }
-
-		// if suffix == "_10367583230383768386_1923.go" {
-		// 	ast.Print(fset, x.Body)
-		// 	panic(0)
-		// }
-
-		p.Balancer.MainAction(1)
 		res.Set(fname, controls)
 
 		p.Queue.Add(func() error {
 			_, end := tracer.Start(ctx, "write to file")
 			defer end(nil)
 
-			nodeText = nodeText[1 : len(nodeText)-1]
-
-			file, err := os.OpenFile(pathOut, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+			file, err := os.OpenFile(pathOut+".go", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 			if err != nil {
 				return err
 			}

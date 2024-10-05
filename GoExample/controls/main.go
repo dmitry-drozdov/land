@@ -54,10 +54,8 @@ var folders = []string{
 }
 
 var stats = struct {
-	hasCalls   int
-	hasNoCalls int
-	ok         int
-	total      int
+	ok    int
+	total int
 }{}
 
 func main() {
@@ -87,14 +85,8 @@ func main() {
 		}
 	}
 
-	totalFuncs := stats.hasCalls + stats.hasNoCalls
-	color.Green(
-		"TOTAL has calls: %v (%.2f%%), has no calls: %v (%.2f%%)\n",
-		stats.hasCalls, ratio(stats.hasCalls, totalFuncs),
-		stats.hasNoCalls, ratio(stats.hasNoCalls, totalFuncs),
-	)
 	color.Green("TOTAL func call: %v, bodies: %v\n", b.CntMain(), b.CntSub())
-	color.Green("TOTAL ratio: %.5f [bad=%v]\n", ratio(stats.ok, stats.total), stats.total-stats.ok)
+	color.Green("TOTAL ratio: %.5f [bad=%v] [ok=%v]\n", ratio(stats.ok, stats.total), stats.total-stats.ok, stats.ok)
 }
 
 func doWork(ctx context.Context, sname string, balancer *concurrency.Balancer, fc map[string]struct{}) error {
@@ -115,7 +107,7 @@ func doWork(ctx context.Context, sname string, balancer *concurrency.Balancer, f
 	if err != nil {
 		return err
 	}
-	color.Cyan("===== %s END [%v] [%v] [dups %v]=====\n", sname, -1, -1, p.Dups)
+	color.Cyan("===== %s END [%v] [%v] [dups %v]=====\n", sname, track(land), track(orig), p.Dups)
 
 	err = compareMaps(ctx, orig, land)
 	if err != nil {
@@ -123,6 +115,14 @@ func doWork(ctx context.Context, sname string, balancer *concurrency.Balancer, f
 	}
 
 	return nil
+}
+
+func track(mp map[string]*datatype.Control) uint64 {
+	res := uint64(0)
+	for _, v := range mp {
+		res += uint64(v.Count())
+	}
+	return res
 }
 
 func compareMaps(ctx context.Context, orig, land map[string]*datatype.Control) error {

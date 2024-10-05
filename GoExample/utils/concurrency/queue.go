@@ -13,10 +13,10 @@ type Queue struct {
 
 func NewQueue() *Queue {
 	q := &Queue{
-		ch: make(chan F, 1024),
+		ch: make(chan F, 2048),
 		wg: sync.WaitGroup{},
 	}
-	for range 128 {
+	for range 512 {
 		q.wg.Add(1)
 		go func() {
 			defer q.wg.Done()

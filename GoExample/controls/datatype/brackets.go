@@ -12,7 +12,7 @@ type Control struct {
 }
 
 func (b *Control) ControlNumber() (int, int) {
-	return b.maxDepth(), b.count()
+	return b.MaxDepth(), b.Count()
 }
 
 func (b *Control) MaxChildrenCount() int {
@@ -26,24 +26,24 @@ func (b *Control) MaxChildrenCount() int {
 	return mx
 }
 
-func (b *Control) maxDepth() int {
+func (b *Control) MaxDepth() int {
 	if b == nil {
 		return 0
 	}
 	mx := 0
 	for _, c := range b.Children {
-		mx = max(mx, c.maxDepth())
+		mx = max(mx, c.MaxDepth())
 	}
 	return mx
 }
 
-func (b *Control) count() int {
+func (b *Control) Count() int {
 	if b == nil {
 		return 0
 	}
 	cnt := 1
 	for _, c := range b.Children {
-		cnt += c.count()
+		cnt += c.Count()
 	}
 	return cnt
 }
