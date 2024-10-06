@@ -18,6 +18,8 @@ import (
 	"utils/hash"
 
 	"utils/tracer"
+
+	"github.com/willf/bloom"
 )
 
 type Parser struct {
@@ -25,11 +27,11 @@ type Parser struct {
 	Queue      *concurrency.Queue
 	Balancer   *concurrency.Balancer
 	Counter    uint64
-	FilesCache map[string]struct{}
+	FilesCache *bloom.BloomFilter
 	Dups       uint64
 }
 
-func NewParser(balancer *concurrency.Balancer, fc map[string]struct{}) *Parser {
+func NewParser(balancer *concurrency.Balancer, fc *bloom.BloomFilter) *Parser {
 	return &Parser{
 		ast_type.NewNameConverter(),
 		concurrency.NewQueue(),
@@ -235,10 +237,10 @@ func (p *Parser) AutoInc() uint64 {
 var re = regexp.MustCompile(`[\s]`) // to unify files formatting
 func (p *Parser) Dub(str string) bool {
 	str = re.ReplaceAllString(str, "")
-	if _, ok := p.FilesCache[str]; ok {
+	b := unsafe.Slice((*byte)(unsafe.Pointer(unsafe.StringData(str))), len(str))
+	if p.FilesCache.TestAndAdd(b) {
 		p.Dups++
 		return true
 	}
-	p.FilesCache[str] = struct{}{}
 	return false
 }

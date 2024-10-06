@@ -13,6 +13,7 @@ import (
 	"utils/tracer"
 
 	"github.com/fatih/color"
+	"github.com/willf/bloom"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -79,7 +80,8 @@ func main() {
 	color.New(color.FgRed, color.Bold).Printf("START %v\n", time.Now().Format(time.DateTime))
 
 	b := concurrency.NewBalancer(RATIO) // на каждые RATIO файлов с вызовами 1 файл без вызовов
-	fc := make(map[string]struct{}, 1_900_000)
+
+	fc := bloom.NewWithEstimates(500_000, 0.005)
 	for _, f := range folders {
 		if err := doWork(ctx, f, b, fc); err != nil {
 			color.New(color.FgBlack, color.Bold).Printf("[%v] <ERROR>: [%v]\n", f, err)
@@ -90,7 +92,7 @@ func main() {
 	color.Green("TOTAL ratio: %.5f [bad=%v] [ok=%v]\n", ratio(stats.ok, stats.total), stats.total-stats.ok, stats.ok)
 }
 
-func doWork(ctx context.Context, sname string, balancer *concurrency.Balancer, fc map[string]struct{}) error {
+func doWork(ctx context.Context, sname string, balancer *concurrency.Balancer, fc *bloom.BloomFilter) error {
 	ctx, end := tracer.Start(ctx, "doWork "+sname)
 	defer end(nil)
 
