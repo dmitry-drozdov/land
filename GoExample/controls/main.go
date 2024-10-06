@@ -13,6 +13,7 @@ import (
 	"utils/tracer"
 
 	"github.com/fatih/color"
+	"go.opentelemetry.io/otel/trace"
 )
 
 const (
@@ -60,17 +61,17 @@ var stats = struct {
 
 func main() {
 	ctx := context.Background()
-	cancel := tracer.NewTracer(ctx,
-		tracer.WithInsecure(true),
-		tracer.WithServiceName("phd"),
-		tracer.WithEndpoint("localhost:4317"),
-	)
-	defer func() {
-		if err := cancel(); err != nil {
-			panic(err)
-		}
-	}()
-	//tracer.ReplaceGlobals(&tracer.Tracer{T: trace.NewNoopTracerProvider().Tracer("phd")})
+	// cancel := tracer.NewTracer(ctx,
+	// 	tracer.WithInsecure(true),
+	// 	tracer.WithServiceName("phd"),
+	// 	tracer.WithEndpoint("localhost:4317"),
+	// )
+	// defer func() {
+	// 	if err := cancel(); err != nil {
+	// 		panic(err)
+	// 	}
+	// }()
+	tracer.ReplaceGlobals(&tracer.Tracer{T: trace.NewNoopTracerProvider().Tracer("phd")})
 
 	ctx, end := tracer.Start(ctx, "main")
 	defer end(nil)

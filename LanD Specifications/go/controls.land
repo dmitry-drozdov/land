@@ -21,13 +21,15 @@ ID			: '@'?[_a-zA-Z\u0430-\u044F\u0410-\u042F\u0192\u06F0\u03A9][_0-9a-zA-Z\u043
 
 
 content	= entity*
-entity	= if | anon_func | block | Any 
+entity	= if | for | anon_func | block | Any 
 		| '(' entity* ')'
 
 block = '{' entity*  '}'
 
 if = 'if' cond* block else?
 else = 'else' (if | block)
+
+for = 'for' cond* block
 
 cond = Any | '(' (cond | '{' cond* '}')* ')' | init | anon_func 
 init =  anon_struct '{' Any '}'

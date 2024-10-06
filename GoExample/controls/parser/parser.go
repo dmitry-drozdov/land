@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"bufio"
 	"context"
 	"controls/datatype"
 	"fmt"
@@ -106,14 +105,14 @@ func (p *Parser) ParseFile(
 			return true // функция без тела
 		}
 
-		start := fset.Position(x.Body.Pos())
-		end := fset.Position(x.Body.End())
+		start := fset.Position(x.Body.Pos()).Offset + 1 // убираем по краям { и }
+		end := fset.Position(x.Body.End()).Offset - 1
 
-		// более быстрый вариант nodeText := string(src[start.Offset+1:end.Offset-1])
-		nodeText := unsafe.String(&src[start.Offset+1], end.Offset-start.Offset-2)
-		if len(nodeText) < 3 {
-			return true // функция с пустым телом
+		ln := end - start
+		if ln < 10 {
+			return true // функция с пустым или незначащим телом
 		}
+		nodeText := unsafe.String(&src[start], ln)
 
 		var suffix uint64
 		if x.Recv != nil && len(x.Recv.List) > 0 {
@@ -144,29 +143,29 @@ func (p *Parser) ParseFile(
 		fname := key[len(key)-1]
 
 		// проход по МЕТОДУ в поиске if/for/else
-		controls := &datatype.Control{Type: "root"}
+		controls := &datatype.Control{Type: "root", Children: make([]*datatype.Control, 0, 2)}
 		p.innerInspectControls(x.Body, controls)
 
 		res.Set(fname, controls)
 
-		p.Queue.Add(func() error {
-			_, end := tracer.Start(ctx, "write to file")
-			defer end(nil)
+		// p.Queue.Add(func() error {
+		// 	_, end := tracer.Start(ctx, "write to file")
+		// 	defer end(nil)
 
-			file, err := os.OpenFile(pathOut+".go", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
-			if err != nil {
-				return err
-			}
-			defer file.Close()
+		// 	file, err := os.OpenFile(pathOut+".go", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+		// 	if err != nil {
+		// 		return err
+		// 	}
+		// 	defer file.Close()
 
-			writer := bufio.NewWriter(file)
+		// 	writer := bufio.NewWriter(file)
 
-			_, err = writer.WriteString(nodeText)
-			if err != nil {
-				return err
-			}
-			return writer.Flush()
-		})
+		// 	_, err = writer.WriteString(nodeText)
+		// 	if err != nil {
+		// 		return err
+		// 	}
+		// 	return writer.Flush()
+		// })
 
 		return true
 	})
@@ -195,6 +194,33 @@ func (p *Parser) innerInspectControls(root ast.Node, control *datatype.Control) 
 				p.innerInspectControls(x.Else, child)
 			}
 			return false
+
+		case *ast.ForStmt:
+			child := &datatype.Control{
+				Type:     "for",
+				Depth:    control.Depth + 1,
+				Children: make([]*datatype.Control, 0, 2),
+			}
+			control.Children = append(control.Children, child)
+			if x.Init != nil {
+				p.innerInspectControls(x.Init, child)
+			}
+			if x.Cond != nil {
+				p.innerInspectControls(x.Cond, child)
+			}
+			p.innerInspectControls(x.Body, child)
+			return false
+
+		case *ast.RangeStmt:
+			child := &datatype.Control{
+				Type:     "for",
+				Depth:    control.Depth + 1,
+				Children: make([]*datatype.Control, 0, 2),
+			}
+			control.Children = append(control.Children, child)
+			p.innerInspectControls(x.Body, child)
+			return false
+
 		default:
 			return true // continue
 		}
