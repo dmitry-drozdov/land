@@ -99,7 +99,7 @@ func doWork(ctx context.Context, sname string, balancer *concurrency.Balancer, f
 	color.Cyan("===== %s START =====\n", sname)
 
 	source := fmt.Sprintf(`e:\phd\test_repos\%s\`, sname)
-	p := parser.NewParser(balancer, fc)
+	p := parser.NewParser(fc)
 	orig, err := p.ParseFiles(ctx, source)
 	if err != nil {
 		return err

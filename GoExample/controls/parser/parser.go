@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"bufio"
 	"context"
 	"controls/datatype"
 	"fmt"
@@ -25,17 +26,17 @@ import (
 type Parser struct {
 	*ast_type.NameConverter
 	Queue      *concurrency.Queue
-	Balancer   *concurrency.Balancer
+	Balancer   byte
 	Counter    uint64
 	FilesCache *bloom.BloomFilter
 	Dups       uint64
 }
 
-func NewParser(balancer *concurrency.Balancer, fc *bloom.BloomFilter) *Parser {
+func NewParser(fc *bloom.BloomFilter) *Parser {
 	return &Parser{
 		ast_type.NewNameConverter(),
 		concurrency.NewQueue(),
-		balancer,
+		0,
 		0,
 		fc,
 		0,
@@ -148,26 +149,34 @@ func (p *Parser) ParseFile(
 		controls := &datatype.Control{Type: "root", Children: make([]*datatype.Control, 0, 2)}
 		p.innerInspectControls(x.Body, controls)
 
+		cnt := len(controls.Children)
+		if cnt == 0 { // из тех, кто без операторов, берем только 1/3, все равно ничего интересного
+			p.Balancer = (p.Balancer + 1) % 3
+			if p.Balancer > 0 { // 1 или 2 - пропуск, 0 - берем
+				return true
+			}
+		}
+
 		res.Set(fname, controls)
 
-		// p.Queue.Add(func() error {
-		// 	_, end := tracer.Start(ctx, "write to file")
-		// 	defer end(nil)
+		p.Queue.Add(func() error {
+			_, end := tracer.Start(ctx, "write to file")
+			defer end(nil)
 
-		// 	file, err := os.OpenFile(pathOut+".go", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
-		// 	if err != nil {
-		// 		return err
-		// 	}
-		// 	defer file.Close()
+			file, err := os.OpenFile(pathOut+".go", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+			if err != nil {
+				return err
+			}
+			defer file.Close()
 
-		// 	writer := bufio.NewWriter(file)
+			writer := bufio.NewWriter(file)
 
-		// 	_, err = writer.WriteString(nodeText)
-		// 	if err != nil {
-		// 		return err
-		// 	}
-		// 	return writer.Flush()
-		// })
+			_, err = writer.WriteString(nodeText)
+			if err != nil {
+				return err
+			}
+			return writer.Flush()
+		})
 
 		return true
 	})
