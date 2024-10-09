@@ -23,7 +23,7 @@ namespace Land.GUI.Serializers
 				node.Type = "root";
 			}
 
-			if (str == "if" || str == "for" || str == "switch")
+			if (str == "if" || str == "for" || str == "switch" || str == "select")
 			{
 				var c = new GoControl(str, node.Depth + 1);
 				node.Children.Add(c);

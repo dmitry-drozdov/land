@@ -22,7 +22,7 @@ CURVE_BRACKETED : %left '{' %right '}'
 ROUND_BRACKETED : %left '(' %right ')'
 
 content	= entity*
-entity	= if | for | switch | anon_func | block | Any 
+entity	= if | for | switch | select | anon_func | block | Any 
 		| '(' entity* ')'
 
 block = '{' entity*  '}'
@@ -32,6 +32,7 @@ else = 'else' (if | block)
 
 for = 'for' cond* block
 switch = 'switch' cond* block
+select = 'select' block
 
 cond = Any | '(' (cond | '{' cond* '}')* ')' | init | anon_func 
 init =  anon_struct '{' Any '}'

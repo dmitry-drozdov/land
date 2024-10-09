@@ -223,6 +223,16 @@ func (p *Parser) innerInspectControls(root ast.Node, control *datatype.Control) 
 			p.innerInspectControls(x.Body, child)
 			return false
 
+		case *ast.SelectStmt:
+			child := &datatype.Control{
+				Type:     "select",
+				Depth:    control.Depth + 1,
+				Children: make([]*datatype.Control, 0, 2),
+			}
+			control.Children = append(control.Children, child)
+			p.innerInspectControls(x.Body, child)
+			return false
+
 		case *ast.ForStmt:
 			child := &datatype.Control{
 				Type:     "for",
