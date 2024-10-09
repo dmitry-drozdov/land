@@ -197,6 +197,32 @@ func (p *Parser) innerInspectControls(root ast.Node, control *datatype.Control) 
 			}
 			return false
 
+		case *ast.SwitchStmt:
+			child := &datatype.Control{
+				Type:     "switch",
+				Depth:    control.Depth + 1,
+				Children: make([]*datatype.Control, 0, 2),
+			}
+			control.Children = append(control.Children, child)
+			if x.Init != nil {
+				p.innerInspectControls(x.Init, child)
+			}
+			p.innerInspectControls(x.Body, child)
+			return false
+
+		case *ast.TypeSwitchStmt:
+			child := &datatype.Control{
+				Type:     "switch",
+				Depth:    control.Depth + 1,
+				Children: make([]*datatype.Control, 0, 2),
+			}
+			control.Children = append(control.Children, child)
+			if x.Init != nil {
+				p.innerInspectControls(x.Init, child)
+			}
+			p.innerInspectControls(x.Body, child)
+			return false
+
 		case *ast.ForStmt:
 			child := &datatype.Control{
 				Type:     "for",
