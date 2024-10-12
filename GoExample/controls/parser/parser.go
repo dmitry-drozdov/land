@@ -268,6 +268,19 @@ func (p *Parser) innerInspectControls(root ast.Node, control *datatype.Control) 
 			p.innerInspectControls(x.Body, child)
 			return false
 
+		case *ast.CallExpr:
+			if f, ok := x.Fun.(*ast.FuncLit); ok {
+				child := &datatype.Control{
+					Type:     "anon_func_call",
+					Depth:    control.Depth + 1,
+					Children: make([]*datatype.Control, 0, 2),
+				}
+				control.Children = append(control.Children, child)
+				p.innerInspectControls(f.Body, child)
+				return false
+			}
+			return true
+
 		default:
 			return true // continue
 		}

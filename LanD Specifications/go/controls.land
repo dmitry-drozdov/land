@@ -22,7 +22,7 @@ CURVE_BRACKETED : %left '{' %right '}'
 ROUND_BRACKETED : %left '(' %right ')'
 
 content	= entity*
-entity	= if | for | switch | select | anon_func | block | Any 
+entity	= if | for | switch | select |  anon_func_title  | anon_func | anon_func_call | block | Any 
 		| '(' entity* ')'
 
 block = '{' entity*  '}'
@@ -34,7 +34,7 @@ for = 'for' cond* block
 switch = 'switch' cond* block
 select = 'select' block
 
-cond = Any | '(' (cond | '{' cond* '}')* ')' | init | anon_func 
+cond = Any | '(' (cond | '{' cond* '}')* ')' | init | anon_func | anon_func_call | anon_func_title
 init =  anon_struct '{' Any '}'
 	| ('[' Any ']')+ type  ('{' Any '}')? 
 
@@ -42,8 +42,9 @@ type = '*' Any | ID Any | anon_struct | anon_func_title | '(' type ')'
 
 anon_struct = '&'? ('struct'|'interface') '{' Any '}'
 
-anon_func = anon_func_title block ('(' Any ')')?
-anon_func_title = 'func' '(' Any ')' ('(' Any ')')? AnyAvoid('\n')
+anon_func_call = anon_func '(' Any ')'
+anon_func = anon_func_title block 
+anon_func_title = 'func' '(' Any ')' ('(' Any ')')?   ('[' Any ']')* (AnyAvoid('\n')|anon_struct|anon_func_title)
 
 %%
 
