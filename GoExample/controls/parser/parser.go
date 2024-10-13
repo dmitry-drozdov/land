@@ -269,17 +269,74 @@ func (p *Parser) innerInspectControls(root ast.Node, control *datatype.Control) 
 			return false
 
 		case *ast.CallExpr:
-			if f, ok := x.Fun.(*ast.FuncLit); ok {
+			switch y := x.Fun.(type) {
+			case *ast.IndexExpr:
+				child := &datatype.Control{
+					Type:     "call",
+					Depth:    control.Depth + 1,
+					Children: make([]*datatype.Control, 0, 2),
+				}
+				control.Children = append(control.Children, child)
+				p.innerInspectControls(y.Index, child)
+				return false
+			case *ast.FuncLit:
 				child := &datatype.Control{
 					Type:     "anon_func_call",
 					Depth:    control.Depth + 1,
 					Children: make([]*datatype.Control, 0, 2),
 				}
 				control.Children = append(control.Children, child)
-				p.innerInspectControls(f.Body, child)
+				p.innerInspectControls(y.Body, child)
 				return false
+			case *ast.CallExpr:
+				child := &datatype.Control{
+					Type:     "call",
+					Depth:    control.Depth + 1,
+					Children: make([]*datatype.Control, 0, 2),
+				}
+				control.Children = append(control.Children, child)
+				return false // interrupt, кейс f()()()
+			case *ast.ParenExpr:
+				for _, arg := range x.Args {
+					p.innerInspectControls(arg, control)
+				}
+				p.innerInspectControls(y.X, control)
+				return false // interrupt, кейс *(*uint64)(unsafe.Pointer(&c.elemBuf[0]))
+			case *ast.SelectorExpr:
+				if excluded[y.Sel.Name] {
+					return true
+				}
+				child := &datatype.Control{
+					Type:     "call",
+					Depth:    control.Depth + 1,
+					Children: make([]*datatype.Control, 0, 2),
+				}
+				control.Children = append(control.Children, child)
+				p.innerInspectControls(y.X, control)
+				return false // interrupt, кейс a.f(x).g(y)
+			case *ast.MapType, *ast.InterfaceType:
+				return false // interrupt, кейс map[int]string(oldMap) и interface{}(oldMap)
+			case *ast.Ident:
+				if excluded[y.Name] {
+					return true // внешний вызов нам не подошел - продолжаем внутри
+				}
+			case *ast.ArrayType:
+				if ident, ok := y.Elt.(*ast.Ident); ok && excluded[ident.Name] {
+					return true // внешний вызов нам не подошел - продолжаем внутри
+				}
+				if _, ok := y.Elt.(*ast.InterfaceType); ok {
+					return false // внутрь интерфейса не лезем, там нет вызовов, и []interface{}(smth) - это каст, а не вызов
+				}
 			}
-			return true
+
+			child := &datatype.Control{
+				Type:     "call",
+				Depth:    control.Depth + 1,
+				Children: make([]*datatype.Control, 0, 2),
+			}
+			control.Children = append(control.Children, child)
+
+			return false // interrupt, внутренние вызовы нам не интересны
 
 		default:
 			return true // continue
@@ -301,4 +358,41 @@ func (p *Parser) Dub(str string) bool {
 		return true
 	}
 	return false
+}
+
+var excluded = map[string]bool{
+	"bool":       true,
+	"string":     true,
+	"int":        true,
+	"int8":       true,
+	"int16":      true,
+	"int32":      true,
+	"int64":      true,
+	"uint":       true,
+	"uint8":      true,
+	"uint16":     true,
+	"uint32":     true,
+	"uint64":     true,
+	"uintptr":    true,
+	"byte":       true,
+	"rune":       true,
+	"float32":    true,
+	"float64":    true,
+	"complex64":  true,
+	"complex128": true,
+	"close":      true,
+	"len":        true,
+	"cap":        true,
+	"copy":       true,
+	"delete":     true,
+	"complex":    true,
+	"real":       true,
+	"imag":       true,
+	"new":        true,
+	"make":       true,
+	"append":     true,
+	"panic":      true,
+	"recover":    true,
+	"print":      true,
+	"println":    true,
 }

@@ -593,7 +593,7 @@ namespace Land.GUI
 
 		private void File_ParseButton_Click(object sender, RoutedEventArgs e)
 		{
-			//if (Parser != null)
+			if (Parser != null)
 			{
 				Node root = null;
 
@@ -836,12 +836,13 @@ namespace Land.GUI
 				try
 				{
 					Node root = null;
+					Node sub = null;
 					Durations stats = null;
 
 					FrontendUpdateDispatcher.Invoke((System.Action)(() =>
 					{
-						//(root, stats) = File_Parse(file, File.ReadAllText(file, GetEncoding(file))) ?? (null, null);
-						throw new Exception("unimpl");
+						(root, sub, stats) = File_Parse(file, File.ReadAllText(file, GetEncoding(file))) ?? (null, null, null);
+						Land.Core.Parsing.Tree.TreeManager.MergeTrees(root, sub);
 					}));
 
 					//allNodes.Add(root);

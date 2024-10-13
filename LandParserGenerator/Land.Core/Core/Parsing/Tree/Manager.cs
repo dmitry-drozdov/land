@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Xml.Linq;
 using Land.Core.Specification;
 
 namespace Land.Core.Parsing.Tree
@@ -9,7 +10,7 @@ namespace Land.Core.Parsing.Tree
 	{
 		public static void MergeTrees(Node node1, Node node2)
 		{
-			var controls = AllControlNodes(node1).OrderBy(x => x.Location.Start.Offset).ToList();
+			var controls = AllControlNodes(node1).OrderBy(x => x.Location?.Start?.Offset ?? 0).ToList();
 			var calls = AllCallsNodes(node2);
 
 			foreach (var call in calls)
@@ -19,32 +20,32 @@ namespace Land.Core.Parsing.Tree
 				{
 					if (call.Location.HasOverlap(control.Location))
 					{
-						throw new InvalidOperationException("overlapping detected");
+						//throw new InvalidOperationException("overlapping detected");
+						continue;
 					}
 
-					if (control.Location.Includes(call.Location))
+					if (control.Location?.Includes(call.Location) == true)
 					{
 						foundControl = control;
 					}
 				}
 				if (foundControl == null)
 				{
-					throw new InvalidOperationException("cannot weave call in control");
+					//throw new InvalidOperationException("cannot weave call in control");
+					continue;
 				}
 				call.Parent = foundControl;
 				foundControl.Children.Add(call);
+				foundControl.Children = foundControl.Children.OrderBy(x => x.Location?.Start.Offset ?? 0).ToList();
 			}
 		}
 
 		public static List<Node> AllControlNodes(Node root)
 		{
 			if (root == null) return null;
-			var list = new List<Node>();
-
+			var list = new List<Node> { root };
 			foreach (var node in root.Children)
 			{
-				var str = node.ToString();
-				list.Add(node);
 				list.AddRange(AllControlNodes(node));
 			}
 
@@ -53,8 +54,8 @@ namespace Land.Core.Parsing.Tree
 
 		public static List<Node> AllCallsNodes(Node root)
 		{
-			if (root == null) return null;
 			var list = new List<Node>();
+			if (root == null) return list;
 
 			foreach (var node in root.Children)
 			{
