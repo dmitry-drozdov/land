@@ -13,7 +13,7 @@ namespace Land.Core
 	{
 		public int? Line { get; private set; }
 
-		public int? Column { get;  private set; }
+		public int? Column { get; private set; }
 
 		public int Offset { get; private set; }
 
@@ -33,7 +33,7 @@ namespace Land.Core
 		{
 			Offset += offsetDelta;
 
-			if(Line.HasValue)
+			if (Line.HasValue)
 			{
 				Line += lnDelta;
 				Column += colDelta;
@@ -51,10 +51,23 @@ namespace Land.Core
 			if (Offset < 0)
 				Offset = 0;
 		}
+
+		public static bool operator <(PointLocation a, PointLocation b)
+		{
+			if (a is null || b is null)
+				return false;
+			return a.Offset < b.Offset;
+		}
+		public static bool operator >(PointLocation a, PointLocation b)
+		{
+			if (a is null || b is null)
+				return false;
+			return a.Offset > b.Offset;
+		}
 	}
 
 	[Serializable]
-	public class SegmentLocation: IMerge<SegmentLocation>
+	public class SegmentLocation : IMerge<SegmentLocation>
 	{
 		public PointLocation Start { get; set; }
 
@@ -132,14 +145,14 @@ namespace Land.Core
 
 		public override bool Equals(object obj)
 		{
-			return obj is SegmentLocation other 
+			return obj is SegmentLocation other
 				&& Start.Offset == other.Start.Offset
 				&& End.Offset == other.End.Offset;
 		}
 
 		public bool Includes(SegmentLocation other)
 		{
-			return other != null 
+			return other != null
 				&& Start.Offset <= other.Start.Offset
 				&& End.Offset >= other.End.Offset;
 		}
@@ -150,14 +163,25 @@ namespace Land.Core
 		public bool Overlaps(SegmentLocation other)
 		{
 			return other != null
-				&& (Start.Offset <= other.Start.Offset && other.Start.Offset <= End.Offset) 
+				&& (Start.Offset <= other.Start.Offset && other.Start.Offset <= End.Offset)
 				^ (Start.Offset <= other.End.Offset && other.End.Offset <= End.Offset);
+		}
+
+		/// <summary>
+		/// Проверка строгого пересечения локаций (без вложения)
+		/// </summary>
+		public bool HasOverlap(SegmentLocation other)
+		{
+			if (other == null) return false;
+
+			var (s1, e1, s2, e2) = (Start, End, other.Start, other.End);
+			return (s2 < s1 && s1 < e2 && e2 < e1) || (s1 < s2 && s2 < e1 && e1 < e2);
 		}
 	}
 
-    public class SegmentLocationComparer : IComparer<SegmentLocation>
-    {
+	public class SegmentLocationComparer : IComparer<SegmentLocation>
+	{
 		public int Compare(SegmentLocation x, SegmentLocation y) =>
 			x.Start.Offset - y.Start.Offset;
-    }
+	}
 }

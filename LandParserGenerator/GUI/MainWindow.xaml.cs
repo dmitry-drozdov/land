@@ -47,6 +47,10 @@ namespace Land.GUI
 		private SegmentsBackgroundRenderer File_SegmentColorizer { get; set; }
 
 		private Land.Core.Parsing.BaseParser Parser { get; set; }
+
+		private Land.Core.Parsing.BaseParser SecondParser { get; set; }
+
+
 		private BasePreprocessor Preprocessor { get; set; }
 
 		public MainWindow()
@@ -234,11 +238,22 @@ namespace Land.GUI
 
 			var messages = new List<Message>();
 
-			Parser = Builder.BuildParser(
-			    ParsingLL.IsChecked ?? false ? GrammarType.LL : GrammarType.LR,
-			    Grammar_Editor.Text,
-			    messages
-			);
+			if (Parser != null) // уже был парсер, сейчас второй
+			{
+				SecondParser = Builder.BuildParser(
+					ParsingLL.IsChecked ?? false ? GrammarType.LL : GrammarType.LR,
+					Grammar_Editor.Text,
+					messages
+				);
+			}
+			else
+			{
+				Parser = Builder.BuildParser(
+				    ParsingLL.IsChecked ?? false ? GrammarType.LL : GrammarType.LR,
+				    Grammar_Editor.Text,
+				    messages
+				);
+			}
 
 			Grammar_LogList.Text = String.Join(Environment.NewLine, messages.Where(m => m.Type == MessageType.Trace).Select(m => m.Text));
 			Grammar_ErrorsList.ItemsSource = messages
@@ -569,20 +584,28 @@ namespace Land.GUI
 		private Node TreeRoot { get; set; }
 		private string TreeSource { get; set; }
 
-		private (Node, Durations)? File_Parse(string fileName, string text, bool enableTracing = false)
+		private (Node, Node, Durations)? File_Parse(string fileName, string text, bool enableTracing = false)
 		{
-			return Parser?.Parse(text, enableTracing);
+			var n1 = Parser?.Parse(text, enableTracing);
+			var n2 = SecondParser?.Parse(text, enableTracing);
+			return (n1?.Item1, n2?.Item1, null);
 		}
 
 		private void File_ParseButton_Click(object sender, RoutedEventArgs e)
 		{
-			if (Parser != null)
+			//if (Parser != null)
 			{
 				Node root = null;
 
 				try
 				{
-					root = File_Parse((string)File_NameLabel.Content, File_Editor.Text, true)?.Item1;
+					var tmp = File_Parse((string)File_NameLabel.Content, File_Editor.Text, true);
+					root = tmp?.Item1;
+					var sub = tmp?.Item2;
+					if (root != null && sub != null)
+					{
+						TreeManager.MergeTrees(root, sub);
+					}
 				}
 				catch (Exception ex)
 				{
@@ -817,7 +840,8 @@ namespace Land.GUI
 
 					FrontendUpdateDispatcher.Invoke((System.Action)(() =>
 					{
-						(root, stats) = File_Parse(file, File.ReadAllText(file, GetEncoding(file))) ?? (null, null);
+						//(root, stats) = File_Parse(file, File.ReadAllText(file, GetEncoding(file))) ?? (null, null);
+						throw new Exception("unimpl");
 					}));
 
 					//allNodes.Add(root);

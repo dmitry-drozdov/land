@@ -58,7 +58,7 @@ anon_func_title = 'func' '(' Any ')' ('(' Any ')')?   ('[' Any ']')* (AnyAvoid('
 %nodes {
 	ghost entity 
 	leaf 
-	void
+	void '(' ')' '{' '}'
 }
 
 

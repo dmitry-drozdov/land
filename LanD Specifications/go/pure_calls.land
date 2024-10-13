@@ -73,7 +73,7 @@ interface = 'interface' '{' Any '}'
 %nodes {
 	ghost entity 
 	leaf
-	void 
+	void '(' ')' '{' '}'
 }
 
 
