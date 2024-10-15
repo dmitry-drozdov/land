@@ -58,7 +58,7 @@ namespace Land.Core.Parsing.Tree
 				}
 				if (foundControl == null)
 				{
-					throw new InvalidOperationException("cannot weave call in control");
+					//throw new InvalidOperationException("cannot weave call in control");
 					continue;
 				}
 				anonFunc.Parent.Children.Remove(anonFunc); // self delete

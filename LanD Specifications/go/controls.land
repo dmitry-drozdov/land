@@ -43,7 +43,7 @@ type = '*' Any | ID Any | anon_struct | anon_func_title | '(' type ')'
 anon_struct = '&'? ('struct'|'interface') '{' Any '}'
 
 anon_func_call = anon_func '(' Any ')'
-anon_func = anon_func_title block 
+anon_func = anon_func_title '{' Any '}' 
 anon_func_title = 'func' '(' Any ')' ('(' Any ')')?   ('[' Any ']')* (AnyAvoid('\n')|anon_struct|anon_func_title)
 
 %%
