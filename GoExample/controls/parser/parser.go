@@ -216,6 +216,9 @@ func (p *Parser) innerInspectControls(root ast.Node, control *datatype.Control) 
 			if x.Init != nil {
 				p.innerInspectControls(x.Init, child)
 			}
+			if x.Tag != nil {
+				p.innerInspectControls(x.Tag, child)
+			}
 			p.innerInspectControls(x.Body, child)
 			return false
 
@@ -245,6 +248,7 @@ func (p *Parser) innerInspectControls(root ast.Node, control *datatype.Control) 
 
 		case *ast.RangeStmt:
 			child := add("for")
+			p.innerInspectControls(x.X, child)
 			p.innerInspectControls(x.Body, child)
 			return false
 
@@ -253,6 +257,9 @@ func (p *Parser) innerInspectControls(root ast.Node, control *datatype.Control) 
 			case *ast.IndexExpr:
 				child := add("call")
 				p.innerInspectControls(y.Index, child)
+				for _, arg := range x.Args {
+					p.innerInspectControls(arg, child)
+				}
 				return false
 			case *ast.FuncLit:
 				child := add("anon_func_call")
@@ -271,8 +278,11 @@ func (p *Parser) innerInspectControls(root ast.Node, control *datatype.Control) 
 				if excluded[y.Sel.Name] {
 					return true
 				}
-				_ = add("call")
+				child := add("call")
 				p.innerInspectControls(y.X, control)
+				for _, arg := range x.Args {
+					p.innerInspectControls(arg, child)
+				}
 				return false // interrupt, кейс a.f(x).g(y)
 			case *ast.MapType, *ast.InterfaceType:
 				return false // interrupt, кейс map[int]string(oldMap) и interface{}(oldMap)
@@ -289,7 +299,10 @@ func (p *Parser) innerInspectControls(root ast.Node, control *datatype.Control) 
 				}
 			}
 
-			_ = add("call")
+			child := add("call")
+			for _, arg := range x.Args {
+				p.innerInspectControls(arg, child)
+			}
 			return false // interrupt, внутренние вызовы нам не интересны
 
 		default:

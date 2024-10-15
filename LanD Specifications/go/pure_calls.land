@@ -50,7 +50,7 @@ entity =  call | smth
 		 | Any
 
 
-call = smth ('(' Any ')')+
+call = smth ('(' entity* ')')+
 
 smth =  ID ('[' entity* ']')* ('.' smth2)?
 	
