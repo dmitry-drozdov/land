@@ -185,15 +185,20 @@ func (p *Parser) ParseFile(
 }
 
 func (p *Parser) innerInspectControls(root ast.Node, control *datatype.Control) {
+	add := func(tp string) *datatype.Control {
+		child := &datatype.Control{
+			Type:     tp,
+			Depth:    control.Depth + 1,
+			Children: make([]*datatype.Control, 0, 2),
+		}
+		control.Children = append(control.Children, child)
+		return child
+	}
+
 	ast.Inspect(root, func(n ast.Node) bool {
 		switch x := n.(type) {
 		case *ast.IfStmt:
-			child := &datatype.Control{
-				Type:     "if",
-				Depth:    control.Depth + 1,
-				Children: make([]*datatype.Control, 0, 2),
-			}
-			control.Children = append(control.Children, child)
+			child := add("if")
 			if x.Init != nil {
 				p.innerInspectControls(x.Init, child)
 			}
@@ -207,12 +212,7 @@ func (p *Parser) innerInspectControls(root ast.Node, control *datatype.Control) 
 			return false
 
 		case *ast.SwitchStmt:
-			child := &datatype.Control{
-				Type:     "switch",
-				Depth:    control.Depth + 1,
-				Children: make([]*datatype.Control, 0, 2),
-			}
-			control.Children = append(control.Children, child)
+			child := add("switch")
 			if x.Init != nil {
 				p.innerInspectControls(x.Init, child)
 			}
@@ -220,12 +220,7 @@ func (p *Parser) innerInspectControls(root ast.Node, control *datatype.Control) 
 			return false
 
 		case *ast.TypeSwitchStmt:
-			child := &datatype.Control{
-				Type:     "switch",
-				Depth:    control.Depth + 1,
-				Children: make([]*datatype.Control, 0, 2),
-			}
-			control.Children = append(control.Children, child)
+			child := add("switch")
 			if x.Init != nil {
 				p.innerInspectControls(x.Init, child)
 			}
@@ -233,22 +228,12 @@ func (p *Parser) innerInspectControls(root ast.Node, control *datatype.Control) 
 			return false
 
 		case *ast.SelectStmt:
-			child := &datatype.Control{
-				Type:     "select",
-				Depth:    control.Depth + 1,
-				Children: make([]*datatype.Control, 0, 2),
-			}
-			control.Children = append(control.Children, child)
+			child := add("select")
 			p.innerInspectControls(x.Body, child)
 			return false
 
 		case *ast.ForStmt:
-			child := &datatype.Control{
-				Type:     "for",
-				Depth:    control.Depth + 1,
-				Children: make([]*datatype.Control, 0, 2),
-			}
-			control.Children = append(control.Children, child)
+			child := add("for")
 			if x.Init != nil {
 				p.innerInspectControls(x.Init, child)
 			}
@@ -259,42 +244,22 @@ func (p *Parser) innerInspectControls(root ast.Node, control *datatype.Control) 
 			return false
 
 		case *ast.RangeStmt:
-			child := &datatype.Control{
-				Type:     "for",
-				Depth:    control.Depth + 1,
-				Children: make([]*datatype.Control, 0, 2),
-			}
-			control.Children = append(control.Children, child)
+			child := add("for")
 			p.innerInspectControls(x.Body, child)
 			return false
 
 		case *ast.CallExpr:
 			switch y := x.Fun.(type) {
 			case *ast.IndexExpr:
-				child := &datatype.Control{
-					Type:     "call",
-					Depth:    control.Depth + 1,
-					Children: make([]*datatype.Control, 0, 2),
-				}
-				control.Children = append(control.Children, child)
+				child := add("call")
 				p.innerInspectControls(y.Index, child)
 				return false
 			case *ast.FuncLit:
-				child := &datatype.Control{
-					Type:     "anon_func_call",
-					Depth:    control.Depth + 1,
-					Children: make([]*datatype.Control, 0, 2),
-				}
-				control.Children = append(control.Children, child)
+				child := add("anon_func_call")
 				p.innerInspectControls(y.Body, child)
 				return false
 			case *ast.CallExpr:
-				child := &datatype.Control{
-					Type:     "call",
-					Depth:    control.Depth + 1,
-					Children: make([]*datatype.Control, 0, 2),
-				}
-				control.Children = append(control.Children, child)
+				_ = add("call")
 				return false // interrupt, кейс f()()()
 			case *ast.ParenExpr:
 				for _, arg := range x.Args {
@@ -306,12 +271,7 @@ func (p *Parser) innerInspectControls(root ast.Node, control *datatype.Control) 
 				if excluded[y.Sel.Name] {
 					return true
 				}
-				child := &datatype.Control{
-					Type:     "call",
-					Depth:    control.Depth + 1,
-					Children: make([]*datatype.Control, 0, 2),
-				}
-				control.Children = append(control.Children, child)
+				_ = add("call")
 				p.innerInspectControls(y.X, control)
 				return false // interrupt, кейс a.f(x).g(y)
 			case *ast.MapType, *ast.InterfaceType:
@@ -329,13 +289,7 @@ func (p *Parser) innerInspectControls(root ast.Node, control *datatype.Control) 
 				}
 			}
 
-			child := &datatype.Control{
-				Type:     "call",
-				Depth:    control.Depth + 1,
-				Children: make([]*datatype.Control, 0, 2),
-			}
-			control.Children = append(control.Children, child)
-
+			_ = add("call")
 			return false // interrupt, внутренние вызовы нам не интересны
 
 		default:

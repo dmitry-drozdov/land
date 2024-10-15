@@ -38,6 +38,35 @@ namespace Land.Core.Parsing.Tree
 				foundControl.Children.Add(call);
 				foundControl.Children = foundControl.Children.OrderBy(x => x.Location?.Start.Offset ?? 0).ToList();
 			}
+
+			var anonFuncs = AllAnonFuncsNodes(node1);
+			foreach (var anonFunc in anonFuncs)
+			{
+				Node foundControl = null;
+				foreach (var call in calls)
+				{
+					if (anonFunc.Location.HasOverlap(call.Location))
+					{
+						//throw new InvalidOperationException("overlapping detected");
+						continue;
+					}
+
+					if (call.Location?.Includes(anonFunc.Location) == true)
+					{
+						foundControl = call;
+					}
+				}
+				if (foundControl == null)
+				{
+					throw new InvalidOperationException("cannot weave call in control");
+					continue;
+				}
+				anonFunc.Parent.Children.Remove(anonFunc); // self delete
+				anonFunc.Parent = foundControl;
+				foundControl.Children.Add(anonFunc);
+				foundControl.Children = foundControl.Children.OrderBy(x => x.Location?.Start.Offset ?? 0).ToList();
+			}
+
 		}
 
 		public static List<Node> AllControlNodes(Node root)
@@ -66,6 +95,25 @@ namespace Land.Core.Parsing.Tree
 					continue;
 				}
 				list.AddRange(AllCallsNodes(node));
+			}
+
+			return list;
+		}
+
+		public static List<Node> AllAnonFuncsNodes(Node root)
+		{
+			var list = new List<Node>();
+			if (root == null) return list;
+
+			foreach (var node in root.Children)
+			{
+				var str = node.ToString();
+				if (str == "anon_func")
+				{
+					list.Add(node);
+					continue;
+				}
+				list.AddRange(AllAnonFuncsNodes(node));
 			}
 
 			return list;
