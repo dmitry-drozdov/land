@@ -88,6 +88,17 @@ func Test_MergeTrees(t *testing.T) {
 				{Shft: Shft(40, 70), Chldren: Ns{{Shft: Shft(50, 69), Chldren: Ns{{Shft: Shft(60, 65)}}}}},
 			}},
 		},
+		{ // вклинивание
+			n1: &N{Shft: Shft(0, 80), Chldren: Ns{
+				{Shft: Shft(50, 69)},
+			}},
+			n2: &N{Shft: Shft(0, 80), Chldren: Ns{
+				{Shft: Shft(40, 70), Chldren: Ns{{Shft: Shft(60, 65)}}},
+			}},
+			res: &N{Shft: Shft(0, 80), Chldren: Ns{
+				{Shft: Shft(40, 70), Chldren: Ns{{Shft: Shft(50, 69), Chldren: Ns{{Shft: Shft(60, 65)}}}}},
+			}},
+		},
 	}
 
 	for _, tt := range tests {
