@@ -20,6 +20,10 @@ type Node struct {
 	Chldren []*Node
 }
 
+func Shft(start, end int) Shift {
+	return Shift{start, end}
+}
+
 func MergeTrees(node1, node2 *Node) *Node {
 	if node1 == nil {
 		return node2
