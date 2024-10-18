@@ -42,7 +42,7 @@ func MergeTrees(node1, node2 *Node) *Node {
 
 	if node2.Offs.Contains(node1.Offs) {
 		node2.Chldren = MergeChildIntoChildren(node2.Chldren, node1)
-		return node1
+		return node2
 	}
 
 	// Обработка перекрывающихся узлов
@@ -103,6 +103,10 @@ func MergeChildLists(list1, list2 []*Node) []*Node {
 
 	if j < len(list2) {
 		mergedList = append(mergedList, list2[i:]...)
+	}
+
+	if len(mergedList) == 0 {
+		return nil
 	}
 
 	return mergedList

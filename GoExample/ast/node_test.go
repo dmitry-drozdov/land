@@ -10,6 +10,11 @@ func Test_MergeTrees(t *testing.T) {
 	tests := []struct {
 		n1, n2, res *Node
 	}{
+		{ // nil check
+			n1:  &Node{Offs: Offset{2, 20}},
+			n2:  nil,
+			res: &Node{Offs: Offset{2, 20}},
+		},
 		{ // n2 внутри n1
 			n1:  &Node{Offs: Offset{2, 20}},
 			n2:  &Node{Offs: Offset{5, 10}},
@@ -49,6 +54,10 @@ func Test_MergeTrees(t *testing.T) {
 
 	for _, tt := range tests {
 		res := MergeTrees(tt.n1, tt.n2)
+		assert.EqualValues(t, tt.res, res)
+
+		// коммутативность
+		res = MergeTrees(tt.n2, tt.n1)
 		assert.EqualValues(t, tt.res, res)
 	}
 }
