@@ -1,10 +1,18 @@
 package main
 
-import "sort"
+import (
+	"encoding/json"
+	"fmt"
+	"sort"
+)
 
 type Shift struct {
 	Start int
 	End   int
+}
+
+func (o Shift) Nested(other Shift) bool {
+	return o.Contains(other) || other.Contains(o)
 }
 
 func (o Shift) Contains(other Shift) bool {
@@ -22,6 +30,11 @@ type Node struct {
 
 func Shft(start, end int) Shift {
 	return Shift{start, end}
+}
+
+func (n *Node) Print() {
+	b, _ := json.MarshalIndent(n, "", "\t")
+	fmt.Println(string(b))
 }
 
 func MergeTrees(node1, node2 *Node) *Node {
@@ -88,14 +101,15 @@ func MergeChildLists(list1, list2 []*Node) []*Node {
 		child1 := list1[i]
 		child2 := list2[j]
 
-		if child1.Shft == child2.Shft {
+		switch {
+		case child1.Shft.Nested(child2.Shft):
 			mergedList = append(mergedList, MergeTrees(child1, child2))
 			i++
 			j++
-		} else if child1.Shft.Start < child2.Shft.Start {
+		case child1.Shft.Start < child2.Shft.Start:
 			mergedList = append(mergedList, child1)
 			i++
-		} else {
+		default:
 			mergedList = append(mergedList, child2)
 			j++
 		}
@@ -119,7 +133,7 @@ func MergeChildLists(list1, list2 []*Node) []*Node {
 func MergeChildIntoChildren(children []*Node, childToMerge *Node) []*Node {
 	merged := false
 	for i, child := range children {
-		if child.Shft.Contains(childToMerge.Shft) || child.Shft == childToMerge.Shft {
+		if child.Shft.Nested(childToMerge.Shft) || child.Shft == childToMerge.Shft {
 			children[i] = MergeTrees(child, childToMerge)
 			merged = true
 			break

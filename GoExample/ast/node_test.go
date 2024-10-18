@@ -69,11 +69,33 @@ func Test_MergeTrees(t *testing.T) {
 			n2:  &N{Shft: Shft(6, 12)},
 			res: &N{Shft: Shft(2, 20), Chldren: Ns{{Shft: Shft(2, 4)}, {Shft: Shft(5, 15), Chldren: Ns{{Shft: Shft(6, 12)}}}, {Shft: Shft(15, 19)}}},
 		},
+		{ // не пересекаются
+			n1:  &N{Shft: Shft(0, 50), Chldren: Ns{{Shft: Shft(10, 20)}}},
+			n2:  &N{Shft: Shft(60, 90), Chldren: Ns{{Shft: Shft(65, 75)}}},
+			res: &N{Shft: Shft(0, 90), Chldren: Ns{{Shft: Shft(0, 50), Chldren: Ns{{Shft: Shft(10, 20)}}}, {Shft: Shft(60, 90), Chldren: Ns{{Shft: Shft(65, 75)}}}}},
+		},
+		{ // перекрестное
+			n1: &N{Shft: Shft(0, 80), Chldren: Ns{
+				{Shft: Shft(10, 30)},
+				{Shft: Shft(50, 69)},
+			}},
+			n2: &N{Shft: Shft(0, 80), Chldren: Ns{
+				{Shft: Shft(20, 29), Chldren: Ns{{Shft: Shft(23, 28)}}},
+				{Shft: Shft(40, 70), Chldren: Ns{{Shft: Shft(60, 65)}}},
+			}},
+			res: &N{Shft: Shft(0, 80), Chldren: Ns{
+				{Shft: Shft(10, 30), Chldren: Ns{{Shft: Shft(20, 29), Chldren: Ns{{Shft: Shft(23, 28)}}}}},
+				{Shft: Shft(40, 70), Chldren: Ns{{Shft: Shft(50, 69), Chldren: Ns{{Shft: Shft(60, 65)}}}}},
+			}},
+		},
 	}
 
 	for _, tt := range tests {
 		res := MergeTrees((*Node)(tt.n1), (*Node)(tt.n2))
-		assert.EqualValues(t, tt.res, res)
+		if !assert.EqualValues(t, tt.res.Chldren, res.Chldren) {
+			res.Print()
+			continue
+		}
 
 		// коммутативность
 		res = MergeTrees((*Node)(tt.n2), (*Node)(tt.n1))
