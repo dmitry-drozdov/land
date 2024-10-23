@@ -129,16 +129,16 @@ func Test_MergeTrees(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
+	for i, tt := range tests {
 		res := MergeTrees((*Node)(tt.n1), (*Node)(tt.n2))
-		if !assert.EqualValues(t, tt.res.Chldren, res.Chldren) {
+		if !assert.EqualValues(t, tt.res.Chldren, res.Chldren, i) {
 			res.Print()
 			continue
 		}
 
 		// коммутативность
 		res = MergeTrees((*Node)(tt.n2), (*Node)(tt.n1))
-		assert.EqualValues(t, tt.res, res)
+		assert.EqualValues(t, tt.res, res, i)
 	}
 }
 
@@ -176,6 +176,71 @@ func Test_MergeTreesHard(t *testing.T) {
 				}},
 			}},
 		},
+		{ // вклинивание через уровни
+			n1: &N{Shft: Shft(0, 120), Chldren: Ns{
+				{Shft: Shft(20, 80), Chldren: Ns{
+					{Shft: Shft(50, 70), Chldren: Ns{
+						{Shft: Shft(66, 69)},
+					}},
+				}},
+				{Shft: Shft(90, 100)},
+			}},
+			n2: &N{Shft: Shft(0, 120), Chldren: Ns{
+				{Shft: Shft(30, 39)},
+				{Shft: Shft(40, 80), Chldren: Ns{
+					{Shft: Shft(45, 79), Chldren: Ns{
+						{Shft: Shft(60, 65)},
+					}},
+				}},
+			}},
+			res: &N{Shft: Shft(0, 120), Chldren: Ns{
+				{Shft: Shft(20, 80), Chldren: Ns{
+					{Shft: Shft(30, 39)},
+					{Shft: Shft(40, 80), Chldren: Ns{
+						{Shft: Shft(45, 79), Chldren: Ns{
+							{Shft: Shft(50, 70), Chldren: Ns{
+								{Shft: Shft(60, 65)},
+								{Shft: Shft(66, 69)},
+							}},
+						}},
+					}},
+				}},
+				{Shft: Shft(90, 100)},
+			}},
+		},
+		{ // вклинивание через уровни
+			n1: &N{Shft: Shft(0, 120), Chldren: Ns{
+				{Shft: Shft(20, 80), Chldren: Ns{
+					{Shft: Shft(50, 70), Chldren: Ns{
+						{Shft: Shft(66, 69)},
+					}},
+				}},
+				{Shft: Shft(90, 120)},
+			}},
+			n2: &N{Shft: Shft(0, 120), Chldren: Ns{
+				{Shft: Shft(30, 39)},
+				{Shft: Shft(40, 80), Chldren: Ns{
+					{Shft: Shft(45, 79), Chldren: Ns{
+						{Shft: Shft(60, 65)},
+					}},
+				}},
+				{Shft: Shft(100, 110)},
+			}},
+			res: &N{Shft: Shft(0, 120), Chldren: Ns{
+				{Shft: Shft(20, 80), Chldren: Ns{
+					{Shft: Shft(30, 39)},
+					{Shft: Shft(40, 80), Chldren: Ns{
+						{Shft: Shft(45, 79), Chldren: Ns{
+							{Shft: Shft(50, 70), Chldren: Ns{
+								{Shft: Shft(60, 65)},
+								{Shft: Shft(66, 69)},
+							}},
+						}},
+					}},
+				}},
+				{Shft: Shft(90, 120), Chldren: Ns{{Shft: Shft(100, 110)}}},
+			}},
+		},
 		// { // вклинивание через уровни
 		// 	n1: &N{Shft: Shft(0, 120), Chldren: Ns{
 		// 		{Shft: Shft(20, 80), Chldren: Ns{
@@ -183,25 +248,19 @@ func Test_MergeTreesHard(t *testing.T) {
 		// 				{Shft: Shft(66, 69)},
 		// 			}},
 		// 		}},
-		// 		{Shft: Shft(100, 110)},
+		// 		{Shft: Shft(90, 120), Chldren: Ns{{Shft: Shft(90, 110)}}},
 		// 	}},
 		// 	n2: &N{Shft: Shft(0, 120), Chldren: Ns{
-		// 		{Shft: Shft(10, 19), Chldren: Ns{
-		// 			{Shft: Shft(11, 17)},
-		// 		}},
 		// 		{Shft: Shft(30, 39)},
 		// 		{Shft: Shft(40, 80), Chldren: Ns{
 		// 			{Shft: Shft(45, 79), Chldren: Ns{
 		// 				{Shft: Shft(60, 65)},
 		// 			}},
 		// 		}},
-		// 		{Shft: Shft(90, 100)},
-		// 		{Shft: Shft(102, 108)},
+		// 		{Shft: Shft(100, 109)},
+		// 		{Shft: Shft(130, 140)},
 		// 	}},
 		// 	res: &N{Shft: Shft(0, 120), Chldren: Ns{
-		// 		{Shft: Shft(10, 19), Chldren: Ns{
-		// 			{Shft: Shft(11, 17)},
-		// 		}},
 		// 		{Shft: Shft(20, 80), Chldren: Ns{
 		// 			{Shft: Shft(30, 39)},
 		// 			{Shft: Shft(40, 80), Chldren: Ns{
@@ -213,12 +272,55 @@ func Test_MergeTreesHard(t *testing.T) {
 		// 				}},
 		// 			}},
 		// 		}},
-		// 		{Shft: Shft(90, 100)},
-		// 		{Shft: Shft(100, 110), Chldren: Ns{
-		// 			{Shft: Shft(102, 108)},
+		// 		{Shft: Shft(90, 120), Chldren: Ns{
+		// 			{Shft: Shft(90, 110), Chldren: Ns{{Shft: Shft(100, 110)}}},
 		// 		}},
+		// 		{Shft: Shft(130, 140)},
 		// 	}},
 		// },
+		{ // вклинивание через уровни
+			n1: &N{Shft: Shft(0, 120), Chldren: Ns{
+				{Shft: Shft(20, 80), Chldren: Ns{
+					{Shft: Shft(50, 70), Chldren: Ns{
+						{Shft: Shft(66, 69)},
+					}},
+				}},
+				{Shft: Shft(100, 110)},
+			}},
+			n2: &N{Shft: Shft(0, 120), Chldren: Ns{
+				{Shft: Shft(10, 19), Chldren: Ns{
+					{Shft: Shft(11, 17)},
+				}},
+				{Shft: Shft(30, 39)},
+				{Shft: Shft(40, 80), Chldren: Ns{
+					{Shft: Shft(45, 79), Chldren: Ns{
+						{Shft: Shft(60, 65)},
+					}},
+				}},
+				{Shft: Shft(90, 100)},
+				{Shft: Shft(102, 108)},
+			}},
+			res: &N{Shft: Shft(0, 120), Chldren: Ns{
+				{Shft: Shft(10, 19), Chldren: Ns{
+					{Shft: Shft(11, 17)},
+				}},
+				{Shft: Shft(20, 80), Chldren: Ns{
+					{Shft: Shft(30, 39)},
+					{Shft: Shft(40, 80), Chldren: Ns{
+						{Shft: Shft(45, 79), Chldren: Ns{
+							{Shft: Shft(50, 70), Chldren: Ns{
+								{Shft: Shft(60, 65)},
+								{Shft: Shft(66, 69)},
+							}},
+						}},
+					}},
+				}},
+				{Shft: Shft(90, 100)},
+				{Shft: Shft(100, 110), Chldren: Ns{
+					{Shft: Shft(102, 108)},
+				}},
+			}},
+		},
 	}
 
 	for _, tt := range tests {

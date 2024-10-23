@@ -102,10 +102,16 @@ func MergeChildLists(list1, list2 []*Node) []*Node {
 		child2 := list2[j]
 
 		switch {
-		case child1.Shft.Nested(child2.Shft):
+		case child1.Shft == child2.Shft:
 			mergedList = append(mergedList, MergeTrees(child1, child2))
 			i++
 			j++
+		case child1.Shft.Contains(child2.Shft):
+			child1.Chldren = MergeChildIntoChildren(child1.Chldren, child2)
+			j++
+		case child2.Shft.Contains(child1.Shft):
+			child2.Chldren = MergeChildIntoChildren(child2.Chldren, child1)
+			i++
 		case child1.Shft.Start < child2.Shft.Start:
 			mergedList = append(mergedList, child1)
 			i++
