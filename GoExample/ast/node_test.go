@@ -241,43 +241,43 @@ func Test_MergeTreesHard(t *testing.T) {
 				{Shft: Shft(90, 120), Chldren: Ns{{Shft: Shft(100, 110)}}},
 			}},
 		},
-		// { // вклинивание через уровни
-		// 	n1: &N{Shft: Shft(0, 120), Chldren: Ns{
-		// 		{Shft: Shft(20, 80), Chldren: Ns{
-		// 			{Shft: Shft(50, 70), Chldren: Ns{
-		// 				{Shft: Shft(66, 69)},
-		// 			}},
-		// 		}},
-		// 		{Shft: Shft(90, 120), Chldren: Ns{{Shft: Shft(90, 110)}}},
-		// 	}},
-		// 	n2: &N{Shft: Shft(0, 120), Chldren: Ns{
-		// 		{Shft: Shft(30, 39)},
-		// 		{Shft: Shft(40, 80), Chldren: Ns{
-		// 			{Shft: Shft(45, 79), Chldren: Ns{
-		// 				{Shft: Shft(60, 65)},
-		// 			}},
-		// 		}},
-		// 		{Shft: Shft(100, 109)},
-		// 		{Shft: Shft(130, 140)},
-		// 	}},
-		// 	res: &N{Shft: Shft(0, 120), Chldren: Ns{
-		// 		{Shft: Shft(20, 80), Chldren: Ns{
-		// 			{Shft: Shft(30, 39)},
-		// 			{Shft: Shft(40, 80), Chldren: Ns{
-		// 				{Shft: Shft(45, 79), Chldren: Ns{
-		// 					{Shft: Shft(50, 70), Chldren: Ns{
-		// 						{Shft: Shft(60, 65)},
-		// 						{Shft: Shft(66, 69)},
-		// 					}},
-		// 				}},
-		// 			}},
-		// 		}},
-		// 		{Shft: Shft(90, 120), Chldren: Ns{
-		// 			{Shft: Shft(90, 110), Chldren: Ns{{Shft: Shft(100, 110)}}},
-		// 		}},
-		// 		{Shft: Shft(130, 140)},
-		// 	}},
-		// },
+		{ // вклинивание через уровни
+			n1: &N{Shft: Shft(0, 120), Chldren: Ns{
+				{Shft: Shft(20, 80), Chldren: Ns{
+					{Shft: Shft(50, 70), Chldren: Ns{
+						{Shft: Shft(66, 69)},
+					}},
+				}},
+				{Shft: Shft(90, 120), Chldren: Ns{{Shft: Shft(90, 110)}}},
+			}},
+			n2: &N{Shft: Shft(0, 120), Chldren: Ns{
+				{Shft: Shft(30, 39)},
+				{Shft: Shft(40, 80), Chldren: Ns{
+					{Shft: Shft(45, 79), Chldren: Ns{
+						{Shft: Shft(60, 65)},
+					}},
+				}},
+				{Shft: Shft(100, 109)},
+				{Shft: Shft(130, 140)},
+			}},
+			res: &N{Shft: Shft(0, 120), Chldren: Ns{
+				{Shft: Shft(20, 80), Chldren: Ns{
+					{Shft: Shft(30, 39)},
+					{Shft: Shft(40, 80), Chldren: Ns{
+						{Shft: Shft(45, 79), Chldren: Ns{
+							{Shft: Shft(50, 70), Chldren: Ns{
+								{Shft: Shft(60, 65)},
+								{Shft: Shft(66, 69)},
+							}},
+						}},
+					}},
+				}},
+				{Shft: Shft(90, 120), Chldren: Ns{
+					{Shft: Shft(90, 110), Chldren: Ns{{Shft: Shft(100, 109)}}},
+				}},
+				{Shft: Shft(130, 140)},
+			}},
+		},
 		{ // вклинивание через уровни
 			n1: &N{Shft: Shft(0, 120), Chldren: Ns{
 				{Shft: Shft(20, 80), Chldren: Ns{
