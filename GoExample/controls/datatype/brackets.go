@@ -48,6 +48,18 @@ func (b *Control) Count() int {
 	return cnt
 }
 
+func (b *Control) CountByType(mp map[string]int) {
+	if b == nil {
+		return
+	}
+	if _, ok := mp[b.Type]; ok {
+		mp[b.Type] += 1
+	}
+	for _, c := range b.Children {
+		c.CountByType(mp)
+	}
+}
+
 func (b1 *Control) EqualTo(b2 *Control) error {
 	if (b1 == nil) != (b2 == nil) {
 		return errors.New("xor failed")

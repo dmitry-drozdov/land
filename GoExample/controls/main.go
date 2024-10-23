@@ -22,35 +22,34 @@ const (
 )
 
 var folders = []string{
-	// "Lp\\address-service",
-	// "Lp\\bitrix-adapter",
-	// "Lp\\channel-profile",
-	// "Lp\\delivery-offering",
-	// "Lp\\delivery-ordering",
-	// "Lp\\efin-courier",
-	// "Lp\\logportal-adapter",
-	// "Lp\\polygons",
-	// "Lp\\protovar-adapter",
-	// "Lp\\rtk-assembling-adapter",
-	// "Lp\\rtk-pickup",
-	// "Lp\\rtk-stock",
-	// "Lp\\rtk-stores-loader",
-	// "Lp\\stock-managment",
-	// "Lp\\warehouses",
-	// "azure-service-operator",
-	// "kubernetes",
-	// "docker-ce",
-	// "sourcegraph",
-	// "delivery-offering",
-	// "boost",
-	// "chainlink",
-	// "modules",
-	// "go-ethereum",
-	// "grafana",
-	// "gvisor",
-	// "backend",
-	// "tidb",
-	// "moby",
+	"Lp\\address-service",
+	"Lp\\bitrix-adapter",
+	"Lp\\channel-profile",
+	"Lp\\delivery-offering",
+	"Lp\\delivery-ordering",
+	"Lp\\efin-courier",
+	"Lp\\logportal-adapter",
+	"Lp\\polygons",
+	"Lp\\protovar-adapter",
+	"Lp\\rtk-assembling-adapter",
+	"Lp\\rtk-pickup",
+	"Lp\\rtk-stock",
+	"Lp\\rtk-stores-loader",
+	"Lp\\stock-managment",
+	"Lp\\warehouses",
+	"azure-service-operator",
+	"kubernetes",
+	"docker-ce",
+	"sourcegraph",
+	"boost",
+	"chainlink",
+	"modules",
+	"go-ethereum",
+	"grafana",
+	"gvisor",
+	"backend",
+	"tidb",
+	"moby",
 	"go-redis",
 	"test",
 }
@@ -84,7 +83,7 @@ func main() {
 	fc := bloom.NewWithEstimates(500_000, 0.005)
 	for _, f := range folders {
 		if err := doWork(ctx, f, b, fc); err != nil {
-			color.New(color.FgBlack, color.Bold).Printf("[%v] <ERROR>: [%v]\n", f, err)
+			//color.New(color.FgBlack, color.Bold).Printf("[%v] <ERROR>: [%v]\n", f, err)
 		}
 	}
 
@@ -112,6 +111,8 @@ func doWork(ctx context.Context, sname string, balancer *concurrency.Balancer, f
 	}
 	color.Cyan("===== %s END [%v] [%v] [dups %v]=====\n", sname, track(land), track(orig), p.Dups)
 
+	_ = count(orig)
+
 	err = compareMaps(ctx, orig, land)
 	if err != nil {
 		return err
@@ -126,6 +127,22 @@ func track(mp map[string]*datatype.Control) uint64 {
 		res += uint64(v.Count())
 	}
 	return res
+}
+
+func count(mp map[string]*datatype.Control) map[string]int {
+	c := map[string]int{
+		"call":           0,
+		"anon_func_call": 0,
+		"if":             0,
+		"for":            0,
+		"switch":         0,
+		"select":         0,
+	}
+	for _, v := range mp {
+		v.CountByType(c)
+	}
+	fmt.Printf("%v %v %v\n", c["call"], c["anon_func_call"], c["if"]+c["for"]+c["switch"]+c["select"])
+	return c
 }
 
 func compareMaps(ctx context.Context, orig, land map[string]*datatype.Control) error {

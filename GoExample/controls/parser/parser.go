@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"bufio"
 	"context"
 	"controls/datatype"
 	"fmt"
@@ -159,24 +158,24 @@ func (p *Parser) ParseFile(
 
 		res.Set(fname, controls)
 
-		p.Queue.Add(func() error {
-			_, end := tracer.Start(ctx, "write to file")
-			defer end(nil)
+		// p.Queue.Add(func() error {
+		// 	_, end := tracer.Start(ctx, "write to file")
+		// 	defer end(nil)
 
-			file, err := os.OpenFile(pathOut+".go", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
-			if err != nil {
-				return err
-			}
-			defer file.Close()
+		// 	file, err := os.OpenFile(pathOut+".go", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+		// 	if err != nil {
+		// 		return err
+		// 	}
+		// 	defer file.Close()
 
-			writer := bufio.NewWriter(file)
+		// 	writer := bufio.NewWriter(file)
 
-			_, err = writer.WriteString(nodeText)
-			if err != nil {
-				return err
-			}
-			return writer.Flush()
-		})
+		// 	_, err = writer.WriteString(nodeText)
+		// 	if err != nil {
+		// 		return err
+		// 	}
+		// 	return writer.Flush()
+		// })
 
 		return true
 	})
