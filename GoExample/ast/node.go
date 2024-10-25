@@ -139,7 +139,7 @@ func MergeChildLists(list1, list2 []*Node) []*Node {
 func MergeChildIntoChildren(children []*Node, childToMerge *Node) []*Node {
 	merged := false
 	for i, child := range children {
-		if child.Shft.Nested(childToMerge.Shft) || child.Shft == childToMerge.Shft {
+		if child.Shft.Nested(childToMerge.Shft) {
 			children[i] = MergeTrees(child, childToMerge)
 			merged = true
 			break
