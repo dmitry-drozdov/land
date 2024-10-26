@@ -26,6 +26,8 @@ func (o Shift) Overlaps(other Shift) bool {
 type Node struct {
 	Shft    Shift
 	Chldren []*Node
+	Type    string
+	Text    string
 }
 
 func Shft(start, end int) Shift {
@@ -154,4 +156,47 @@ func MergeChildIntoChildren(children []*Node, childToMerge *Node) []*Node {
 		return children[i].Shft.Start < children[j].Shft.Start
 	})
 	return children
+}
+
+func CorrectedNode(n *Node) {
+	if len(n.Chldren) == 0 {
+		return
+	}
+
+	newChildren := make([]*Node, 0, len(n.Chldren))
+	for _, c := range n.Chldren {
+		if c.Type == "Any" {
+			newChildren = append(newChildren, correctedAny(c)...)
+		} else {
+			newChildren = append(newChildren, c)
+		}
+	}
+	n.Chldren = newChildren
+}
+
+func correctedAny(n *Node) []*Node {
+	res := make([]*Node, 0, 3)
+
+	lastEnd := -1
+	for _, c := range n.Chldren {
+		start := c.Shft.Start - n.Shft.Start
+		if start > 0 {
+			res = append(res, &Node{
+				Type: "Any",
+				Shft: Shft(lastEnd+1+n.Shft.Start, start-1+n.Shft.Start),
+				Text: n.Text[lastEnd+1 : start],
+			})
+		}
+		lastEnd = c.Shft.End - n.Shft.Start
+		CorrectedNode(c)
+		res = append(res, c)
+	}
+	if lastEnd != n.Shft.End {
+		res = append(res, &Node{
+			Type: "Any",
+			Shft: Shft(lastEnd+1+n.Shft.Start, n.Shft.End),
+			Text: n.Text[lastEnd+1:],
+		})
+	}
+	return res
 }

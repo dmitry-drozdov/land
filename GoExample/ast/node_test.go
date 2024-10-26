@@ -335,3 +335,110 @@ func Test_MergeTreesHard(t *testing.T) {
 		assert.EqualValues(t, tt.res, res)
 	}
 }
+
+func Test_CorrectedNode(t *testing.T) {
+	tests := []struct {
+		n   *Node
+		res *Node
+	}{
+		{n: &Node{}, res: &Node{}},
+		{n: &Node{Type: "Any"}, res: &Node{Type: "Any"}},
+		{n: &Node{Type: "Any", Text: "0123456789", Shft: Shft(0, 9)}, res: &Node{Type: "Any", Text: "0123456789", Shft: Shft(0, 9)}},
+		{ // 1 any
+			n: &Node{Type: "root", Text: "0123456789A", Shft: Shft(0, 10), Chldren: Ns{
+				&Node{Type: "Any", Text: "0123456789A", Shft: Shft(0, 10), Chldren: Ns{
+					{Type: "Some", Text: "45678", Shft: Shft(4, 8)},
+				}},
+			}},
+			res: &Node{Type: "root", Text: "0123456789A", Shft: Shft(0, 10), Chldren: Ns{
+				&Node{Type: "Any", Text: "0123", Shft: Shft(0, 3)},
+				&Node{Type: "Some", Text: "45678", Shft: Shft(4, 8)},
+				&Node{Type: "Any", Text: "9A", Shft: Shft(9, 10)},
+			}},
+		},
+		{ // 2 Any
+			n: &Node{Type: "root", Text: "0123456789ABCDEF", Shft: Shft(0, 15), Chldren: Ns{
+				&Node{Type: "Any", Text: "0123456789ABCDEF", Shft: Shft(0, 15), Chldren: Ns{
+					{Type: "Some", Text: "56", Shft: Shft(5, 6)},
+					{Type: "Some", Text: "ABCD", Shft: Shft(10, 13)},
+				}},
+			}},
+			res: &Node{Type: "root", Text: "0123456789ABCDEF", Shft: Shft(0, 15), Chldren: Ns{
+				{Type: "Any", Text: "01234", Shft: Shft(0, 4)},
+				{Type: "Some", Text: "56", Shft: Shft(5, 6)},
+				{Type: "Any", Text: "789", Shft: Shft(7, 9)},
+				{Type: "Some", Text: "ABCD", Shft: Shft(10, 13)},
+				{Type: "Any", Text: "EF", Shft: Shft(14, 15)},
+			}},
+		},
+		{ // Some слева
+			n: &Node{Type: "root", Text: "0123456789ABCDEF", Shft: Shft(0, 15), Chldren: Ns{
+				&Node{Type: "Any", Text: "0123456789ABCDEF", Shft: Shft(0, 15), Chldren: Ns{
+					{Type: "Some", Text: "0123", Shft: Shft(0, 3)},
+				}},
+			}},
+			res: &Node{Type: "root", Text: "0123456789ABCDEF", Shft: Shft(0, 15), Chldren: Ns{
+				{Type: "Some", Text: "0123", Shft: Shft(0, 3)},
+				{Type: "Any", Text: "456789ABCDEF", Shft: Shft(4, 15)},
+			}},
+		},
+		{ // Some справа
+			n: &Node{Type: "root", Text: "0123456789ABCDEF", Shft: Shft(0, 15), Chldren: Ns{
+				&Node{Type: "Any", Text: "0123456789ABCDEF", Shft: Shft(0, 15), Chldren: Ns{
+					{Type: "Some", Text: "ABCDEF", Shft: Shft(10, 15)},
+				}},
+			}},
+			res: &Node{Type: "root", Text: "0123456789ABCDEF", Shft: Shft(0, 15), Chldren: Ns{
+				{Type: "Any", Text: "0123456789", Shft: Shft(0, 9)},
+				{Type: "Some", Text: "ABCDEF", Shft: Shft(10, 15)},
+			}},
+		},
+		{ // 2 any
+			n: &Node{Type: "root", Text: "0123456789ABCDEF", Shft: Shft(0, 15), Chldren: Ns{
+				&Node{Type: "Any", Text: "0123456789ABCDEF", Shft: Shft(0, 15), Chldren: Ns{
+					{Type: "Some", Text: "23456789", Shft: Shft(2, 9), Chldren: Ns{
+						{Type: "Any", Text: "345678", Shft: Shft(3, 8), Chldren: Ns{
+							{Type: "Some", Text: "56", Shft: Shft(5, 6)},
+						}},
+					}},
+				}},
+			}},
+			res: &Node{Type: "root", Text: "0123456789ABCDEF", Shft: Shft(0, 15), Chldren: Ns{
+				&Node{Type: "Any", Text: "01", Shft: Shft(0, 1)},
+				&Node{Type: "Some", Text: "23456789", Shft: Shft(2, 9), Chldren: Ns{
+					{Type: "Any", Text: "34", Shft: Shft(3, 4)},
+					{Type: "Some", Text: "56", Shft: Shft(5, 6)},
+					{Type: "Any", Text: "78", Shft: Shft(7, 8)},
+				}},
+				&Node{Type: "Any", Text: "ABCDEF", Shft: Shft(10, 15)},
+			}},
+		},
+		{ // 2 any
+			n: &Node{Type: "root", Text: "0123456789ABCDEF", Shft: Shft(0, 15), Chldren: Ns{
+				&Node{Type: "Any", Text: "0123456789ABCDEF", Shft: Shft(0, 15), Chldren: Ns{
+					{Type: "Some", Text: "23456789", Shft: Shft(2, 9), Chldren: Ns{
+						{Type: "Any", Text: "345678", Shft: Shft(3, 8), Chldren: Ns{
+							{Type: "Some", Text: "56", Shft: Shft(5, 6)},
+						}},
+					}},
+				}},
+			}},
+			res: &Node{Type: "root", Text: "0123456789ABCDEF", Shft: Shft(0, 15), Chldren: Ns{
+				&Node{Type: "Any", Text: "01", Shft: Shft(0, 1)},
+				&Node{Type: "Some", Text: "23456789", Shft: Shft(2, 9), Chldren: Ns{
+					{Type: "Any", Text: "34", Shft: Shft(3, 4)},
+					{Type: "Some", Text: "56", Shft: Shft(5, 6)},
+					{Type: "Any", Text: "78", Shft: Shft(7, 8)},
+				}},
+				&Node{Type: "Any", Text: "ABCDEF", Shft: Shft(10, 15)},
+			}},
+		},
+	}
+
+	for _, tt := range tests {
+		CorrectedNode(tt.n)
+		if !assert.EqualValues(t, tt.res, tt.n) {
+			tt.n.Print()
+		}
+	}
+}
