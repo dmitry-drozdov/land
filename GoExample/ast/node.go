@@ -177,25 +177,25 @@ func CorrectedNode(n *Node) {
 func correctedAny(n *Node) []*Node {
 	res := make([]*Node, 0, 3)
 
-	lastEnd := -1
+	nextStart := 0
 	for _, c := range n.Chldren {
 		start := c.Shft.Start - n.Shft.Start
 		if start > 0 {
 			res = append(res, &Node{
 				Type: "Any",
-				Shft: Shft(lastEnd+1+n.Shft.Start, start-1+n.Shft.Start),
-				Text: n.Text[lastEnd+1 : start],
+				Shft: Shft(nextStart+n.Shft.Start, start-1+n.Shft.Start),
+				Text: n.Text[nextStart:start],
 			})
 		}
-		lastEnd = c.Shft.End - n.Shft.Start
+		nextStart = c.Shft.End + 1 - n.Shft.Start
 		CorrectedNode(c)
 		res = append(res, c)
 	}
-	if lastEnd != n.Shft.End {
+	if nextStart < n.Shft.End {
 		res = append(res, &Node{
 			Type: "Any",
-			Shft: Shft(lastEnd+1+n.Shft.Start, n.Shft.End),
-			Text: n.Text[lastEnd+1:],
+			Shft: Shft(nextStart+n.Shft.Start, n.Shft.End),
+			Text: n.Text[nextStart:],
 		})
 	}
 	return res
