@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"bufio"
 	"context"
 	"controls/datatype"
 	"fmt"
@@ -12,10 +13,10 @@ import (
 	"regexp"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"unsafe"
 	"utils/ast_type"
 	"utils/concurrency"
-	"utils/hash"
 
 	"utils/tracer"
 
@@ -46,8 +47,8 @@ func (p *Parser) ParseFiles(ctx context.Context, root string) (map[string]*datat
 	ctx, end := tracer.Start(ctx, "ParseFiles")
 	defer end(nil)
 
-	res := concurrency.NewSaveMap[string, *datatype.Control](20000)
-	pathCache := concurrency.NewSaveMap[string, struct{}](20000)
+	res := make(map[string]*datatype.Control, 20000)
+	pathCache := make(map[string]struct{}, 3000)
 
 	err := filepath.Walk(root, func(path string, info os.FileInfo, _ error) error {
 		if info.IsDir() || filepath.Ext(info.Name()) != ".go" { /* ||
@@ -69,15 +70,15 @@ func (p *Parser) ParseFiles(ctx context.Context, root string) (map[string]*datat
 		return nil, err
 	}
 
-	return res.Unsafe(), nil
+	return res, nil
 }
 
 func (p *Parser) ParseFile(
 	ctx context.Context,
 	path string,
 	pathOut string,
-	res *concurrency.SaveMap[string, *datatype.Control],
-	pathCache *concurrency.SaveMap[string, struct{}],
+	res map[string]*datatype.Control,
+	pathCache map[string]struct{},
 ) error {
 	ctx, end := tracer.Start(ctx, "ParseFile")
 	defer end(nil)
@@ -116,30 +117,23 @@ func (p *Parser) ParseFile(
 		}
 		nodeText := unsafe.String(&src[start], ln)
 
-		var suffix uint64
-		if x.Recv != nil && len(x.Recv.List) > 0 {
-			suffix = hash.HashStrings(p.HumanType(x.Recv.List[0].Type), x.Name.Name)
-		} else {
-			suffix = hash.HashString(x.Name.Name)
-		}
-
 		if p.Dub(nodeText) {
 			return true
 		}
 
 		once.Do(func() {
 			dir := filepath.Dir(pathOut)
-			if pathCache.Ok(dir) {
+			if _, ok := pathCache[dir]; ok {
 				return
 			}
 			err = os.MkdirAll(dir, 0755)
 			if err != nil {
 				panic(err)
 			}
-			pathCache.Set(dir, struct{}{})
+			pathCache[dir] = struct{}{}
 		})
 
-		pathOut := fmt.Sprint(pathOut[:len(pathOut)-3], "_", suffix, "_", p.AutoInc())
+		pathOut := fmt.Sprint(pathOut[:len(pathOut)-3], "_", atomic.AddUint64(&p.Counter, 1))
 
 		key := strings.Split(pathOut, "\\") // trim .go
 		fname := key[len(key)-1]
@@ -156,26 +150,26 @@ func (p *Parser) ParseFile(
 			}
 		}
 
-		res.Set(fname, controls)
+		res[fname] = controls
 
-		// p.Queue.Add(func() error {
-		// 	_, end := tracer.Start(ctx, "write to file")
-		// 	defer end(nil)
+		p.Queue.Add(func() error {
+			_, end := tracer.Start(ctx, "write to file")
+			defer end(nil)
 
-		// 	file, err := os.OpenFile(pathOut+".go", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
-		// 	if err != nil {
-		// 		return err
-		// 	}
-		// 	defer file.Close()
+			file, err := os.OpenFile(pathOut+".go", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+			if err != nil {
+				return err
+			}
+			defer file.Close()
 
-		// 	writer := bufio.NewWriter(file)
+			writer := bufio.NewWriter(file)
 
-		// 	_, err = writer.WriteString(nodeText)
-		// 	if err != nil {
-		// 		return err
-		// 	}
-		// 	return writer.Flush()
-		// })
+			_, err = writer.WriteString(nodeText)
+			if err != nil {
+				return err
+			}
+			return writer.Flush()
+		})
 
 		return true
 	})
@@ -308,11 +302,6 @@ func (p *Parser) innerInspectControls(root ast.Node, control *datatype.Control) 
 			return true // continue
 		}
 	})
-}
-
-func (p *Parser) AutoInc() uint64 {
-	p.Counter++
-	return p.Counter
 }
 
 var re = regexp.MustCompile(`[\s]`) // to unify files formatting

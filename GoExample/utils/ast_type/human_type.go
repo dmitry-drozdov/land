@@ -29,9 +29,6 @@ func (a *NameConverter) ReqCnt() int {
 }
 
 func (a *NameConverter) HumanType(tp ast.Expr) (res string) {
-	defer func() { a.mx.Lock(); a.stats[res]++; a.mx.Unlock() }()
-
-	a.reqCnt++
 	switch t := tp.(type) {
 	case *ast.Ident:
 		return t.Name

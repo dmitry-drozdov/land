@@ -22,32 +22,32 @@ const (
 )
 
 var folders = []string{
-	"Lp\\address-service",
-	"Lp\\bitrix-adapter",
-	"Lp\\channel-profile",
-	"Lp\\delivery-offering",
-	"Lp\\delivery-ordering",
-	"Lp\\efin-courier",
-	"Lp\\logportal-adapter",
-	"Lp\\polygons",
-	"Lp\\protovar-adapter",
-	"Lp\\rtk-assembling-adapter",
-	"Lp\\rtk-pickup",
-	"Lp\\rtk-stock",
-	"Lp\\rtk-stores-loader",
-	"Lp\\stock-managment",
-	"Lp\\warehouses",
+	// "Lp\\address-service",
+	// "Lp\\bitrix-adapter",
+	// "Lp\\channel-profile",
+	// "Lp\\delivery-offering",
+	// "Lp\\delivery-ordering",
+	// "Lp\\efin-courier",
+	// "Lp\\logportal-adapter",
+	// "Lp\\polygons",
+	// "Lp\\protovar-adapter",
+	// "Lp\\rtk-assembling-adapter",
+	// "Lp\\rtk-pickup",
+	// "Lp\\rtk-stock",
+	// "Lp\\rtk-stores-loader",
+	// "Lp\\stock-managment",
+	// "Lp\\warehouses",
 	"azure-service-operator",
 	"kubernetes",
 	"docker-ce",
 	"sourcegraph",
 	"boost",
 	"chainlink",
-	"modules",
+	//"modules",
 	"go-ethereum",
 	"grafana",
 	"gvisor",
-	"backend",
+	//"backend",
 	"tidb",
 	"moby",
 	"go-redis",
@@ -60,6 +60,7 @@ var stats = struct {
 }{}
 
 func main() {
+	t0 := time.Now()
 	ctx := context.Background()
 	// cancel := tracer.NewTracer(ctx,
 	// 	tracer.WithInsecure(true),
@@ -89,6 +90,7 @@ func main() {
 
 	color.Green("TOTAL func call: %v, bodies: %v\n", b.CntMain(), b.CntSub())
 	color.Green("TOTAL ratio: %.5f [bad=%v] [ok=%v]\n", ratio(stats.ok, stats.total), stats.total-stats.ok, stats.ok)
+	color.Red("TIME %v", time.Since(t0))
 }
 
 func doWork(ctx context.Context, sname string, balancer *concurrency.Balancer, fc *bloom.BloomFilter) error {
