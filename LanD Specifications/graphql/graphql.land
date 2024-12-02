@@ -75,7 +75,7 @@ water_entity	=	Any
 
 %nodes {
 	ghost entity
-	leaf id
+	leaf 
 	void LB RB COMMA COLON tag extend
 }
 
