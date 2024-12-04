@@ -4,6 +4,7 @@ import h "utils/hash"
 
 type Hash interface {
 	Hash() uint64
+	GetName() string
 }
 
 var getName = func(d Def) string {
@@ -20,4 +21,16 @@ func (t Type) Hash() uint64 {
 
 func (f Func) Hash() uint64 {
 	return h.HashString(f.Parent) ^ 3*h.HashString(f.Name) ^ 7*h.HashSlice(f.Args, getName) ^ 31*h.HashString(f.Return)
+}
+
+func (i Input) GetName() string {
+	return i.Name
+}
+
+func (t Type) GetName() string {
+	return t.Name
+}
+
+func (f Func) GetName() string {
+	return f.Name
 }

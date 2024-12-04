@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 	"sort"
@@ -78,17 +79,17 @@ func (r *Result) EqualTo(o *Result) error {
 		return err
 	}
 	if err := o.CheckDuplicates(); err != nil {
-		return err
+		return fmt.Errorf("land [%w]", err)
 	}
 
 	if len(r.Funcs) != len(o.Funcs) {
-		return fmt.Errorf("len func mismatch [%+v] [%+v]", len(r.Funcs), len(o.Funcs))
+		return fmt.Errorf("len func mismatch [%+v] land=[%+v]", len(r.Funcs), len(o.Funcs))
 	}
 	if len(r.Types) != len(o.Types) {
-		return fmt.Errorf("len type mismatch [%+v] [%+v]", len(r.Types), len(o.Types))
+		return fmt.Errorf("len type mismatch [%+v] land=[%+v]", len(r.Types), len(o.Types))
 	}
 	if len(r.Inputs) != len(o.Inputs) {
-		return fmt.Errorf("len inputs mismatch [%+v] [%+v]", len(r.Inputs), len(o.Inputs))
+		return fmt.Errorf("len inputs mismatch [%+v] land=[%+v]", len(r.Inputs), len(o.Inputs))
 	}
 
 	for i := range r.Funcs {
@@ -107,6 +108,29 @@ func (r *Result) EqualTo(o *Result) error {
 		}
 	}
 	return nil
+}
+
+func diff[T Hash](r, o []T) error {
+	mp1 := make(map[uint64]T, len(r))
+	mp2 := make(map[uint64]T, len(o))
+	for _, rv := range r {
+		mp1[rv.Hash()] = rv
+	}
+	for _, ov := range o {
+		mp2[ov.Hash()] = ov
+	}
+	errs := []error{}
+	for k1, v1 := range mp1 {
+		if _, ok := mp2[k1]; !ok {
+			errs = append(errs, fmt.Errorf("missing %v", v1.GetName()))
+		}
+	}
+	for k2, v2 := range mp2 {
+		if _, ok := mp1[k2]; !ok {
+			errs = append(errs, fmt.Errorf("extra %v", v2.GetName()))
+		}
+	}
+	return errors.Join(errs...)
 }
 
 type Input struct {

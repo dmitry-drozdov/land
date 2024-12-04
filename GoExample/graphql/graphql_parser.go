@@ -19,6 +19,7 @@ func parseFolders() (map[string]Result, error) {
 	res := make(map[string]Result, len(source))
 
 	for name, path := range source {
+		fmt.Printf("===============%v===============\n", name)
 		r, err := parse(path)
 		if err != nil {
 			return nil, err
