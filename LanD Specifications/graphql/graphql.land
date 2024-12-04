@@ -1,13 +1,8 @@
-DIRECTIVE	: '#' ~[\n\r]*
-
 COMMENT		: COMMENT_L|COMMENT_ML
 COMMENT_L	: '#' ~[\n\r]*
 COMMENT_ML	: '"""' .*? '"""'
 
-ITALIC_QUOTE : '`' .*? '`'
 
-QUOTE		: '"'
-SPREAD 		: '...'
 
 STRING		: '"' (~["]|'""')* '"'
 
@@ -24,8 +19,8 @@ CURVE_BRACKETED : %left '{' %right '}'
 ROUND_BRACKETED : %left '(' %right ')'
 SQUARE_BRACKETED : %left ('['|GENERAL_ATTRIBUTE_START) %right ']'
 
-HEX 		: '0x'[0-9a-fA-F]+
-DEC			: '-'?[0-9]+
+
+DEC			: '-'?[0-9]+('.'[0-9]+)*
 
 COMMA 		: ','
 COLON		: ':'
@@ -34,21 +29,14 @@ COLON		: ':'
 
 content = entity*
 
-entity	= water_entity | type_def | enum_def   
+entity	= water_entity | type_def 
 
-_directive_def = 'directive' tag* 'repeatable'? 'on' _combine_types
-_schema_def = extend 'schema' tag* '{' type_line* '}'
-_scalar_def = extend 'scalar' id tag*
-_union_def = extend 'union' id tag* ('=' _combine_types)?
-_combine_types = id | (id ('|' | '&') _combine_types)
 
-enum_def = extend 'enum' id tag* ('{' enum_line* '}')?
-enum_line = id tag* ','?
+type_def =  'extend'? ('type'|'input'|'interface') id Any ('{' (type_line|func_line)* '}')? 
+type_line = id COLON type default_value? tag* ','?
+type = id  | '[' type? ']' | type '!'
 
-type_def =  extend ('type'|'input'|'interface') id ('implements' Any)? tag* ('{' (type_line|func_line)* '}')? 
-type_line = id COLON type default_value? tag* ','? 
-type = id '!'? | '[' type? ']' '!'?
-value = id | DEC | STRING | '[' value? ']' | '{' (id COLON value ','?)* '}'
+value = id | DEC | STRING | '[' (Any|value)* ']' | '{' (Any|value)*'}'
 default_value = '=' value
 
 func_line = id '(' func_arg* ')' COLON type tag* ','? 
@@ -56,10 +44,8 @@ func_arg = type_line
 tag = '@' id ('(' Any ')')? ','?
 
 
-id = ID | 'type' | 'input' | 'interface' | 'schema' | 'enum' // to allow considering keywords as a var name 
+id = ID | 'type' | 'input' | 'interface' // to allow considering keywords as a var name 
 
-
-extend = 'extend'?
 
 water_entity	=	Any 
 
@@ -70,13 +56,13 @@ water_entity	=	Any
 	recovery entity 
 	fragment STRING_INT_CODE
 	start content
-	skip COMMENT DIRECTIVE STRING
+	skip COMMENT STRING DEC
 }
 
 %nodes {
 	ghost entity
 	leaf 
-	void LB RB COMMA COLON tag extend
+	void LB RB COMMA COLON tag
 }
 
 %customblock {
