@@ -32,10 +32,20 @@ COLON		: ':'
 
 content = entity*
 
-entity	= water_entity | resolver_section
+entity	= water_entity | resolver_section | class | lamda_struct
 
-resolver_section = 'const' ID '=' '{' (resolver_block ',')* resolver_block? '}'
+// class section
+class = 'class' ID '{' func* '}'
+func = ID '(' Any ')' '{' Any '}'
 
+// lambda struct section
+lamda_struct = 'const' ID '=' '(' Any ')' '=>' '(' resolver_blocks ')'
+
+
+// struct section
+resolver_section = 'const' ID '=' resolver_blocks
+
+resolver_blocks = '{' (resolver_block ',')* resolver_block? '}'
 resolver_block = ID ':' '{' (resolver_line ',')* resolver_line? '}'
 resolver_line = resolver_line_impl | resolver_line_obj
 
