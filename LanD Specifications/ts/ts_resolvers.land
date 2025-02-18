@@ -1,6 +1,8 @@
+NON_COMMENT	: '\\/' | '\\(' | '\\)'
 COMMENT		: COMMENT_L|COMMENT_ML
 COMMENT_L	: '//' ~[\n\r]*
 COMMENT_ML	: '/*' .*? '*/'
+
 
 
 
@@ -67,7 +69,7 @@ water_entity	=	Any
 	recovery entity 
 	fragment STRING_INT_CODE
 	start content
-	skip COMMENT STRING DEC CHAR STRING_Q
+	skip COMMENT STRING DEC CHAR STRING_Q 
 }
 
 %nodes {

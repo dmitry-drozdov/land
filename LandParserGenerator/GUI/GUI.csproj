@@ -127,6 +127,7 @@
     <Compile Include="Serializers\GoSerializerBody.cs" />
     <Compile Include="Serializers\GraphqlSerializer.cs" />
     <Compile Include="Serializers\GoSerializer.cs" />
+    <Compile Include="Visitor\TypeScriptVisitor.cs" />
     <Compile Include="VisualHelpers\ColumnSettingsAttribute.cs" />
     <Compile Include="ConsoleWriter.cs" />
     <Compile Include="CountEntitiesVisitor.cs" />

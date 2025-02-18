@@ -23,6 +23,7 @@ using System.Text.Json;
 using Land.GUI.Serializers;
 using Land.Core.Parsing.LR;
 using System.Diagnostics;
+using Land.GUI.Visitor;
 //using System.Windows.Shapes;
 
 namespace Land.GUI
@@ -844,6 +845,10 @@ namespace Land.GUI
 
 
 
+						if (file.EndsWith(".ts"))
+						{
+							TypeScriptVisitor.CheckData(file, root);
+						}
 						if (file.EndsWith(".go"))
 						{
 							var oldPath = @"E:\phd\test_repos_calls";
