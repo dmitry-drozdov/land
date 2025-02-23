@@ -37,7 +37,7 @@ content = entity*
 entity	= water_entity | resolver_section | class | lamda_struct
 
 // class section
-class = 'class' ID '{' func* '}'
+class = 'class' ID ('extends' Any)? '{' func* '}'
 func = ID '(' Any ')' '{' Any '}'
 
 // lambda struct section
@@ -45,7 +45,7 @@ lamda_struct = 'const' ID '=' '(' Any ')' '=>' '(' resolver_blocks ')'
 
 
 // struct section
-resolver_section = 'const' ID '=' resolver_blocks
+resolver_section = 'const' ID  '=' resolver_blocks 
 
 resolver_blocks = '{' (resolver_block ',')* resolver_block? '}'
 resolver_block = ID ':' '{' (resolver_line ',')* resolver_line? '}'

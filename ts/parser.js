@@ -16,6 +16,9 @@ function findResolvers(ast) {
         if (node.type === "VariableDeclarator" && node.id.type === "ObjectPattern") {
             return; // Не добавляем деструктурированные переменные
         }
+        if (node.type === "FunctionDeclaration") {
+            return;
+        }
         if (node.type === "Property") {
             var keyName = node.key.name || node.key.value;
             if (node.value.type === "ArrowFunctionExpression" || node.value.type === "FunctionExpression") {
