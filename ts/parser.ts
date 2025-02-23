@@ -18,7 +18,7 @@ function findResolvers(ast: any) {
             return; // Не добавляем деструктурированные переменные
         }
 
-        if (node.type === "FunctionDeclaration"){
+        if (node.type === "FunctionDeclaration" || node.type === "TSTypeAliasDeclaration"){
             return;
         }
 
