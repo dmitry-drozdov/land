@@ -847,7 +847,11 @@ namespace Land.GUI
 
 						if (file.EndsWith(".ts"))
 						{
-							TypeScriptVisitor.CheckData(file, root);
+							var oldPath = @"E:\phd\ts";
+							var newPath = @"E:\phd\ts_res";
+							var path = Path.ChangeExtension(file.Replace(oldPath, newPath), ".res_land");
+
+							TypeScriptVisitor.CheckAndDumpData(path, root);
 						}
 						if (file.EndsWith(".go"))
 						{

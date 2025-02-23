@@ -12,6 +12,10 @@ function findResolvers(ast) {
     var resolvers = [];
     function traverse(node, className, factoryName) {
         var _a;
+        //  Исключаем деструктурирующее присваивание
+        if (node.type === "VariableDeclarator" && node.id.type === "ObjectPattern") {
+            return; // Не добавляем деструктурированные переменные
+        }
         if (node.type === "Property") {
             var keyName = node.key.name || node.key.value;
             if (node.value.type === "ArrowFunctionExpression" || node.value.type === "FunctionExpression") {
@@ -19,13 +23,25 @@ function findResolvers(ast) {
                 // resolvers.push(factoryName ? `${factoryName}.${keyName}` : keyName);
                 // Новый способ: только имя функции
                 resolvers.push(keyName);
+                return;
+            }
+            if (node.value.type === "ArrayExpression" || // Массивы [1, 2, 3]
+                node.value.type === "Literal" // Числа, строки, true/false, null
+            ) {
+                return;
+            }
+            if (node.value.type === "Identifier" /*&& variableFunctions[node.value.name]*/) {
+                resolvers.push(keyName);
             }
         }
+        // if (node.type)
+        //     console.log(node.type, node.key?.name || node.key?.value);
         if (node.type === "MethodDefinition" && node.key.type === "Identifier") {
             // Старый способ:
             // resolvers.push(`${className}.${node.key.name}`);
             // Новый способ: только имя функции
             resolvers.push(node.key.name);
+            return;
         }
         if (node.type === "ClassDeclaration" && node.id) {
             className = node.id.name;
@@ -53,6 +69,7 @@ function processFile(filePath) {
             loc: true
         });
         var resolvers = findResolvers(ast);
+        //console.log(resolvers);
         if (resolvers.length > 0) {
             // 📂 Сохраняем файлы в аналогичную структуру внутри OUTPUT_DIR
             var relativePath = path.relative(SOURCE_DIR, filePath);
@@ -61,7 +78,7 @@ function processFile(filePath) {
             fs.mkdirSync(path.dirname(resFilePath), { recursive: true });
             // 💾 Записываем результат
             fs.writeFileSync(resFilePath, resolvers.join("\n"), "utf-8");
-            console.log("\u2705 \u0420\u0435\u0437\u043E\u043B\u0432\u0435\u0440\u044B \u0441\u043E\u0445\u0440\u0430\u043D\u0435\u043D\u044B \u0432: ".concat(resFilePath));
+            //console.log(`✅ Резолверы сохранены в: ${resFilePath}`);
         }
     }
     catch (err) {
@@ -78,7 +95,7 @@ function processDirectory(directory) {
             processDirectory(fullPath);
         }
         else if (file.endsWith(".ts")) {
-            console.log("\uD83D\uDD0D \u041E\u0431\u0440\u0430\u0431\u0430\u0442\u044B\u0432\u0430\u0435\u043C \u0444\u0430\u0439\u043B: ".concat(fullPath));
+            //console.log(`🔍 Обрабатываем файл: ${fullPath}`);
             processFile(fullPath);
         }
     });

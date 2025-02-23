@@ -1,8 +1,10 @@
 ﻿using Land.Core.Parsing.Tree;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Land.GUI.Visitor
@@ -14,7 +16,7 @@ namespace Land.GUI.Visitor
 		{
 			System.Diagnostics.Debug.WriteLine("LOG🔔 " + msg);
 		}
-		internal static void CheckData(string path, Node root)
+		internal static void CheckAndDumpData(string path, Node root)
 		{
 			var d = new Dictionary<string, int> {
 				{ "ResolverTest_class_1_func_1", 0 },
@@ -37,8 +39,9 @@ namespace Land.GUI.Visitor
 				{ "ResolverTest_struct_1_func_11", 0 },
 				{ "ResolverTest_struct_1_func_12", 0 },
 			};
-			Visit(root, d);
-			bool ok= true;
+			var l = new List<string>();
+			Visit(root, d, l);
+			bool ok = true;
 			foreach (var item in d)
 			{
 				if (item.Value != 1)
@@ -51,8 +54,21 @@ namespace Land.GUI.Visitor
 			{
 				//Debug($"OK {path}");
 			}
+			Dump(path, l);
 		}
-		internal static void Visit(Node root, Dictionary<string, int> d)
+
+		internal static void Dump(string path, List<string> l)
+		{
+			FileInfo file = new FileInfo(path);
+			file.Directory.Create();
+
+			using (StreamWriter sw = File.CreateText(path))
+			{
+				sw.Write(string.Join("\n", l));
+			}
+		}
+
+		internal static void Visit(Node root, Dictionary<string, int> d, List<string> l)
 		{
 			var nodeName = root.ToString();
 			if (nodeName == "water_entity")
@@ -66,6 +82,7 @@ namespace Land.GUI.Visitor
 				{
 					d[funcName]++;
 				}
+				l.Add(funcName);
 				return;
 			}
 			foreach (var child in root.Children)
@@ -74,7 +91,7 @@ namespace Land.GUI.Visitor
 				{
 					continue;
 				}
-				Visit(child, d);
+				Visit(child, d, l);
 			}
 		}
 
