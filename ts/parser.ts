@@ -53,7 +53,9 @@ function findResolvers(ast: any) {
             // resolvers.push(`${className}.${node.key.name}`);
 
             // Новый способ: только имя функции
-            resolvers.push(node.key.name);
+            if (node.key.name !== "constructor") { // Исключаем конструкторы
+                resolvers.push(node.key.name);
+            }
             return;
         }
 

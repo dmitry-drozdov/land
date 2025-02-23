@@ -41,7 +41,7 @@ class = 'class' ID ('extends' Any)? '{' func* '}'
 func = ID '(' Any ')' '{' Any '}'
 
 // lambda struct section
-lamda_struct = 'const' ID '=' '(' Any ')' '=>' '(' resolver_blocks ')'
+lamda_struct = 'const' ID '=' '(' Any ')' (':' ID)? '=>' Any ( '(' resolver_blocks ')' | '{' Any '}' )
 
 
 // struct section
