@@ -22,6 +22,15 @@ function findResolvers(ast: any) {
             return;
         }
 
+        if (node.type === "ArrowFunctionExpression") {
+            for (const key in node) {
+                if (node[key] && (typeof node[key] === "object") && node[key].type === "ObjectExpression") {
+                    traverse(node[key], className, factoryName);
+                }
+            }
+            return;
+        }
+
         if (node.type === "Property") {
             const keyName = node.key.name || node.key.value;
             if (node.value.type === "ArrowFunctionExpression" || node.value.type === "FunctionExpression") {
