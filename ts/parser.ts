@@ -13,6 +13,10 @@ function findResolvers(ast: any) {
     const resolvers: string[] = [];
 
     function traverse(node: any, className?: string, factoryName?: string) {
+        if (node.type === "ExportDefaultDeclaration" && node.declaration.type === "ObjectExpression") {
+            return;
+        }
+        
         //  Исключаем деструктурирующее присваивание
         if (node.type === "VariableDeclarator" && node.id.type === "ObjectPattern") {
             return; // Не добавляем деструктурированные переменные
