@@ -22,7 +22,11 @@ function findResolvers(ast) {
         if (node.type === "FunctionDeclaration" || node.type === "TSTypeAliasDeclaration") {
             return;
         }
-        // ❌ 2️⃣ Исключаем объекты с динамическими ключами (например, `[COLD_WATER_METER_RESOURCE_ID]: SnowflakeIcon`)
+        // Исключаем аргументы функций (Parameter)
+        if (node.type === "ObjectPattern") {
+            return;
+        }
+        // Исключаем объекты с динамическими ключами (например, `[COLD_WATER_METER_RESOURCE_ID]: SnowflakeIcon`)
         if (node.type === "Property" && node.computed) {
             return;
         }

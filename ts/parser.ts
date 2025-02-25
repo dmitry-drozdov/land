@@ -26,6 +26,10 @@ function findResolvers(ast: any) {
             return;
         }
 
+        if (node.type === "ObjectPattern") {
+            return;
+        }
+
         // Исключаем объекты с динамическими ключами (например, `[COLD_WATER_METER_RESOURCE_ID]: SnowflakeIcon`)
         if (node.type === "Property" && node.computed) {
             return;
@@ -84,6 +88,7 @@ function findResolvers(ast: any) {
         if (node.type === "VariableDeclarator" && node.init?.type === "ArrowFunctionExpression") {
             factoryName = node.id.name;
         }
+
 
         for (const key in node) {
             if (node[key] && typeof node[key] === "object") {
