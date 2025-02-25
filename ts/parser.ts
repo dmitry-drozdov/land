@@ -16,13 +16,18 @@ function findResolvers(ast: any) {
         if (node.type === "ExportDefaultDeclaration" && node.declaration.type === "ObjectExpression") {
             return;
         }
-        
+
         //  Исключаем деструктурирующее присваивание
         if (node.type === "VariableDeclarator" && node.id.type === "ObjectPattern") {
             return; // Не добавляем деструктурированные переменные
         }
 
         if (node.type === "FunctionDeclaration" || node.type === "TSTypeAliasDeclaration"){
+            return;
+        }
+
+        // Исключаем объекты с динамическими ключами (например, `[COLD_WATER_METER_RESOURCE_ID]: SnowflakeIcon`)
+        if (node.type === "Property" && node.computed) {
             return;
         }
 
