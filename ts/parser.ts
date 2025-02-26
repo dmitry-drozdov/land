@@ -12,7 +12,7 @@ const OUTPUT_DIR = "e:/phd/ts_res";
 function findResolvers(ast: any) {
     const resolvers: string[] = [];
 
-    function traverse(node: any, className?: string, factoryName?: string) {
+    function traverse(node: any, className?: string, factoryName?: string, propertyDepth = 0) {
         if (node.type === "ExportDefaultDeclaration" && node.declaration.type === "ObjectExpression") {
             return;
         }
@@ -42,43 +42,35 @@ function findResolvers(ast: any) {
         if (node.type === "ArrowFunctionExpression") {
             for (const key in node) {
                 if (node[key] && (typeof node[key] === "object") && node[key].type === "ObjectExpression") {
-                    traverse(node[key], className, factoryName);
+                    traverse(node[key], className, factoryName, propertyDepth);
                 }
             }
             return;
         }
 
         if (node.type === "Property") {
+            if (node.value.type === "ArrayExpression" || node.value.type === "Literal") {
+                return;
+            }
+
             const keyName = node.key.name || node.key.value;
             if (node.value.type === "ArrowFunctionExpression" || node.value.type === "FunctionExpression") {
-                // Старый способ:
-                // resolvers.push(factoryName ? `${factoryName}.${keyName}` : keyName);
-
-                // Новый способ: только имя функции
-                resolvers.push(keyName);
+                if (propertyDepth > 0)
+                    resolvers.push(keyName);
                 return;
             }
 
-            if (
-                node.value.type === "ArrayExpression" || // Массивы [1, 2, 3]
-                node.value.type === "Literal" // Числа, строки, true/false, null
-            ) {
-                return;
+            if (node.value.type === "Identifier") {
+                if (propertyDepth > 0)
+                    resolvers.push(keyName);
             }
-           
-            if (node.value.type === "Identifier" /*&& variableFunctions[node.value.name]*/) {
-                resolvers.push(keyName);
-            }
+            propertyDepth++;
         }
 
         // if (node.type)
         //     console.log(node.type, node.key?.name || node.key?.value);
 
         if (node.type === "MethodDefinition" && node.key.type === "Identifier") {
-            // Старый способ:
-            // resolvers.push(`${className}.${node.key.name}`);
-
-            // Новый способ: только имя функции
             if (node.value.body) { // Исключаем методы без тела
                 resolvers.push(node.key.name);
             }
@@ -96,7 +88,7 @@ function findResolvers(ast: any) {
 
         for (const key in node) {
             if (node[key] && typeof node[key] === "object") {
-                traverse(node[key], className, factoryName);
+                traverse(node[key], className, factoryName, propertyDepth);
             }
         }
     }
