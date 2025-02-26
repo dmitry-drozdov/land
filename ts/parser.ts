@@ -26,6 +26,10 @@ function findResolvers(ast: any) {
             return;
         }
 
+        if (node.type === "CallExpression") {
+            return;
+        }
+
         if (node.type === "ObjectPattern") {
             return;
         }

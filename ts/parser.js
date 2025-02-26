@@ -22,7 +22,9 @@ function findResolvers(ast) {
         if (node.type === "FunctionDeclaration" || node.type === "TSTypeAliasDeclaration") {
             return;
         }
-        // Исключаем аргументы функций (Parameter)
+        if (node.type === "CallExpression") {
+            return;
+        }
         if (node.type === "ObjectPattern") {
             return;
         }
