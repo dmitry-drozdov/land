@@ -45,7 +45,7 @@ class = 'class' ID template? (('extends'|'implements') Any)? '{' func* '}'
 func = 'public'? 'async'? ID '(' Any ')' return_type? '{' Any '}'
 
 // lambda struct section
-lamda_struct = 'const' ID '=' '(' Any ')' (':' ID)? '=>' AnyAvoid(NEW) ( '(' resolver_blocks ')' | '{' Any '}' )
+lamda_struct = 'const' ID '=' '(' Any ')' (':' ID)? '=>' AnyAvoid(NEW, 'class') ( '(' resolver_blocks ')' | '{' Any '}' )
 
 
 // struct section
