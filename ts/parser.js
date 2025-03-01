@@ -29,6 +29,9 @@ function findResolvers(ast) {
         if (node.type === "ObjectPattern") {
             return;
         }
+        if (node.type === "NewExpression") {
+            return;
+        }
         // Исключаем объекты с динамическими ключами (например, `[COLD_WATER_METER_RESOURCE_ID]: SnowflakeIcon`)
         if (node.type === "Property" && node.computed) {
             return;
