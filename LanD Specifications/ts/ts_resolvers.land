@@ -13,8 +13,8 @@ CHAR		: '\'' ('\\\''|'\\\\'|.)*? '\''
 
 NEW: 'new'
 BOOL: 'true' | 'false'
-ASYNC: 'async'
-PUBLIC: 'public'
+
+MODIFICATOR: 'async' | 'public' | 'protected' | 'readonly' | 'private' | 'abstract'
 
 ID			: [_a-zA-Z\u0430-\u044F\u0410-\u042F\u0192\u06F0\u03A9][_0-9a-zA-Z\u0430-\u044F\u0410-\u042F.\u0192\u06F0\u03A9]*
 
@@ -44,9 +44,9 @@ entity	= water_entity | resolver_section | class | lamda_struct
 // class section
 class = 'class' ID template? (('extends'|'implements') Any)? '{' (func|field)* '}'
 
-field = PUBLIC? ASYNC? ID '?'? ':' Any ';'
+field = MODIFICATOR* ID '?'? (':'|'=') Any ';'
 
-func = PUBLIC? ASYNC? ID '?'? '(' Any ')' return_type? '{' Any '}'
+func = MODIFICATOR* ID '?'? '(' Any ')' return_type? '{' Any '}'
 
 // lambda struct section
 lamda_struct = 'const' ID '=' '(' Any ')' (':' ID)? '=>' AnyAvoid(NEW, 'class') ( '(' resolver_blocks ')' | '{' Any '}' )
@@ -88,7 +88,7 @@ water_entity	=	Any
 %nodes {
 	ghost entity
 	leaf 
-	void LB RB COMMA COLON ASYNC PUBLIC
+	void LB RB COMMA COLON MODIFICATOR
 }
 
 
