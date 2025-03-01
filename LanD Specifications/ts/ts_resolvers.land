@@ -50,7 +50,7 @@ resolver_section = 'const' ID  '=' resolver_blocks | 'const' ID (':' ID)?  '=' r
 
 resolver_blocks = '{' (resolver_block ',')* resolver_block? '}'
 resolver_block = ID ':' '{' (resolver_line ',')* resolver_line? '}'
-resolver_line = resolver_line_impl | resolver_line_obj
+resolver_line = resolver_line_impl | resolver_line_obj | resolver_line_var
 
 resolver_line_impl = ID ':' '(' Any ')' (':' ID)? '=>' 
 	(
@@ -58,7 +58,8 @@ resolver_line_impl = ID ':' '(' Any ')' (':' ID)? '=>'
 		|'{' Any '}'
 	)
 	
-resolver_line_obj = ID ':' Any
+resolver_line_obj = ID ':' '{' Any '}'
+resolver_line_var = ID ':' Any
 
 
 water_entity	=	Any 
