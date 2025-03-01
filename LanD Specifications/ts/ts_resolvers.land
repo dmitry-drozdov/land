@@ -11,6 +11,8 @@ STRING_Q	: '`' .*? '`'
 
 CHAR		: '\'' ('\\\''|'\\\\'|.)*? '\''
 
+BOOL: 'true' | 'false'
+
 ID			: [_a-zA-Z\u0430-\u044F\u0410-\u042F\u0192\u06F0\u03A9][_0-9a-zA-Z\u0430-\u044F\u0410-\u042F.\u0192\u06F0\u03A9]*
 
 
@@ -32,6 +34,8 @@ COLON		: ':'
 
 
 
+
+
 content = entity*
 
 entity	= water_entity | resolver_section | class | lamda_struct
@@ -50,7 +54,7 @@ resolver_section = 'const' ID  '=' resolver_blocks | 'const' ID (':' ID)?  '=' r
 
 resolver_blocks = '{' (resolver_block ',')* resolver_block? '}'
 resolver_block = ID ':' '{' (resolver_line ',')* resolver_line? '}'
-resolver_line = resolver_line_impl | resolver_line_obj | resolver_line_var
+resolver_line = resolver_line_impl  | resolver_line_obj | resolver_line_var| resolver_line_literal
 
 resolver_line_impl = ID ':' '(' Any ')' (':' ID)? '=>' 
 	(
@@ -58,12 +62,12 @@ resolver_line_impl = ID ':' '(' Any ')' (':' ID)? '=>'
 		|'{' Any '}'
 	)
 	
-resolver_line_obj = ID ':' '{' Any '}'
+resolver_line_obj = ID ':' '{' Any '}' // to be ignored
 resolver_line_var = ID ':' Any
+resolver_line_literal = ID ':' BOOL // to be ignored
 
 
 water_entity	=	Any 
-
 
 %%
 
@@ -71,7 +75,7 @@ water_entity	=	Any
 	recovery entity 
 	fragment STRING_INT_CODE
 	start content
-	skip COMMENT STRING DEC CHAR STRING_Q 
+	skip COMMENT STRING DEC CHAR STRING_Q BOOL
 }
 
 %nodes {
