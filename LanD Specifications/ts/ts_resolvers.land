@@ -42,7 +42,7 @@ content = entity*
 entity	= water_entity | struct | class | lamda_struct
 
 // class section
-class = 'class' ID template? (('extends'|'implements') Any)? '{' (func|field)* '}'
+class = 'class' ID template? (('extends'|'implements') Any)? '{' (func|field|decorator)* '}'
 
 field = MODIFICATOR* ID '?'? (':'|'=') Any ';'
 
@@ -75,9 +75,12 @@ sub_field_obj = ID ':' '{' Any '}' // to be ignored
 sub_field_arr = ID ':' '[' Any ']' // to be ignored
 sub_field_literal = ID ':' (BOOL|CHAR) // to be ignored
 
+// helpers
 template = ('<' (Any|','|'<'|'>')* '>')
 array = '[' (Any|array)* ']'
 return_type = ':' ID template? array?
+
+decorator = '@' Any '(' Any ')'
 
 
 water_entity	=	Any 
