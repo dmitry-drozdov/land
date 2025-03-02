@@ -14,7 +14,7 @@ CHAR		: '\'' ('\\\''|'\\\\'|.)*? '\''
 NEW: 'new'
 BOOL: 'true' | 'false'
 
-MODIFICATOR: 'async' | 'public' | 'protected' | 'readonly' | 'private' | 'abstract'
+MODIFICATOR: 'async' | 'public' | 'protected' | 'readonly' | 'private' | 'abstract' | 'static'
 
 ID			: [_a-zA-Z\u0430-\u044F\u0410-\u042F\u0192\u06F0\u03A9][_0-9a-zA-Z\u0430-\u044F\u0410-\u042F.\u0192\u06F0\u03A9]*
 
