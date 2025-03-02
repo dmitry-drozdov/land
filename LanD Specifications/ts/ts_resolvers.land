@@ -53,7 +53,7 @@ lamda_struct = 'const' ID '=' '(' Any ')' (':' ID)? '=>' AnyAvoid(NEW, 'class') 
 
 
 // struct section
-resolver_section = 'const' ID  '=' resolver_blocks | 'const' ID (':' ID)?  '=' resolver_blocks
+resolver_section = 'const' ID  '=' resolver_blocks | 'const' ID return_type?  '=' resolver_blocks
 
 resolver_blocks = '{' (resolver_block ',')* resolver_block? '}'
 resolver_block = ID ':' '{' (resolver_line ',')* resolver_line? '}'
