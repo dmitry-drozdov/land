@@ -36,6 +36,9 @@ function findResolvers(ast) {
         if (node.type === "Property" && node.computed) {
             return;
         }
+        if (node.type === "AssignmentPattern") {
+            return;
+        }
         if (node.type === "ArrowFunctionExpression") {
             for (var key in node) {
                 if (node[key] && (typeof node[key] === "object") && node[key].type === "ObjectExpression") {

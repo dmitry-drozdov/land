@@ -39,7 +39,7 @@ COLON		: ':'
 
 content = entity*
 
-entity	= water_entity | resolver_section | class | lamda_struct
+entity	= water_entity | struct | class | lamda_struct
 
 // class section
 class = 'class' ID template? (('extends'|'implements') Any)? '{' (func|field)* '}'
@@ -49,29 +49,31 @@ field = MODIFICATOR* ID '?'? (':'|'=') Any ';'
 func = MODIFICATOR* ID '?'? '(' Any ')' return_type? '{' Any '}'
 
 // lambda struct section
-lamda_struct = 'const' ID '=' '(' Any ')' (':' ID)? '=>' AnyAvoid(NEW, 'class') ( '(' resolver_blocks ')' | '{' Any '}' )
+lamda_struct = 'const' ID '=' '(' Any ')' (':' ID)? '=>' AnyAvoid(NEW, 'class') ( '(' struct_blocks ')' | '{' Any '}' )
 
 
 // struct section
-resolver_section = 'const' ID  '=' resolver_blocks | 'const' ID return_type?  '=' resolver_blocks
+struct = 'const' ID  '=' struct_blocks | 'const' ID return_type?  '=' struct_blocks
 
-resolver_blocks = '{' (resolver_block_val ',')* resolver_block_val? '}'
-resolver_block_val = resolver_block | resolver_block_any
-resolver_block = ID ':' '{' (resolver_line ',')* resolver_line? '}'
-resolver_block_any = ID ':' Any
+struct_blocks = '{' (struct_block ',')* struct_block? '}'
+
+struct_block = field_block | field_any
+field_block = ID ':' '{' (sub_field ',')* sub_field? '}'
+field_any = ID ':' Any
 
 
-resolver_line = resolver_line_impl  | resolver_line_obj | resolver_line_var| resolver_line_literal
+sub_field = sub_field_func_impl | sub_field_obj | sub_field_any| sub_field_literal | sub_field_arr
 
-resolver_line_impl = ID ':' '(' Any ')' (':' ID)? '=>' 
+sub_field_func_impl = ID ':' '(' Any ')' (':' ID)? '=>' 
 	(
 		Any
 		|'{' Any '}'
 	)
-	
-resolver_line_obj = ID ':' '{' Any '}' // to be ignored
-resolver_line_var = ID ':' Any
-resolver_line_literal = ID ':' BOOL // to be ignored
+
+sub_field_any = ID ':' Any
+sub_field_obj = ID ':' '{' Any '}' // to be ignored
+sub_field_arr = ID ':' '[' Any ']' // to be ignored
+sub_field_literal = ID ':' BOOL // to be ignored
 
 template = ('<' (Any|','|'<'|'>')* '>')
 array = '[' (Any|array)* ']'
