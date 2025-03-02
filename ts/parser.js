@@ -36,9 +36,6 @@ function findResolvers(ast) {
         if (node.type === "Property" && node.computed) {
             return;
         }
-        if (node.type === "AssignmentPattern") {
-            return;
-        }
         if (node.type === "ArrowFunctionExpression") {
             for (var key in node) {
                 if (node[key] && (typeof node[key] === "object") && node[key].type === "ObjectExpression") {
@@ -53,13 +50,14 @@ function findResolvers(ast) {
             }
             var keyName = node.key.name || node.key.value;
             if (node.value.type === "ArrowFunctionExpression" || node.value.type === "FunctionExpression") {
-                if (propertyDepth > 0)
+                if (propertyDepth == 1)
                     resolvers.push(keyName);
                 return;
             }
             if (node.value.type === "Identifier") {
-                if (propertyDepth > 0)
+                if (propertyDepth == 1)
                     resolvers.push(keyName);
+                return;
             }
             propertyDepth++;
         }

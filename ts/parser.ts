@@ -59,14 +59,15 @@ function findResolvers(ast: any) {
 
             const keyName = node.key.name || node.key.value;
             if (node.value.type === "ArrowFunctionExpression" || node.value.type === "FunctionExpression") {
-                if (propertyDepth > 0)
+                if (propertyDepth == 1)
                     resolvers.push(keyName);
                 return;
             }
 
             if (node.value.type === "Identifier") {
-                if (propertyDepth > 0)
+                if (propertyDepth == 1)
                     resolvers.push(keyName);
+                return;
             }
             propertyDepth++;
         }
