@@ -73,7 +73,7 @@ sub_field_func_impl = ID ':' '(' Any ')' (':' ID)? '=>'
 sub_field_any = ID ':' Any
 sub_field_obj = ID ':' '{' Any '}' // to be ignored
 sub_field_arr = ID ':' '[' Any ']' // to be ignored
-sub_field_literal = ID ':' (BOOL|CHAR) // to be ignored
+sub_field_literal = ID ':' (BOOL|CHAR|DEC) // to be ignored
 
 // helpers
 template = ('<' (Any|','|'<'|'>')* '>')
