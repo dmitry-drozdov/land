@@ -4,16 +4,16 @@ var parse = require("@typescript-eslint/parser").parse;
 var fs = require("fs");
 var path = require("path");
 // 📂 Папка с TypeScript-файлами (исходная, где лежат `.ts` файлы)
-var SOURCE_DIR = "e:/phd/ts";
+var SOURCE_DIR = "e:/phd/ts/test/1";
 // 📂 Папка для сохранения `.res` файлов (результатов)
-var OUTPUT_DIR = "e:/phd/ts_res";
+var OUTPUT_DIR = "e:/phd/ts_res/test/1";
 //  🔄 Функция для поиска резолверов в AST
 function findResolvers(ast) {
     var resolvers = [];
     function traverse(node, className, factoryName, propertyDepth) {
         var _a;
         if (propertyDepth === void 0) { propertyDepth = 0; }
-        //console.log(node);
+        console.log(node);
         if (node.type === "ExportDefaultDeclaration" && node.declaration.type === "ObjectExpression") {
             return;
         }

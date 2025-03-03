@@ -3,17 +3,17 @@ import * as fs from "fs";
 import * as path from "path";
 
 // 📂 Папка с TypeScript-файлами (исходная, где лежат `.ts` файлы)
-const SOURCE_DIR = "e:/phd/ts";
+const SOURCE_DIR = "e:/phd/ts/test/1";
 
 // 📂 Папка для сохранения `.res` файлов (результатов)
-const OUTPUT_DIR = "e:/phd/ts_res";
+const OUTPUT_DIR = "e:/phd/ts_res/test/1";
 
 //  🔄 Функция для поиска резолверов в AST
 function findResolvers(ast: any) {
     const resolvers: string[] = [];
 
     function traverse(node: any, className?: string, factoryName?: string, propertyDepth = 0) {
-        //console.log(node);
+        console.log(node);
         if (node.type === "ExportDefaultDeclaration" && node.declaration.type === "ObjectExpression") {
             return;
         }
