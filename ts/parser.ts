@@ -64,7 +64,7 @@ function findResolvers(ast: any) {
                 return;
             }
 
-            if (node.value.type === "Identifier") {
+            if (node.value.type === "Identifier" || node.value.type === "MemberExpression") {
                 if (propertyDepth == 1)
                     resolvers.push(keyName);
                 return;
