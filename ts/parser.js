@@ -13,6 +13,7 @@ function findResolvers(ast) {
     function traverse(node, className, factoryName, propertyDepth) {
         var _a;
         if (propertyDepth === void 0) { propertyDepth = 0; }
+        //console.log(node);
         if (node.type === "ExportDefaultDeclaration" && node.declaration.type === "ObjectExpression") {
             return;
         }
@@ -54,7 +55,7 @@ function findResolvers(ast) {
                     resolvers.push(keyName);
                 return;
             }
-            if (node.value.type === "Identifier" || node.value.type === "MemberExpression") {
+            if (node.value.type === "Identifier" || node.value.type === "MemberExpression" || node.value.type === "ConditionalExpression") {
                 if (propertyDepth == 1)
                     resolvers.push(keyName);
                 return;

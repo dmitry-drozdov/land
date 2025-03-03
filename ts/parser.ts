@@ -13,6 +13,7 @@ function findResolvers(ast: any) {
     const resolvers: string[] = [];
 
     function traverse(node: any, className?: string, factoryName?: string, propertyDepth = 0) {
+        //console.log(node);
         if (node.type === "ExportDefaultDeclaration" && node.declaration.type === "ObjectExpression") {
             return;
         }
@@ -64,7 +65,7 @@ function findResolvers(ast: any) {
                 return;
             }
 
-            if (node.value.type === "Identifier" || node.value.type === "MemberExpression") {
+            if (node.value.type === "Identifier" || node.value.type === "MemberExpression" || node.value.type === "ConditionalExpression") {
                 if (propertyDepth == 1)
                     resolvers.push(keyName);
                 return;

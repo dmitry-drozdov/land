@@ -49,7 +49,7 @@ field = MODIFICATOR* ID '?'? (':'|'=') Any ';'
 func = MODIFICATOR* ID '?'? '(' Any ')' return_type? '{' Any '}'
 
 // lambda struct section
-lamda_struct = 'const' ID '=' '(' Any ')' (':' ID)? '=>' AnyAvoid(NEW, 'class') ( '(' struct_blocks ')' | '{' Any '}' )
+lamda_struct = 'const' ID '=' '(' Any ')' return_type? '=>' AnyAvoid(NEW, 'class') ( '(' struct_blocks ')' | '{' Any '}' )
 
 
 // struct section
