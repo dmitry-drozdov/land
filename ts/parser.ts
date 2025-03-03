@@ -3,17 +3,17 @@ import * as fs from "fs";
 import * as path from "path";
 
 // 📂 Папка с TypeScript-файлами (исходная, где лежат `.ts` файлы)
-const SOURCE_DIR = "e:/phd/ts/test/1";
+const SOURCE_DIR = "e:/phd/ts";
 
 // 📂 Папка для сохранения `.res` файлов (результатов)
-const OUTPUT_DIR = "e:/phd/ts_res/test/1";
+const OUTPUT_DIR = "e:/phd/ts_res";
 
 //  🔄 Функция для поиска резолверов в AST
 function findResolvers(ast: any) {
     const resolvers: string[] = [];
 
     function traverse(node: any, className?: string, factoryName?: string, propertyDepth = 0) {
-        console.log(node);
+        //console.log(node);
         if (node.type === "ExportDefaultDeclaration" && node.declaration.type === "ObjectExpression") {
             return;
         }
@@ -23,7 +23,7 @@ function findResolvers(ast: any) {
             return; // Не добавляем деструктурированные переменные
         }
 
-        if (node.type === "FunctionDeclaration" || node.type === "TSTypeAliasDeclaration"){
+        if (node.type === "FunctionDeclaration" || node.type === "TSTypeAliasDeclaration") {
             return;
         }
 
@@ -65,7 +65,10 @@ function findResolvers(ast: any) {
                 return;
             }
 
-            if (node.value.type === "Identifier" || node.value.type === "MemberExpression" || node.value.type === "ConditionalExpression") {
+            if (node.value.type === "Identifier" ||
+                node.value.type === "MemberExpression" ||
+                node.value.type === "ConditionalExpression" ||
+                node.value.type === "CallExpression") {
                 if (propertyDepth == 1)
                     resolvers.push(keyName);
                 return;
