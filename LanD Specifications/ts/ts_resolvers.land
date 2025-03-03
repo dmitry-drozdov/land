@@ -5,6 +5,7 @@ COMMENT_ML	: '/*' .*? '*/'
 
 SPREAD : '...'
 
+NL: '\n'
 
 STRING		: '"' (~["]|'""')* '"'
 STRING_Q	: '`' .*? '`'
@@ -42,11 +43,12 @@ content = entity*
 entity	= water_entity | struct | class | lamda_struct
 
 // class section
-class = 'class' ID template? (('extends'|'implements') Any)? '{' (func|field|decorator)* '}'
+class = 'class' ID template? (('extends'|'implements') Any)? '{' (func|func_title|field|decorator)* '}'
 
-field = MODIFICATOR* ID '?'? (':'|'=') Any ';'
+field = MODIFICATOR* ID '?'? (':'|'=') Any (';'|NL)
 
 func = MODIFICATOR* ID '?'? '(' Any ')' return_type? '{' Any '}'
+func_title = MODIFICATOR* ID '?'? '(' Any ')' return_type? (';'|NL)
 
 // lambda struct section
 lamda_struct = 'const' ID '=' '(' Any ')' return_type? '=>' AnyAvoid(NEW, 'class') ( '(' struct_blocks ')' | '{' Any '}' )
@@ -95,7 +97,7 @@ water_entity	=	Any
 	recovery entity 
 	fragment STRING_INT_CODE
 	start content
-	skip COMMENT STRING DEC CHAR STRING_Q BOOL
+	skip COMMENT STRING DEC CHAR STRING_Q BOOL NL
 }
 
 %nodes {
