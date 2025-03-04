@@ -45,10 +45,10 @@ entity	= water_entity | struct | class | lamda_struct
 // class section
 class = 'class' ID template? (('extends'|'implements') Any)? '{' (func|func_title|field|decorator)* '}'
 
-field = MODIFICATOR* ID '?'? (':'|'=') Any (';'|NL)
+field = MODIFICATOR* ID template? '?'? (':'|'=') Any (';'|NL)
 
-func = MODIFICATOR* ID '?'? '(' Any ')' return_type? '{' Any '}'
-func_title = MODIFICATOR* ID '?'? '(' Any ')' return_type? (';'|NL)
+func = MODIFICATOR* ID template? '?'? '(' Any ')' return_type? '{' Any '}'
+func_title = MODIFICATOR* ID template? '?'? '(' Any ')' return_type? (';'|NL)
 
 // lambda struct section
 lamda_struct = 'const' ID '=' template? '(' Any ')' return_type? '=>' AnyAvoid(NEW, 'class') ( '(' struct_blocks ')' | '{' Any '}' )
