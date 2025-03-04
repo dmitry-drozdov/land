@@ -51,7 +51,7 @@ func = MODIFICATOR* ID '?'? '(' Any ')' return_type? '{' Any '}'
 func_title = MODIFICATOR* ID '?'? '(' Any ')' return_type? (';'|NL)
 
 // lambda struct section
-lamda_struct = 'const' ID '=' '(' Any ')' return_type? '=>' AnyAvoid(NEW, 'class') ( '(' struct_blocks ')' | '{' Any '}' )
+lamda_struct = 'const' ID '=' template? '(' Any ')' return_type? '=>' AnyAvoid(NEW, 'class') ( '(' struct_blocks ')' | '{' Any '}' )
 
 
 // struct section
@@ -66,7 +66,7 @@ field_just = ID
 field_spread = SPREAD ID
 
 
-sub_field = sub_field_func_impl | sub_field_obj | sub_field_any| sub_field_call| sub_field_id|sub_field_literal | sub_field_arr
+sub_field = sub_field_func_impl | sub_field_obj | sub_field_any| sub_field_call| sub_field_id|sub_field_literal | sub_field_arr|sub_field_just
 
 sub_field_func_impl = ID ':' '(' Any ')' (':' ID)? '=>' 
 	(
@@ -77,6 +77,7 @@ sub_field_func_impl = ID ':' '(' Any ')' (':' ID)? '=>'
 sub_field_any = ID ':' Any
 sub_field_id = ID ':' ID array?
 sub_field_call = ID ':' ID template? '(' Any ')'
+sub_field_just = ID 
 sub_field_obj = ID ':' '{' Any '}' // to be ignored
 sub_field_arr = ID ':' Any '[' Any ']' // to be ignored
 sub_field_literal = ID ':' (BOOL|CHAR|DEC|STRING|STRING_Q) // to be ignored

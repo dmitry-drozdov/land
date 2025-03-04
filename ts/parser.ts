@@ -13,7 +13,7 @@ function findResolvers(ast: any) {
     const resolvers: string[] = [];
 
     function traverse(node: any, className?: string, factoryName?: string, propertyDepth = 0) {
-        //console.log(node);
+       // console.log(node);
         if (node.type === "ExportDefaultDeclaration" && node.declaration.type === "ObjectExpression") {
             return;
         }
