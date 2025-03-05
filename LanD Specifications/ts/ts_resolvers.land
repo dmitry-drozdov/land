@@ -86,6 +86,7 @@ sub_field_literal = ID ':' (BOOL|CHAR|DEC|STRING|STRING_Q) // to be ignored
 template = ('<' (Any|','|'<'|'>')* '>')
 array = '[' (Any|array)* ']'
 return_type = ':' ID template? array? ('|' ID)?
+			| ':' '{' Any '}'
 
 decorator = '@' Any '(' Any ')'
 
