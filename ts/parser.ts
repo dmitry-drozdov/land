@@ -119,7 +119,7 @@ function processFile(filePath: string) {
 
         const resolvers = findResolvers(ast);
         //console.log(resolvers);
-        if (resolvers.length > 0) {
+        if (resolvers.length > 0 || true) {
             // 📂 Сохраняем файлы в аналогичную структуру внутри OUTPUT_DIR
             const relativePath = path.relative(SOURCE_DIR, filePath);
             const resFilePath = path.join(OUTPUT_DIR, relativePath.replace(/\.ts$/, ".res"));

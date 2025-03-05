@@ -100,7 +100,7 @@ function processFile(filePath) {
         });
         var resolvers = findResolvers(ast);
         //console.log(resolvers);
-        if (resolvers.length > 0) {
+        if (resolvers.length > 0 || true) {
             // 📂 Сохраняем файлы в аналогичную структуру внутри OUTPUT_DIR
             var relativePath = path.relative(SOURCE_DIR, filePath);
             var resFilePath = path.join(OUTPUT_DIR, relativePath.replace(/\.ts$/, ".res"));
