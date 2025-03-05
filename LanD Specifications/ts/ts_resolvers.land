@@ -15,7 +15,7 @@ CHAR		: '\'' ('\\\''|'\\\\'|.)*? '\''
 NEW: 'new'
 BOOL: 'true' | 'false'
 
-MODIFICATOR: 'async' | 'public' | 'protected' | 'readonly' | 'private' | 'abstract' | 'static'
+MODIFICATOR: 'async' | 'public' | 'protected' | 'readonly' | 'private' | 'abstract' | 'static' | 'override'
 
 ID			: [_a-zA-Z\u0430-\u044F\u0410-\u042F\u0192\u06F0\u03A9][_0-9a-zA-Z\u0430-\u044F\u0410-\u042F.\u0192\u06F0\u03A9]*
 
@@ -43,12 +43,13 @@ content = entity*
 entity	= water_entity | struct | class | lamda_struct
 
 // class section
-class = 'class' ID template? (('extends'|'implements') Any)? '{' (func|func_title|field|decorator)* '}'
+class = 'class' ID template? (('extends'|'implements') Any)? '{' (func|func_title|field|decorator|unpack)* '}'
 
-field = MODIFICATOR* ID template? '?'? (':'|'=') Any (';'|NL)
+field = MODIFICATOR* ID template? '?'? '!'? (':'|'=') Any (';'|NL)
 
-func = MODIFICATOR* ID template? '?'? '(' Any ')' return_type? '{' Any '}'
-func_title = MODIFICATOR* ID template? '?'? '(' Any ')' return_type? (';'|NL)
+func = MODIFICATOR* ID template? '?'? '!'? '(' Any ')' return_type? '{' Any '}'
+func_title = MODIFICATOR* ID template? '?'? '!'? '(' Any ')' return_type? (';'|NL)
+unpack = '[' Any ']' ':' Any (';'|NL)
 
 // lambda struct section
 lamda_struct = 'const' ID '=' template? '(' Any ')' return_type? '=>' AnyAvoid(NEW, 'class') ( '(' struct_blocks ')' | '{' Any '}' )
