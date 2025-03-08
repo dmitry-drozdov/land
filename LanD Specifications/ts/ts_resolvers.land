@@ -100,7 +100,7 @@ water_entity	=	Any
 	recovery entity 
 	fragment STRING_INT_CODE
 	start content
-	skip COMMENT STRING DEC CHAR STRING_Q BOOL NL
+	skip COMMENT STRING DEC STRING_Q BOOL NL
 }
 
 %nodes {
