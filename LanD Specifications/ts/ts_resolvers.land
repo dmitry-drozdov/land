@@ -67,7 +67,7 @@ field_just = ID
 field_spread = SPREAD ID
 
 
-sub_field = sub_field_func_impl | sub_field_obj | sub_field_any| sub_field_call| sub_field_id|sub_field_literal | sub_field_arr|sub_field_just
+sub_field = sub_field_func_impl | sub_field_obj | sub_field_any| sub_field_call| sub_field_id|sub_field_literal | sub_field_arr|sub_field_just | sub_field_cond
 
 sub_field_func_impl = ID ':' '(' Any ')' (':' ID)? '=>' 
 	(
@@ -75,6 +75,7 @@ sub_field_func_impl = ID ':' '(' Any ')' (':' ID)? '=>'
 		|'{' Any '}'
 	)
 
+sub_field_cond = ID ':' Any '?' Any ':' Any
 sub_field_any = ID ':' Any
 sub_field_id = ID ':' ID array?
 sub_field_call = ID ':' ID template? '(' Any ')'
