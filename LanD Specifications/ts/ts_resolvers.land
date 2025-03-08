@@ -91,7 +91,7 @@ array = '[' (Any|array)* ']'
 return_type = ':' ID template? array? ('|' ID)?
 			| ':' '{' Any '}'
 			
-func_return_type = ':' (Any|'{' Any '}')
+func_return_type = ':' ((Any|template)* | '{' Any '}')
 
 decorator = '@' Any '(' Any ')'
 
