@@ -48,8 +48,8 @@ class = 'class' ID template? (('extends'|'implements') Any)? '{' (func|func_titl
 
 field = ID* template? '?'? '!'? (':'|'=') Any (';'|NL)
 
-func = ID* template? '?'? '!'? '(' Any ')' return_type? '{' Any '}'
-func_title = ID* template? '?'? '!'? '(' Any ')' return_type? (';'|NL)
+func = ID* template? '?'? '!'? '(' Any ')' func_return_type? '{' Any '}'
+func_title = ID* template? '?'? '!'? '(' Any ')' func_return_type? (';'|NL)
 unpack = '[' Any ']' ':' Any (';'|NL)
 
 // lambda struct section
@@ -90,6 +90,8 @@ template = '<' (Any|template)* '>'
 array = '[' (Any|array)* ']'
 return_type = ':' ID template? array? ('|' ID)?
 			| ':' '{' Any '}'
+			
+func_return_type = ':' (Any|'{' Any '}')
 
 decorator = '@' Any '(' Any ')'
 
