@@ -83,7 +83,7 @@ namespace Land.GUI.Visitor
 				l.Add(funcName);
 				return;
 			}
-			if (nodeName == "func" || nodeName == "sub_field_func_impl" || nodeName == "sub_field_any" || nodeName == "sub_field_call" || nodeName == "sub_field_id" || nodeName == "sub_cond")
+			if (nodeName == "func" || nodeName == "sub_field_func_impl" || nodeName == "sub_field_any" || nodeName == "sub_field_call" || nodeName == "sub_field_id" || nodeName == "sub_field_cond")
 			{
 				var funcName = root.Children[0].ToString().Replace("ID: ", "");
 				if (d.ContainsKey(funcName))

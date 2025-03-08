@@ -14,6 +14,7 @@ CHAR		: '\'' ('\\\''|'\\\\'|.)*? '\''
 
 NEW: 'new'
 BOOL: 'true' | 'false'
+ASYNC: 'async'
 
 //MODIFICATOR: 'async' | 'public' | 'protected' | 'readonly' | 'private' | 'abstract' | 'static' | 'override'
 
@@ -69,7 +70,7 @@ field_spread = SPREAD ID
 
 sub_field = sub_field_func_impl | sub_field_obj | sub_field_any| sub_field_call| sub_field_id|sub_field_literal | sub_field_arr|sub_field_just | sub_field_cond
 
-sub_field_func_impl = ID ':' '(' Any ')' (':' ID)? '=>' 
+sub_field_func_impl = ID ':' ASYNC? '(' Any ')' (':' ID)? '=>' 
 	(
 		Any
 		|'{' Any '}'
@@ -101,7 +102,7 @@ water_entity	=	Any
 	recovery entity 
 	fragment STRING_INT_CODE
 	start content
-	skip COMMENT STRING DEC STRING_Q BOOL NL
+	skip COMMENT STRING DEC STRING_Q BOOL NL ASYNC
 }
 
 %nodes {
