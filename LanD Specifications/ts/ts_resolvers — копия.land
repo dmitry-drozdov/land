@@ -1,0 +1,73 @@
+NON_COMMENT	: '\\/' | '\\(' | '\\)'
+COMMENT		: COMMENT_L|COMMENT_ML
+COMMENT_L	: '//' ~[\n\r]*
+COMMENT_ML	: '/*' .*? '*/'
+
+SPREAD : '...'
+
+NL: '\n'
+
+STRING		: '"' (~["]|'""')* '"'
+STRING_Q	: '`' .*? '`'
+
+CHAR		: '\'' ('\\\''|'\\\\'|.)*? '\''
+
+NEW: 'new'
+BOOL: 'true' | 'false'
+ASYNC: 'async'
+
+//MODIFICATOR: 'async' | 'public' | 'protected' | 'readonly' | 'private' | 'abstract' | 'static' | 'override'
+
+ID			: [_a-zA-Z\u0430-\u044F\u0410-\u042F\u0192\u06F0\u03A9][_0-9a-zA-Z\u0430-\u044F\u0410-\u042F.\u0192\u06F0\u03A9]*
+
+
+LB			: '('
+RB			: ')'
+EXM			: '!'
+ 
+CURVE_BRACKETED : %left '{' %right '}'
+ROUND_BRACKETED : %left '(' %right ')'
+SQUARE_BRACKETED : %left ('['|GENERAL_ATTRIBUTE_START) %right ']'
+
+
+DEC			: '-'?[0-9]+('.'[0-9]+)*
+
+COMMA 		: ','
+COLON		: ':'
+
+
+
+
+
+content = entity*
+
+entity	= water_entity | class 
+
+// class section
+class = 'class' ID   '{' field* '}'
+
+field = ID (':'|'=') Any (';'|NL)
+
+water_entity	=	Any 
+
+%%
+
+%parsing {
+	recovery entity 
+	fragment STRING_INT_CODE
+	start content
+	skip COMMENT STRING DEC STRING_Q BOOL NL ASYNC
+}
+
+%nodes {
+	ghost entity
+	leaf 
+	void LB RB COMMA COLON
+}
+
+
+
+%markup {
+	land func_line type_def type_line
+	headercore(id) func_line type_def
+}
