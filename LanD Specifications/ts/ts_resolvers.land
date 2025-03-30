@@ -62,12 +62,8 @@ struct = 'const' ID  '=' struct_blocks | 'const' ID return_type?  '=' struct_blo
 
 struct_blocks = '{' (struct_block ',')* struct_block? '}'
 
-struct_block = field_block | field_any | field_just | field_spread
+struct_block = field_block | Any
 field_block = ID ':' '{' (sub_field ',')* sub_field? '}'
-field_any = ID ':' Any
-field_just = ID
-field_spread = SPREAD ID
-
 
 sub_field = sub_field_func_impl | sub_field_obj | sub_field_any| sub_field_call| sub_field_id|sub_field_literal | sub_field_arr|sub_field_just | sub_field_cond
 
