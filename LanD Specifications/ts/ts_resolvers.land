@@ -65,7 +65,7 @@ struct_blocks = '{' (struct_block ',')* struct_block? '}'
 struct_block = field_block | Any
 field_block = ID ':' '{' (sub_field ',')* sub_field? '}'
 
-sub_field = sub_field_func_impl |  sub_field_any| sub_field_call| sub_field_id|  sub_field_cond | Any |sub_field_literal
+sub_field = sub_field_func_impl |  sub_field_any| sub_field_call| sub_field_id|  sub_field_cond | Any
 
 sub_field_func_impl = ID ':' ASYNC? '(' Any ')' (':' ID)? '=>' 
 	(
@@ -74,11 +74,10 @@ sub_field_func_impl = ID ':' ASYNC? '(' Any ')' (':' ID)? '=>'
 	)
 
 sub_field_cond = ID ':' Any '?' Any ':' Any
-sub_field_any = ID ':' AnyAvoid('[', '{')
+sub_field_any = ID ':' AnyAvoid('[', '{', BOOL, CHAR, DEC, STRING, STRING_Q)
 sub_field_id = ID ':' ID array?
 sub_field_call = ID ':' ID template? '(' Any ')'
 
-sub_field_literal = ID ':' (BOOL|CHAR|DEC|STRING|STRING_Q) // to be ignored
 
 // helpers
 template = '<' (Any|template)* '>'
@@ -98,7 +97,7 @@ water_entity	=	Any
 	recovery 
 	fragment STRING_INT_CODE
 	start content
-	skip COMMENT STRING DEC STRING_Q BOOL NL ASYNC
+	skip COMMENT STRING_Q NL ASYNC
 }
 
 %nodes {
