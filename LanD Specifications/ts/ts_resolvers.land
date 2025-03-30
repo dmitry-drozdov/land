@@ -92,7 +92,7 @@ array = '[' Any ']'
 return_type = ':' ID template? array? ('|' ID)?
 			| ':' '{' Any '}'
 			
-func_return_type = ':' ((AnyAvoid(';')|template)* | '{' Any '}')
+func_return_type = ':' ((AnyAvoid(';', NL)|template)* | '{' Any '}')
 
 
 
