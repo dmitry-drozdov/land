@@ -85,13 +85,12 @@ sub_field_literal = ID ':' (BOOL|CHAR|DEC|STRING|STRING_Q) // to be ignored
 
 // helpers
 template = '<' (Any|template)* '>'
-array = '[' (Any|array)* ']'
+array = '[' Any ']'
 return_type = ':' ID template? array? ('|' ID)?
 			| ':' '{' Any '}'
 			
 func_return_type = ':' ((AnyAvoid(';')|template)* | '{' Any '}')
 
-decorator = '@' Any '(' Any ')'
 
 
 water_entity	=	Any 
