@@ -65,7 +65,7 @@ struct_blocks = '{' (struct_block ',')* struct_block? '}'
 struct_block = field_block | Any
 field_block = ID ':' '{' (sub_field ',')* sub_field? '}'
 
-sub_field = sub_field_func_impl | sub_field_obj | sub_field_any| sub_field_call| sub_field_id|sub_field_literal | sub_field_arr|sub_field_just | sub_field_cond
+sub_field = sub_field_func_impl |  sub_field_any| sub_field_call| sub_field_id|  sub_field_cond | Any |sub_field_literal
 
 sub_field_func_impl = ID ':' ASYNC? '(' Any ')' (':' ID)? '=>' 
 	(
@@ -74,12 +74,10 @@ sub_field_func_impl = ID ':' ASYNC? '(' Any ')' (':' ID)? '=>'
 	)
 
 sub_field_cond = ID ':' Any '?' Any ':' Any
-sub_field_any = ID ':' Any
+sub_field_any = ID ':' AnyAvoid('[', '{')
 sub_field_id = ID ':' ID array?
 sub_field_call = ID ':' ID template? '(' Any ')'
-sub_field_just = ID 
-sub_field_obj = ID ':' '{' Any '}' // to be ignored
-sub_field_arr = ID ':' Any '[' Any ']' // to be ignored
+
 sub_field_literal = ID ':' (BOOL|CHAR|DEC|STRING|STRING_Q) // to be ignored
 
 // helpers
