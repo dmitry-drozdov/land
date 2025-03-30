@@ -44,13 +44,11 @@ content = entity*
 entity	= water_entity | struct | class | lamda_struct
 
 // class section
-class = 'class' ID template? (('extends'|'implements') Any)? '{' (func|func_title|field|decorator|unpack)* '}'
+class = 'class' ID template? (('extends'|'implements') Any)? '{' (func|Any)* '}'
 
-field = ID* template? '?'? '!'? (':'|'=') Any (';'|NL)
 
-func = ID* template? '?'? '!'? '(' Any ')' func_return_type? '{' Any '}'
-func_title = ID* template? '?'? '!'? '(' Any ')' func_return_type? (';'|NL)
-unpack = '[' Any ']' ':' Any (';'|NL)
+
+func = ID+ template? '?'? '!'? '(' Any ')' func_return_type? '{' Any '}'
 
 // lambda struct section
 lamda_struct = 'const' ID '=' template? '(' Any ')' return_type? '=>' AnyAvoid(NEW, 'class') ( '(' struct_blocks ')' | '{' Any '}' )
@@ -91,7 +89,7 @@ array = '[' (Any|array)* ']'
 return_type = ':' ID template? array? ('|' ID)?
 			| ':' '{' Any '}'
 			
-func_return_type = ':' ((Any|template)* | '{' Any '}')
+func_return_type = ':' ((AnyAvoid(';')|template)* | '{' Any '}')
 
 decorator = '@' Any '(' Any ')'
 
@@ -101,7 +99,7 @@ water_entity	=	Any
 %%
 
 %parsing {
-	recovery entity 
+	recovery 
 	fragment STRING_INT_CODE
 	start content
 	skip COMMENT STRING DEC STRING_Q BOOL NL ASYNC
