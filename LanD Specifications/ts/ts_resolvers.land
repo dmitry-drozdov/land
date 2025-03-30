@@ -41,7 +41,10 @@ COLON		: ':'
 
 content = entity*
 
-entity	= water_entity | struct | class | lamda_struct
+entity	= water_entity | struct | class | lamda_struct | namespace
+
+
+namespace = 'namespace' ID '{' entity* '}'
 
 // class section
 class = 'class' ID template? (('extends'|'implements') Any)? '{' (func|Any)* '}'
