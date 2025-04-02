@@ -46,7 +46,7 @@ namespace Land.GUI.Visitor
 			{
 				if (item.Value != 1)
 				{
-					Debug($"incorrect count {path}: {item.Key} {item.Value}");
+					//Debug($"incorrect count {path}: {item.Key} {item.Value}");
 					ok = false;
 				}
 			}

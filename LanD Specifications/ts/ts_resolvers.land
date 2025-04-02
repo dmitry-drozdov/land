@@ -67,16 +67,13 @@ field_block = ID ':' '{' (sub_field ',')* sub_field? '}'
 
 sub_field = sub_field_func_impl |  sub_field_any | sub_field_arr | Any 
 
-sub_field_func_impl = ID ':' ASYNC? '(' Any ')' (':' ID)? '=>' 
-	(
-		Any
-		|'{' Any '}'
-	)
+sub_field_func_impl = ID ':' ASYNC? '(' Any ')' (':' ID)? '=>' any_or_block
 
-sub_field_cond = ID ':' Any '?' Any ':' Any
+
 sub_field_any = ID ':' (AnyAvoid('{', BOOL, CHAR, DEC, STRING, STRING_Q)|template)*
 sub_field_arr = ID ':' array
 
+any_or_block = Any | '{' Any '}'
 
 // helpers
 template = '<' (Any|template)* '>'

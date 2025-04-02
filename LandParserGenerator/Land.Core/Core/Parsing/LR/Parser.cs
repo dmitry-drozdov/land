@@ -307,6 +307,9 @@ namespace Land.Core.Parsing.LR
 			var anyLevel = LexingStream.GetPairsCount();
 
 
+
+			var lastToken = token;
+
 			/// Пропускаем токены, пока не найдём тот, для которого
 			/// в текущем состоянии нужно выполнить перенос или свёртку
 			while (!stopTokens.Contains(token.Name)
@@ -317,6 +320,14 @@ namespace Land.Core.Parsing.LR
 			{
 				anyNode.Value.Add(token.Text);
 				endLocation = token.Location.End;
+
+				if (anyNode.Arguments.AnyArguments.ContainsKey(AnyArgument.Avoid) && anyNode.Arguments.AnyArguments[AnyArgument.Avoid].Count==2)
+				{
+					if (lastToken.Name == "ID" && token.Name == "LB")
+						break;
+						//System.Diagnostics.Debug.WriteLine("LOG🔔 tp=" + $"{token.Type} {token.Name}");
+				}
+				lastToken = token;
 
 				if (ignorePairs)
 				{
