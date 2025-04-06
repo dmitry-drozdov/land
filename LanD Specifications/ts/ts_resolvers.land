@@ -51,7 +51,9 @@ class = 'class' ID template? (('extends'|'implements') Any)? '{' (func|Any)* '}'
 
 
 
-func = ID+ template? '?'? '!'? '(' Any ')' func_return_type? '{' Any '}'
+func = ID+ template? '?'? '!'? '(' Any ')' ':' '{' Any '}' '{' Any '}'
+	| ID+ template? '?'? '!'? '(' Any ')' ':' (Any(Except(';', NL, '{'))|template_ex) (';'| NL )? '{' Any '}'
+	| ID+ template? '?'? '!'? '(' Any ')' '{' Any '}'
 
 // lambda struct section
 lamda_struct = 'const' ID '=' template? '(' Any ')' return_type? '=>' AnyAvoid(NEW, 'class') ( '(' struct_blocks ')' | '{' Any '}' )
@@ -78,12 +80,10 @@ any_or_block = Any | '{' Any '}'
 // helpers
 template = '<' (Any|template)* '>'
 array = '[' Any ']'
-return_type = ':' ID template? array? ('|' ID)?
+return_type = ':' Any(Except('=>', '='), Avoid(';', 'class'))
 			| ':' '{' Any '}'
 			
-func_return_type = ':' ((AnyAvoid(';', '&')|template)* | '{' Any '}')
-
-
+template_ex = ID? template?
 
 water_entity	=	Any 
 
