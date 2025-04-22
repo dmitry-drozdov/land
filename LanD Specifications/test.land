@@ -1,0 +1,35 @@
+
+ID			: [_a-zA-Z][_0-9a-zA-Z]*
+
+
+
+
+
+
+content = A
+
+A = AnyExcept('d', 'e') B
+B = Any 'a'
+
+
+%%
+
+%parsing {
+	recovery 
+	fragment
+	start content
+	skip
+}
+
+%nodes {
+	ghost
+	leaf 
+	void
+}
+
+
+
+%markup {
+	land func_line type_def type_line
+	headercore(id) func_line type_def
+}

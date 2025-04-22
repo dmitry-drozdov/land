@@ -324,8 +324,11 @@ namespace Land.Core.Parsing.LR
 				if (anyNode.Arguments.AnyArguments.ContainsKey(AnyArgument.Avoid) && anyNode.Arguments.AnyArguments[AnyArgument.Avoid].Count==2)
 				{
 					if (lastToken.Name == "ID" && token.Name == "LB")
+					{
+						System.Diagnostics.Debug.WriteLine("LOG🔔 tp=" + $"{token.Type} {token.Name}");
 						break;
-						//System.Diagnostics.Debug.WriteLine("LOG🔔 tp=" + $"{token.Type} {token.Name}");
+					}
+						
 				}
 				lastToken = token;
 
