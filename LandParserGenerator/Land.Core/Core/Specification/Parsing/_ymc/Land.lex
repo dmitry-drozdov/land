@@ -138,12 +138,19 @@ STRING \"([^"\\]*|(\\\\)+|\\[^\\])*\"
 		yy_pop_state();
 		return (int)Tokens.ARGS_LROUND_BRACKET;
 	}
+	"[" return (int)Tokens.LSQUARE_BRACKET;
+	
+	"]" return (int)Tokens.RSQUARE_BRACKET;
 }
 	
 <0, in_option> {
 	"(" return (int)Tokens.LROUND_BRACKET;
 	
 	")" return (int)Tokens.RROUND_BRACKET;
+	
+	"[" return (int)Tokens.LSQUARE_BRACKET;
+	
+	"]" return (int)Tokens.RSQUARE_BRACKET;
 	
 	{RNUM} {
 		yylval.doubleVal = double.Parse(yytext, CultureInfo.InvariantCulture);

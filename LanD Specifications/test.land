@@ -6,10 +6,7 @@ ID			: [_a-zA-Z][_0-9a-zA-Z]*
 
 
 
-content = A
-
-A = AnyExcept('d', 'e') B
-B = Any 'a'
+content = AnyAvoid(['a', 'b'])
 
 
 %%

@@ -55,6 +55,7 @@
 %token <doubleVal> RNUM
 %token <quantVal> OPTIONAL ZERO_OR_MORE ONE_OR_MORE
 %token IS_LIST_NODE PREC_NONEMPTY
+%token LSQUARE_BRACKET RSQUARE_BRACKET
 
 %type <optQuantVal> quantifier
 %type <strVal> entry_core group optional_alias grammar_entity
@@ -74,6 +75,9 @@
 %type <optionTuple> context_option
 
 %type <strSet> pair_border_group_content pair_border
+
+%type <dynamicList> sub_args
+%type <dynamicVal> sub_arg
 
 %%
 
@@ -221,8 +225,10 @@ entry
 					var args = new SymbolArguments();
 					AnyArgument sugarOption;
 
-					if(Enum.TryParse($2.Substring(Grammar.ANY_TOKEN_NAME.Length), out sugarOption))
-						args.Set(sugarOption, $3.Select(e=>(string)e)); 
+					if(Enum.TryParse($2.Substring(Grammar.ANY_TOKEN_NAME.Length), out sugarOption)) {
+						args.Set(sugarOption, $3.Where(e => e is string).Select(e => (string)e));
+						args.SetList(sugarOption, $3.Where(e => e is IEnumerable<dynamic>).Select(e => (e as IEnumerable<dynamic>).Select(x => (string)x)));
+					}
 					else
 					{
 						foreach(var opt in $3)
@@ -403,7 +409,31 @@ argument
 	| STRING { $$ = $1.Substring(1, $1.Length - 2); }
 	| ID { $$ = $1; }
 	| argument_group { $$ = $1; }
+	| LSQUARE_BRACKET sub_args RSQUARE_BRACKET { $$ = $2; }
 	;
+
+
+sub_args
+	: sub_args COMMA argument 
+		{ 
+			$$ = $1; 
+			$$.Add($3); 
+		}
+	| sub_arg { $$ = new List<dynamic>(){ $1 }; }
+	;
+
+sub_arg
+	: RNUM { $$ = $1; }
+	| REGEX 
+		{
+			var generated = ConstructedGrammar.GenerateTerminal((string)$1);
+			ConstructedGrammar.AddLocation(generated, @1.Start);		
+			$$ = generated;
+		}
+	| STRING { $$ = $1.Substring(1, $1.Length - 2); }
+	| ID { $$ = $1; }
+	;
+	
 
 argument_group
 	: ID ARGS_LROUND_BRACKET args RROUND_BRACKET 
