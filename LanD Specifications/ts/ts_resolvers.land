@@ -54,11 +54,11 @@ class = 'class' ID template? (('extends'|'implements') Any)? '{' (func|Any)* '}'
 func = ID+ template? '?'? '!'? '(' Any ')' func_return_type? '{' Any '}'
 
 // lambda struct section
-lamda_struct = 'const' ID '=' template? '(' Any ')' return_type? '=>' AnyAvoid(NEW, 'class') ( '(' struct_blocks ')' | '{' Any '}' )
+lamda_struct = 'const' ID '=' template? '(' Any ')' func_return_type? '=>' AnyAvoid(NEW, 'class') ( '(' struct_blocks ')' | '{' Any '}' )
 
 
 // struct section
-struct = 'const' ID  '=' struct_blocks | 'const' ID return_type?  '=' struct_blocks
+struct = 'const' ID  '=' struct_blocks | 'const' ID func_return_type?  '=' struct_blocks
 
 struct_blocks = '{' (struct_block ',')* struct_block? '}'
 
@@ -71,17 +71,14 @@ sub_field_func_impl = ID ':' ASYNC? '(' Any ')' (':' ID)? '=>' any_or_block
 
 
 sub_field_any = ID ':' (AnyAvoid('{', BOOL, CHAR, DEC, STRING, STRING_Q)|template)*
-sub_field_arr = ID ':' array
+sub_field_arr = ID ':' '[' Any ']'
 
 any_or_block = Any | '{' Any '}'
 
 // helpers
 template = '<' (Any|template)* '>'
-array = '[' Any ']'
-return_type = ':' ID template? array? ('|' ID)?
-			| ':' '{' Any '}'
 			
-func_return_type = ':' ((AnyAvoid(';', '&', [ID, LB])|template)* | '{' Any '}')
+func_return_type = ':' ((AnyAvoid(';', '&', [ID, LB], 'class')|template)* | '{' Any '}')
 
 
 
