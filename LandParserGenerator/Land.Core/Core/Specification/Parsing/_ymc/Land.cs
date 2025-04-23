@@ -6,9 +6,9 @@
 //
 //  GPLEX Version:  1.2.2
 //  Machine:  I7-11700
-//  DateTime: 23.04.2025 18:34:11
+//  DateTime: 23.04.2025 19:27:00
 //  UserName: dima
-//  GPLEX input file <E:\phd\my\land\LandParserGenerator\Land.Core\Core\Specification\Parsing\_ymc\Land.lex - 23.04.2025 18:34:11>
+//  GPLEX input file <E:\phd\my\land\LandParserGenerator\Land.Core\Core\Specification\Parsing\_ymc\Land.lex - 23.04.2025 19:27:00>
 //  GPLEX frame file <embedded resource>
 //
 //  Option settings: unicode, parser, stack, minimize

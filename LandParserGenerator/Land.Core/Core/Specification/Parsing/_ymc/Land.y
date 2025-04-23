@@ -225,9 +225,9 @@ entry
 					var args = new SymbolArguments();
 					AnyArgument sugarOption;
 
-					if(Enum.TryParse($2.Substring(Grammar.ANY_TOKEN_NAME.Length), out sugarOption)) {
+					if(Enum.TryParse($2.Substring(Grammar.ANY_TOKEN_NAME.Length), out sugarOption)) {	
 						args.Set(sugarOption, $3.Where(e => e is string).Select(e => (string)e));
-						args.SetList(sugarOption, $3.Where(e => e is IEnumerable<dynamic>).Select(e => (e as IEnumerable<dynamic>).Select(x => (string)x)));
+						args.SetList(sugarOption, $3.Where(e => e is List<dynamic>).Select(e => (e as List<dynamic>).Select(x => (string)x).ToList()).ToList());
 					}
 					else
 					{

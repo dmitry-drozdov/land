@@ -308,7 +308,7 @@ namespace Land.Core.Parsing.LR
 
 
 
-			var lastToken = token;
+			var tokens = new List<string>();
 
 			/// Пропускаем токены, пока не найдём тот, для которого
 			/// в текущем состоянии нужно выполнить перенос или свёртку
@@ -318,19 +318,29 @@ namespace Land.Core.Parsing.LR
 				&& token.Type != Grammar.EOF_TOKEN_TYPE
 				&& token.Type != Grammar.ERROR_TOKEN_TYPE)
 			{
+				tokens.Add(token.Name);
+				if (anyNode.Arguments.AnyArgumentsList.ContainsKey(AnyArgument.Avoid))
+				{
+					var breakWhile = false;
+					foreach (var item in anyNode.Arguments.AnyArgumentsList[AnyArgument.Avoid])
+					{
+						if (tokens.Count < item.Count)
+							continue;
+						if (item.SequenceEqual(tokens.Skip(Math.Max(0, tokens.Count - item.Count))))
+						{
+							System.Diagnostics.Debug.WriteLine("LOG🔔 break AnyAvoid");
+							breakWhile = true;
+							break;
+						}
+					}
+					if (breakWhile)
+						break;
+				}
+				
+
 				anyNode.Value.Add(token.Text);
 				endLocation = token.Location.End;
 
-				if (anyNode.Arguments.AnyArguments.ContainsKey(AnyArgument.Avoid) && anyNode.Arguments.AnyArguments[AnyArgument.Avoid].Count==2)
-				{
-					if (lastToken.Name == "ID" && token.Name == "LB")
-					{
-						System.Diagnostics.Debug.WriteLine("LOG🔔 tp=" + $"{token.Type} {token.Name}");
-						break;
-					}
-						
-				}
-				lastToken = token;
 
 				if (ignorePairs)
 				{

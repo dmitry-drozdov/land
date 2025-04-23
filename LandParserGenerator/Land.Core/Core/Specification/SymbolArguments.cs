@@ -23,16 +23,16 @@ namespace Land.Core.Specification
 		public bool Contains(AnyArgument anyArg, string token) =>
 			AnyArguments.ContainsKey(anyArg) && AnyArguments[anyArg].Contains(token);
 
-		public Dictionary<AnyArgument, HashSet<IEnumerable<string>>> AnyArgumentsList { get; set; } =
-			new Dictionary<AnyArgument, HashSet<IEnumerable<string>>>();
+		public Dictionary<AnyArgument, List<List<string>>> AnyArgumentsList { get; set; } =
+			new Dictionary<AnyArgument, List<List<string>>>();
 
-		public void SetList(AnyArgument anyArg, IEnumerable<IEnumerable<string>> symbols) =>
-			AnyArgumentsList[anyArg] = new HashSet<IEnumerable<string>>(symbols);
+		public void SetList(AnyArgument anyArg, List<List<string>> symbols) =>
+			AnyArgumentsList[anyArg] = new List<List<string>>(symbols);
 
 		public bool ContainsList(AnyArgument anyArg) =>
 			AnyArgumentsList.ContainsKey(anyArg);
 
-		public bool ContainsList(AnyArgument anyArg, IEnumerable<string> tokens) =>
+		public bool ContainsList(AnyArgument anyArg, List<string> tokens) =>
 			AnyArgumentsList.ContainsKey(anyArg) && AnyArgumentsList[anyArg].Contains(tokens);
 
 		#endregion

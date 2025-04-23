@@ -4,9 +4,9 @@
 
 // GPPG version 1.5.2
 // Machine:  I7-11700
-// DateTime: 23.04.2025 18:34:11
+// DateTime: 23.04.2025 19:27:00
 // UserName: dima
-// Input file <E:\phd\my\land\LandParserGenerator\Land.Core\Core\Specification\Parsing\_ymc\Land.y - 23.04.2025 18:34:11>
+// Input file <E:\phd\my\land\LandParserGenerator\Land.Core\Core\Specification\Parsing\_ymc\Land.y - 23.04.2025 19:27:00>
 
 // options: no-lines gplex
 
@@ -79,14 +79,14 @@ public class ScanObj {
 [GeneratedCodeAttribute( "Gardens Point Parser Generator", "1.5.2")]
 public class Parser: ShiftReduceParser<ValueType, Land.Core.SegmentLocation>
 {
-  // Verbatim content from E:\phd\my\land\LandParserGenerator\Land.Core\Core\Specification\Parsing\_ymc\Land.y - 23.04.2025 18:34:11
+  // Verbatim content from E:\phd\my\land\LandParserGenerator\Land.Core\Core\Specification\Parsing\_ymc\Land.y - 23.04.2025 19:27:00
     public Parser(AbstractScanner<ValueType, SegmentLocation> scanner) : base(scanner) { }
     
     public Grammar ConstructedGrammar;
     public List<Message> Log = new List<Message>();
     
     private HashSet<string> Aliases = new HashSet<string>();
-  // End verbatim content from E:\phd\my\land\LandParserGenerator\Land.Core\Core\Specification\Parsing\_ymc\Land.y - 23.04.2025 18:34:11
+  // End verbatim content from E:\phd\my\land\LandParserGenerator\Land.Core\Core\Specification\Parsing\_ymc\Land.y - 23.04.2025 19:27:00
 
 #pragma warning disable 649
   private static Dictionary<int, string> aliases;
@@ -425,9 +425,9 @@ public class Parser: ShiftReduceParser<ValueType, Land.Core.SegmentLocation>
 					var args = new SymbolArguments();
 					AnyArgument sugarOption;
 
-					if(Enum.TryParse(ValueStack[ValueStack.Depth-4].strVal.Substring(Grammar.ANY_TOKEN_NAME.Length), out sugarOption)) {
+					if(Enum.TryParse(ValueStack[ValueStack.Depth-4].strVal.Substring(Grammar.ANY_TOKEN_NAME.Length), out sugarOption)) {	
 						args.Set(sugarOption, ValueStack[ValueStack.Depth-3].dynamicList.Where(e => e is string).Select(e => (string)e));
-						args.SetList(sugarOption, ValueStack[ValueStack.Depth-3].dynamicList.Where(e => e is IEnumerable<dynamic>).Select(e => (e as IEnumerable<dynamic>).Select(x => (string)x)));
+						args.SetList(sugarOption, ValueStack[ValueStack.Depth-3].dynamicList.Where(e => e is List<dynamic>).Select(e => (e as List<dynamic>).Select(x => (string)x).ToList()).ToList());
 					}
 					else
 					{
