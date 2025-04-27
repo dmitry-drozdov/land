@@ -4,9 +4,9 @@
 
 // GPPG version 1.5.2
 // Machine:  I7-11700
-// DateTime: 23.04.2025 19:27:00
+// DateTime: 27.04.2025 17:05:45
 // UserName: dima
-// Input file <E:\phd\my\land\LandParserGenerator\Land.Core\Core\Specification\Parsing\_ymc\Land.y - 23.04.2025 19:27:00>
+// Input file <E:\phd\my\land\LandParserGenerator\Land.Core\Core\Specification\Parsing\_ymc\Land.y - 27.04.2025 17:05:45>
 
 // options: no-lines gplex
 
@@ -79,14 +79,14 @@ public class ScanObj {
 [GeneratedCodeAttribute( "Gardens Point Parser Generator", "1.5.2")]
 public class Parser: ShiftReduceParser<ValueType, Land.Core.SegmentLocation>
 {
-  // Verbatim content from E:\phd\my\land\LandParserGenerator\Land.Core\Core\Specification\Parsing\_ymc\Land.y - 23.04.2025 19:27:00
+  // Verbatim content from E:\phd\my\land\LandParserGenerator\Land.Core\Core\Specification\Parsing\_ymc\Land.y - 27.04.2025 17:05:45
     public Parser(AbstractScanner<ValueType, SegmentLocation> scanner) : base(scanner) { }
     
     public Grammar ConstructedGrammar;
     public List<Message> Log = new List<Message>();
     
     private HashSet<string> Aliases = new HashSet<string>();
-  // End verbatim content from E:\phd\my\land\LandParserGenerator\Land.Core\Core\Specification\Parsing\_ymc\Land.y - 23.04.2025 19:27:00
+  // End verbatim content from E:\phd\my\land\LandParserGenerator\Land.Core\Core\Specification\Parsing\_ymc\Land.y - 27.04.2025 17:05:45
 
 #pragma warning disable 649
   private static Dictionary<int, string> aliases;
@@ -439,8 +439,10 @@ public class Parser: ShiftReduceParser<ValueType, Land.Core.SegmentLocation>
 							{
 								var group = (ArgumentGroup)opt;
 
-								if(Enum.TryParse(group.Name, out sugarOption))
-									args.Set(sugarOption, group.Arguments.Select(e=>(string)e)); 
+								if(Enum.TryParse(group.Name, out sugarOption)) {
+									args.Set(sugarOption, group.Arguments.Where(e => e is string).Select(e => (string)e));
+									args.SetList(sugarOption, group.Arguments.Where(e => e is List<dynamic>).Select(e => (e as List<dynamic>).Select(x => (string)x).ToList()).ToList());
+								}
 								else
 									errorGroupName = group.Name;
 							}

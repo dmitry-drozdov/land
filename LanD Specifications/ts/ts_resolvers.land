@@ -78,7 +78,7 @@ any_or_block = Any | '{' Any '}'
 // helpers
 template = '<' (Any|template)* '>'
 			
-func_return_type = ':' ((AnyAvoid(';', '&', [ID, LB], 'class')|template)* | '{' Any '}')
+func_return_type = ':' ((Any(Avoid(';', '&', [ID, LB], 'class'))|template)* | '{' Any '}')
 
 
 

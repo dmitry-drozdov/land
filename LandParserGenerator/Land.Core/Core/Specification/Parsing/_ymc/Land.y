@@ -239,8 +239,10 @@ entry
 							{
 								var group = (ArgumentGroup)opt;
 
-								if(Enum.TryParse(group.Name, out sugarOption))
-									args.Set(sugarOption, group.Arguments.Select(e=>(string)e)); 
+								if(Enum.TryParse(group.Name, out sugarOption)) {
+									args.Set(sugarOption, group.Arguments.Where(e => e is string).Select(e => (string)e));
+									args.SetList(sugarOption, group.Arguments.Where(e => e is List<dynamic>).Select(e => (e as List<dynamic>).Select(x => (string)x).ToList()).ToList());
+								}
 								else
 									errorGroupName = group.Name;
 							}
