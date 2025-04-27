@@ -1,24 +1,24 @@
 {
  "Duplicates": 0,
  "Source": "tidb",
- "TotalFiles": 581,
+ "TotalFiles": 2955,
  "SkippedFiles": 0,
  "SkippedPerCent": 0,
  "Fail": 0,
- "Ok": 5902,
+ "Ok": 31372,
  "Accuracy": 100,
  "ArgsCover": 100,
  "VendorFuncs": 0,
  "VendorFuncsPerCent": 0,
- "PostProcessReq": 305,
- "PostProcessReqPerCent": 5.17,
- "NoBody": 2,
- "NoBodyPerCent": 0.03,
+ "PostProcessReq": 1978,
+ "PostProcessReqPerCent": 6.3,
+ "NoBody": 7,
+ "NoBodyPerCent": 0.02,
  "StructStats": {
-  "Ok": 845,
+  "Ok": 4736,
   "FailNotFound": 0,
   "FailNotFoundHasFunc": 0,
-  "FailIncorrectTypes": 29,
-  "Ratio": 96.68
+  "FailIncorrectTypes": 165,
+  "Ratio": 96.63
  }
 }

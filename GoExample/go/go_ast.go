@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+
 	"strings"
 	"sync"
 	"time"
@@ -24,6 +25,7 @@ type goAST struct {
 func NewGoAST() *goAST {
 	return &goAST{ast_type.NewNameConverter()}
 }
+
 
 func (a *goAST) ParseFiles(root string) (map[string]map[string]*FuncStat, map[string]map[string]*StructStat, int, error) {
 	resFun := make(map[string]map[string]*FuncStat, 5000)

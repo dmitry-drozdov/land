@@ -1,24 +1,24 @@
 {
  "Duplicates": 0,
  "Source": "azure-service-operator",
- "TotalFiles": 696,
+ "TotalFiles": 3428,
  "SkippedFiles": 0,
  "SkippedPerCent": 0,
  "Fail": 0,
- "Ok": 16974,
+ "Ok": 77419,
  "Accuracy": 100,
  "ArgsCover": 100,
  "VendorFuncs": 0,
  "VendorFuncsPerCent": 0,
- "PostProcessReq": 11,
- "PostProcessReqPerCent": 0.06,
+ "PostProcessReq": 52,
+ "PostProcessReqPerCent": 0.07,
  "NoBody": 0,
  "NoBodyPerCent": 0,
  "StructStats": {
-  "Ok": 1968,
+  "Ok": 10971,
   "FailNotFound": 0,
   "FailNotFoundHasFunc": 0,
-  "FailIncorrectTypes": 0,
-  "Ratio": 100
+  "FailIncorrectTypes": 4,
+  "Ratio": 99.96
  }
 }

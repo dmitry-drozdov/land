@@ -855,8 +855,8 @@ namespace Land.GUI
 						}
 						if (file.EndsWith(".go"))
 						{
-							var oldPath = @"E:\phd\test_repos_light";
-							var newPath = @"E:\phd\test_repos_light\results";
+							var oldPath = @"E:\phd\test_repos";
+							var newPath = @"E:\phd\test_repos\results";
 							var path = Path.ChangeExtension(file.Replace(oldPath, newPath), ".json");
 							//GoSerializerBody.Serialize(path, root);
 							//GoSerializerBrakcets.Serialize(path, root);

@@ -69,7 +69,7 @@ func main() {
 }
 
 func getCodeStats(sname string) (map[string]*CodeStats, error) {
-	return codeStats(fmt.Sprintf(`e:\phd\test_repos_light\%s\`, sname))
+	return codeStats(fmt.Sprintf(`e:\phd\test_repos\%s\`, sname))
 }
 
 // func makeTestSet(percent int) error {
@@ -118,14 +118,14 @@ func doWork(sname string, gt GrammarType) error {
 	defer fmt.Printf("===== %s END =====\n", sname)
 
 	fmt.Println("reading results...")
-	lightFunc, lightStruct, err := ReadResults(fmt.Sprintf(`e:\phd\test_repos_light\results\%s`, sname))
+	lightFunc, lightStruct, err := ReadResults(fmt.Sprintf(`e:\phd\test_repos\results\%s`, sname))
 	if err != nil {
 		return err
 	}
 	fmt.Println(len(lightStruct))
 	fmt.Println("reading results DONE")
 
-	source := fmt.Sprintf(`e:\phd\test_repos_light\%s\`, sname)
+	source := fmt.Sprintf(`e:\phd\test_repos\%s\`, sname)
 	fmt.Println("parsing files with go ast...")
 	ast := NewGoAST()
 	fullFunc, fullStruct, duplicates, err := ast.ParseFiles(source)

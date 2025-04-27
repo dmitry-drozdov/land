@@ -1,24 +1,24 @@
 {
  "Duplicates": 0,
  "Source": "go-ethereum",
- "TotalFiles": 236,
+ "TotalFiles": 1130,
  "SkippedFiles": 0,
  "SkippedPerCent": 0,
  "Fail": 0,
- "Ok": 2511,
+ "Ok": 11661,
  "Accuracy": 100,
  "ArgsCover": 100,
  "VendorFuncs": 0,
  "VendorFuncsPerCent": 0,
- "PostProcessReq": 170,
- "PostProcessReqPerCent": 6.77,
- "NoBody": 1,
- "NoBodyPerCent": 0.04,
+ "PostProcessReq": 680,
+ "PostProcessReqPerCent": 5.83,
+ "NoBody": 22,
+ "NoBodyPerCent": 0.19,
  "StructStats": {
-  "Ok": 250,
+  "Ok": 1367,
   "FailNotFound": 0,
   "FailNotFoundHasFunc": 0,
-  "FailIncorrectTypes": 18,
-  "Ratio": 93.28
+  "FailIncorrectTypes": 119,
+  "Ratio": 91.99
  }
 }

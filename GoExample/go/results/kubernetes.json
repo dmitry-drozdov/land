@@ -1,24 +1,24 @@
 {
  "Duplicates": 0,
  "Source": "kubernetes",
- "TotalFiles": 2693,
+ "TotalFiles": 13392,
  "SkippedFiles": 0,
  "SkippedPerCent": 0,
  "Fail": 0,
- "Ok": 21592,
+ "Ok": 107269,
  "Accuracy": 100,
  "ArgsCover": 100,
  "VendorFuncs": 0,
  "VendorFuncsPerCent": 0,
- "PostProcessReq": 1255,
- "PostProcessReqPerCent": 5.81,
- "NoBody": 3,
- "NoBodyPerCent": 0.01,
+ "PostProcessReq": 5904,
+ "PostProcessReqPerCent": 5.5,
+ "NoBody": 33,
+ "NoBodyPerCent": 0.03,
  "StructStats": {
-  "Ok": 5676,
+  "Ok": 30175,
   "FailNotFound": 0,
   "FailNotFoundHasFunc": 0,
-  "FailIncorrectTypes": 70,
-  "Ratio": 98.78
+  "FailIncorrectTypes": 321,
+  "Ratio": 98.95
  }
 }

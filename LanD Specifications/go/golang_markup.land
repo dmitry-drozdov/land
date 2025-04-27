@@ -50,8 +50,8 @@ tag = ITALIC_QUOTE
 anon_interface = 'interface' '{' Any '}'
 
 func = 'func' f_reciever? f_name generic2? f_args f_returns ('{' Any '}')
-	| 'func' f_reciever? f_name generic2? f_args f_returns NL
-	| 'func' f_reciever? f_name generic2? f_args NL
+	| 'func' f_reciever? f_name generic2? f_args f_returns (NL|';')
+	| 'func' f_reciever? f_name generic2? f_args (NL|';')
 
 
 anon_func_title = 'func' f_args NL | 'func' f_args f_returns
@@ -66,7 +66,7 @@ f_args = LB RB
 		
 f_arg = SPREAD go_type | go_type | go_type SPREAD? go_type
 
-f_returns = Any 
+f_returns = Any
 		| go_type 
 		|LB (f_return ',')* f_return ','? RB 
 f_return = go_type | go_type go_type
