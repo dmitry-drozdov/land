@@ -1,24 +1,24 @@
 {
  "Duplicates": 0,
  "Source": "gvisor",
- "TotalFiles": 1912,
+ "TotalFiles": 395,
  "SkippedFiles": 0,
  "SkippedPerCent": 0,
  "Fail": 0,
- "Ok": 16962,
+ "Ok": 3677,
  "Accuracy": 100,
  "ArgsCover": 100,
  "VendorFuncs": 0,
  "VendorFuncsPerCent": 0,
- "PostProcessReq": 1099,
- "PostProcessReqPerCent": 6.48,
- "NoBody": 220,
- "NoBodyPerCent": 1.3,
+ "PostProcessReq": 222,
+ "PostProcessReqPerCent": 6.04,
+ "NoBody": 48,
+ "NoBodyPerCent": 1.31,
  "StructStats": {
-  "Ok": 2922,
+  "Ok": 573,
   "FailNotFound": 0,
   "FailNotFoundHasFunc": 0,
-  "FailIncorrectTypes": 0,
-  "Ratio": 100
+  "FailIncorrectTypes": 8,
+  "Ratio": 98.62
  }
 }

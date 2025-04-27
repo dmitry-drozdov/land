@@ -4,9 +4,6 @@ import (
 	"fmt"
 	"strings"
 	"utils/slice"
-
-	"github.com/mohae/shuffle"
-	cp "github.com/otiai10/copy"
 )
 
 type GrammarType string
@@ -72,64 +69,63 @@ func main() {
 }
 
 func getCodeStats(sname string) (map[string]*CodeStats, error) {
-	return codeStats(fmt.Sprintf(`e:\phd\test_repos\%s\`, sname))
+	return codeStats(fmt.Sprintf(`e:\phd\test_repos_light\%s\`, sname))
 }
 
-func makeTestSet(percent int) error {
-	if percent <= 0 || percent > 100 {
-		return fmt.Errorf("incorrect percent")
-	}
-	allFiles := make([]string, 0, 40000)
-	for _, sname := range folders {
-		files, err := getFiles(fmt.Sprintf(`e:\phd\test_repos\%s\`, sname))
-		if err != nil {
-			return err
-		}
-		allFiles = append(allFiles, files...)
-	}
+// func makeTestSet(percent int) error {
+// 	if percent <= 0 || percent > 100 {
+// 		return fmt.Errorf("incorrect percent")
+// 	}
+// 	allFiles := make([]string, 0, 40000)
+// 	for _, sname := range folders {
+// 		files, err := getFiles(fmt.Sprintf(`e:\phd\test_repos\%s\`, sname))
+// 		if err != nil {
+// 			return err
+// 		}
+// 		allFiles = append(allFiles, files...)
+// 	}
 
-	ln := len(allFiles)
-	if err := shuffle.String(allFiles); err != nil {
-		return err
-	}
+// 	ln := len(allFiles)
+// 	if err := shuffle.String(allFiles); err != nil {
+// 		return err
+// 	}
 
-	allFiles = allFiles[:(ln * percent / 100)]
+// 	allFiles = allFiles[:(ln * percent / 100)]
 
-	d := make(map[string]int, len(folders))
-	for _, f := range allFiles {
-		for _, folder := range folders {
-			if strings.HasPrefix(f, fmt.Sprintf(`e:\phd\test_repos\%s\`, folder)) {
-				d[folder]++
-			}
-		}
-	}
+// 	d := make(map[string]int, len(folders))
+// 	for _, f := range allFiles {
+// 		for _, folder := range folders {
+// 			if strings.HasPrefix(f, fmt.Sprintf(`e:\phd\test_repos\%s\`, folder)) {
+// 				d[folder]++
+// 			}
+// 		}
+// 	}
 
-	fmt.Println(d)
+// 	fmt.Println(d)
 
-	for _, f := range allFiles {
-		err := cp.Copy(f, strings.Replace(f, `e:\phd\test_repos\`, `e:\phd\test_repos_light\`, 1))
-		if err != nil {
-			return err
-		}
-	}
+// 	for _, f := range allFiles {
+// 		err := cp.Copy(f, strings.Replace(f, `e:\phd\test_repos\`, `e:\phd\test_repos_light\`, 1))
+// 		if err != nil {
+// 			return err
+// 		}
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 func doWork(sname string, gt GrammarType) error {
-	source := fmt.Sprintf(`e:\phd\test_repos\%s\`, sname)
 	fmt.Printf("\n===== %s START =====\n", sname)
 	defer fmt.Printf("===== %s END =====\n", sname)
 
 	fmt.Println("reading results...")
-	lightFunc, lightStruct, err := ReadResults(fmt.Sprintf(`e:\phd\test_repos\results\%s`, sname))
+	lightFunc, lightStruct, err := ReadResults(fmt.Sprintf(`e:\phd\test_repos_light\results\%s`, sname))
 	if err != nil {
 		return err
 	}
 	fmt.Println(len(lightStruct))
 	fmt.Println("reading results DONE")
 
-	source = fmt.Sprintf(`e:\phd\test_repos\%s\`, sname)
+	source := fmt.Sprintf(`e:\phd\test_repos_light\%s\`, sname)
 	fmt.Println("parsing files with go ast...")
 	ast := NewGoAST()
 	fullFunc, fullStruct, duplicates, err := ast.ParseFiles(source)
@@ -200,12 +196,13 @@ func doWork(sname string, gt GrammarType) error {
 	for kf, vf := range fullFunc {
 		kl, ok := lightFunc[kf]
 		if !ok {
+			fmt.Println("not found file from LAND")
 			a.mismatch++
 			continue
 		}
 		for k, v := range vf {
-			countMismatch := func() {
-				fmt.Println()
+			countMismatch := func(reason string) {
+				fmt.Println(reason)
 				fmt.Println(kf, v)
 				if strings.Contains(kf, "vendor") {
 					a.cntVendor++
@@ -215,7 +212,7 @@ func doWork(sname string, gt GrammarType) error {
 
 			funcs, ok := kl[k]
 			if !ok {
-				countMismatch()
+				countMismatch("not found in LAND")
 				continue
 			}
 
@@ -240,7 +237,7 @@ func doWork(sname string, gt GrammarType) error {
 			}
 
 			if !v.EqualTo(funcs, gt) {
-				countMismatch()
+				countMismatch("not equal")
 				continue
 			}
 

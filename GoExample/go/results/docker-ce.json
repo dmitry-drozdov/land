@@ -1,24 +1,24 @@
 {
  "Duplicates": 0,
  "Source": "docker-ce",
- "TotalFiles": 7414,
+ "TotalFiles": 1514,
  "SkippedFiles": 0,
  "SkippedPerCent": 0,
  "Fail": 0,
- "Ok": 58712,
+ "Ok": 11705,
  "Accuracy": 100,
  "ArgsCover": 100,
  "VendorFuncs": 0,
  "VendorFuncsPerCent": 0,
- "PostProcessReq": 3426,
- "PostProcessReqPerCent": 5.84,
- "NoBody": 93,
- "NoBodyPerCent": 0.16,
+ "PostProcessReq": 647,
+ "PostProcessReqPerCent": 5.53,
+ "NoBody": 15,
+ "NoBodyPerCent": 0.13,
  "StructStats": {
-  "Ok": 13179,
+  "Ok": 2644,
   "FailNotFound": 0,
   "FailNotFoundHasFunc": 0,
-  "FailIncorrectTypes": 0,
-  "Ratio": 100
+  "FailIncorrectTypes": 60,
+  "Ratio": 97.78
  }
 }

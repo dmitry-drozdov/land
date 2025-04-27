@@ -1,24 +1,24 @@
 {
  "Duplicates": 0,
  "Source": "backend",
- "TotalFiles": 2550,
+ "TotalFiles": 517,
  "SkippedFiles": 0,
  "SkippedPerCent": 0,
  "Fail": 0,
- "Ok": 29277,
+ "Ok": 5991,
  "Accuracy": 100,
  "ArgsCover": 100,
  "VendorFuncs": 0,
  "VendorFuncsPerCent": 0,
- "PostProcessReq": 1344,
- "PostProcessReqPerCent": 4.59,
- "NoBody": 152,
- "NoBodyPerCent": 0.52,
+ "PostProcessReq": 290,
+ "PostProcessReqPerCent": 4.84,
+ "NoBody": 15,
+ "NoBodyPerCent": 0.25,
  "StructStats": {
-  "Ok": 6858,
+  "Ok": 1287,
   "FailNotFound": 0,
   "FailNotFoundHasFunc": 0,
-  "FailIncorrectTypes": 0,
-  "Ratio": 100
+  "FailIncorrectTypes": 21,
+  "Ratio": 98.39
  }
 }

@@ -1,24 +1,24 @@
 {
  "Duplicates": 0,
  "Source": "go-redis",
- "TotalFiles": 118,
+ "TotalFiles": 27,
  "SkippedFiles": 0,
  "SkippedPerCent": 0,
  "Fail": 0,
- "Ok": 1414,
+ "Ok": 263,
  "Accuracy": 100,
  "ArgsCover": 100,
  "VendorFuncs": 0,
  "VendorFuncsPerCent": 0,
- "PostProcessReq": 120,
- "PostProcessReqPerCent": 8.49,
+ "PostProcessReq": 11,
+ "PostProcessReqPerCent": 4.18,
  "NoBody": 0,
  "NoBodyPerCent": 0,
  "StructStats": {
-  "Ok": 240,
+  "Ok": 16,
   "FailNotFound": 0,
   "FailNotFoundHasFunc": 0,
-  "FailIncorrectTypes": 0,
-  "Ratio": 100
+  "FailIncorrectTypes": 2,
+  "Ratio": 88.89
  }
 }

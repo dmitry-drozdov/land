@@ -1,24 +1,24 @@
 {
  "Duplicates": 0,
  "Source": "chainlink",
- "TotalFiles": 2154,
+ "TotalFiles": 413,
  "SkippedFiles": 0,
  "SkippedPerCent": 0,
  "Fail": 0,
- "Ok": 22649,
+ "Ok": 4732,
  "Accuracy": 100,
  "ArgsCover": 100,
  "VendorFuncs": 0,
  "VendorFuncsPerCent": 0,
- "PostProcessReq": 442,
- "PostProcessReqPerCent": 1.95,
+ "PostProcessReq": 93,
+ "PostProcessReqPerCent": 1.97,
  "NoBody": 0,
  "NoBodyPerCent": 0,
  "StructStats": {
-  "Ok": 6388,
+  "Ok": 1347,
   "FailNotFound": 0,
   "FailNotFoundHasFunc": 0,
-  "FailIncorrectTypes": 0,
-  "Ratio": 100
+  "FailIncorrectTypes": 16,
+  "Ratio": 98.83
  }
 }

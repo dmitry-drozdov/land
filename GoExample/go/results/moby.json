@@ -1,24 +1,24 @@
 {
  "Duplicates": 0,
  "Source": "moby",
- "TotalFiles": 4409,
+ "TotalFiles": 881,
  "SkippedFiles": 0,
  "SkippedPerCent": 0,
  "Fail": 0,
- "Ok": 32349,
+ "Ok": 5824,
  "Accuracy": 100,
  "ArgsCover": 100,
  "VendorFuncs": 0,
  "VendorFuncsPerCent": 0,
- "PostProcessReq": 2051,
- "PostProcessReqPerCent": 6.34,
- "NoBody": 10,
+ "PostProcessReq": 390,
+ "PostProcessReqPerCent": 6.7,
+ "NoBody": 2,
  "NoBodyPerCent": 0.03,
  "StructStats": {
-  "Ok": 6741,
+  "Ok": 1123,
   "FailNotFound": 0,
   "FailNotFoundHasFunc": 0,
-  "FailIncorrectTypes": 0,
-  "Ratio": 100
+  "FailIncorrectTypes": 30,
+  "Ratio": 97.4
  }
 }

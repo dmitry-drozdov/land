@@ -1,24 +1,24 @@
 {
  "Duplicates": 0,
  "Source": "grafana",
- "TotalFiles": 2855,
+ "TotalFiles": 539,
  "SkippedFiles": 0,
  "SkippedPerCent": 0,
  "Fail": 0,
- "Ok": 14519,
+ "Ok": 2627,
  "Accuracy": 100,
  "ArgsCover": 100,
  "VendorFuncs": 0,
  "VendorFuncsPerCent": 0,
- "PostProcessReq": 606,
- "PostProcessReqPerCent": 4.17,
- "NoBody": 1,
- "NoBodyPerCent": 0.01,
+ "PostProcessReq": 117,
+ "PostProcessReqPerCent": 4.45,
+ "NoBody": 0,
+ "NoBodyPerCent": 0,
  "StructStats": {
-  "Ok": 3877,
+  "Ok": 709,
   "FailNotFound": 0,
   "FailNotFoundHasFunc": 0,
-  "FailIncorrectTypes": 0,
-  "Ratio": 100
+  "FailIncorrectTypes": 8,
+  "Ratio": 98.88
  }
 }
