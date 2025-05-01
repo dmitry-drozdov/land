@@ -57,6 +57,9 @@ namespace Land.Core.Parsing.LR
 			StatesStack.Push(0);
 			NestingStack.Push(0);
 
+
+			LexingStream.GrammarObject.PairDepth.Clear();
+
 			//d.Stop("init");
 
 
@@ -83,6 +86,16 @@ namespace Land.Core.Parsing.LR
 
 				if (action != null)
 				{
+					if (token.Name == "LTB" && action.ActionType == 0)
+					{
+						System.Diagnostics.Debug.WriteLine("LOG🔔 Add Pair" );
+						LexingStream.AddPairBalanced(NestingStack);
+					}
+					if (token.Name =="RTB" && action.ActionType == 0)
+					{
+						System.Diagnostics.Debug.WriteLine("LOG🔔 Remove pair" );
+						LexingStream.RemovePairBalanced();
+					}
 					if (token.Type == Grammar.ANY_TOKEN_TYPE)
 					{
 						//d.Start();
@@ -305,8 +318,6 @@ namespace Land.Core.Parsing.LR
 				?? token.Location.Start;
 			var endLocation = anyNode.Location?.End;
 			var anyLevel = LexingStream.GetPairsCount();
-
-
 
 			var tokens = new List<string>();
 
@@ -586,7 +597,7 @@ namespace Land.Core.Parsing.LR
 
 					// Пропускаем токены, пока не поднимемся на тот же уровень вложенности, 
 					// на котором раскрывали нетерминал
-					var nonterminalLevelToken = LexingStream.GetNextToken(NestingStack.Peek(), out skippedBuffer);
+					var nonterminalLevelToken = LexingStream.GetNextToken(NestingStack.Peek(), out skippedBuffer, true);
 
 					if (nonterminalLevelToken.Type != Grammar.ERROR_TOKEN_TYPE)
 					{

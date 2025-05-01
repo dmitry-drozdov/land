@@ -40,6 +40,7 @@ namespace Land.Core.Specification
 		public Dictionary<string, PairSymbol> Pairs { get; private set; } = new Dictionary<string, PairSymbol>();
 		public Dictionary<string, PairSymbol> PairsRight { get; private set; } = new Dictionary<string, PairSymbol>();
 		public Dictionary<string, PairSymbol> PairsLeft{ get; private set; } = new Dictionary<string, PairSymbol>();
+		public Dictionary<string, int> PairDepth { get; private set; }= new Dictionary<string, int>();
 		public HashSet<string> NonEmptyPrecedence { get; private set; } = new HashSet<string>();
 		public List<string> TokenOrder { get; private set; } = new List<string>();
 
@@ -388,12 +389,7 @@ namespace Land.Core.Specification
 			else
 			{
 
-				Pairs[name] = new PairSymbol()
-				{
-					Left = left.First(x => x != "GENERAL_ATTRIBUTE_START"),
-					Right = right.First(),
-					Name = name
-				};
+				Pairs[name] = new PairSymbol(name, left.First(x => x != "GENERAL_ATTRIBUTE_START"), right.First());
 			}
 
 			OnGrammarUpdate();

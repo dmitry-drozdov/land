@@ -11,6 +11,13 @@ namespace Land.Core.Specification
 		public string Left { get; set; }
 		public string Right { get; set; }
 
+		public PairSymbol(string name, string left, string right)
+		{
+			this.Name = name;
+			this.Left = left;
+			this.Right = right;
+		}
+
 		public override bool Equals(object obj)
 		{
 			return obj is PairSymbol symbol && symbol.Name == Name;

@@ -70,7 +70,7 @@ namespace Land.Core.Lexing
 		/// <summary>
 		/// Стек открытых на момент прочтения последнего токена пар
 		/// </summary>
-		private Stack<PairSymbol> PairStack { get; set; } = new Stack<PairSymbol>();
+		public Stack<PairSymbol> PairStack { get; set; } = new Stack<PairSymbol>();
 
 		/// <summary>
 		/// Пара, левой границей которой является текущий токен
@@ -251,7 +251,7 @@ namespace Land.Core.Lexing
 								{ MessageAddInfoKey.UnexpectedToken, token.Name },
 								{ MessageAddInfoKey.UnexpectedLexeme, token.Text }
 							}
-						));	
+						));
 						return Lexer.CreateToken(Grammar.ERROR_TOKEN_NAME, Grammar.ERROR_TOKEN_TYPE);
 					}
 					else if (PairStack.Peek() != closed)
@@ -303,12 +303,18 @@ namespace Land.Core.Lexing
 		/// Получение следующего токена, находящегося на заданном уровне вложенности пар
 		/// </summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public IToken GetNextToken(int level,out List<IToken> skipped)
+		public IToken GetNextToken(int level, out List<IToken> skipped, bool recovering = false)
 		{
 			skipped = new List<IToken>();
 			while (true)
 			{
 				var next = GetNextToken();
+
+				if (next.Name == "RTB" && recovering)
+				{
+					//RemovePairBalanced();
+					//PairStack.Pop();
+				}
 
 				/// Возвращаем следующий токен, если перешли на искомый уровень
 				/// или готовимся сделать шаг в направлении, отличном от разрешённого
@@ -322,6 +328,36 @@ namespace Land.Core.Lexing
 				{
 					skipped.Add(next);
 				}
+			}
+		}
+
+		public void AddPairBalanced(  Stack<int> nestingStack)
+		{
+			if (!GrammarObject.Pairs.ContainsKey("TRIANGLE_BRACKETED"))
+			{
+				var pair = new PairSymbol("TRIANGLE_BRACKETED", "<", ">");
+				GrammarObject.Pairs.Add("TRIANGLE_BRACKETED", pair);
+				GrammarObject.PairsLeft.Add("LTB", pair);
+				GrammarObject.PairsRight.Add("RTB", pair);
+				PairStack.Push(pair);
+				//nestingStack.Push(GetPairsCount());
+			}
+			if (!GrammarObject.PairDepth.ContainsKey("TRIANGLE_BRACKETED"))
+				GrammarObject.PairDepth.Add("TRIANGLE_BRACKETED", 0);
+			GrammarObject.PairDepth["TRIANGLE_BRACKETED"]++;
+		}
+
+		public void RemovePairBalanced()
+		{
+			if (!GrammarObject.PairDepth.ContainsKey("TRIANGLE_BRACKETED"))
+				return;
+			GrammarObject.PairDepth["TRIANGLE_BRACKETED"]--;
+			if (GrammarObject.PairDepth["TRIANGLE_BRACKETED"] == 0)
+			{
+				GrammarObject.Pairs.Remove("TRIANGLE_BRACKETED");
+				GrammarObject.PairsLeft.Remove("LTB");
+				GrammarObject.PairsRight.Remove("RTB");
+				GrammarObject.PairDepth.Remove("TRIANGLE_BRACKETED");
 			}
 		}
 	}
