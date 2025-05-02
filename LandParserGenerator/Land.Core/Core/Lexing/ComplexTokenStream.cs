@@ -374,3 +374,20 @@ namespace Land.Core.Lexing
 		}
 	}
 }
+
+
+/*
+ 
+class Dispatcher <sss> {
+    callTargets(): ReturnType< ID ; > {
+    
+            if x > 2122 {
+                y 3
+            }
+    }  
+    
+    fun() {
+    }
+  }
+ 
+ */
