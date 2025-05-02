@@ -27,6 +27,9 @@ RB			: ')'
 LTB			: '<'
 RTB			: '>'
 
+CLB			: '{'
+CRB			: '}'
+
 EXM			: '!'
  
 CURVE_BRACKETED : %left '{' %right '}'
@@ -80,7 +83,7 @@ sub_field_arr = ID ':' '[' Any ']'
 any_or_block = Any | '{' Any '}'
 
 // helpers
-template = '<' Any '>'
+template = '<' Any ID '>'
 			
 func_return_type = ':' ((Any(Avoid(';', '&', [ID, LB], 'class'))|template)* | '{' Any '}')
 

@@ -59,6 +59,7 @@ namespace Land.Core.Parsing.LR
 
 
 			LexingStream.GrammarObject.PairDepth.Clear();
+			LexingStream.ClearPairBalancedInGrammar();
 
 			//d.Stop("init");
 
@@ -177,6 +178,14 @@ namespace Land.Core.Parsing.LR
 				else if (token.Type == Grammar.ANY_TOKEN_TYPE)
 				{
 					//d.Start();
+
+					if (LexingStream.CurrentToken.Name == "LTB")
+					{
+						System.Diagnostics.Debug.WriteLine("LOG🔔 Add pair before recovering");
+						LexingStream.AddPairBalanced(NestingStack);
+					}
+
+					System.Diagnostics.Debug.WriteLine($"LOG🔔 Неожиданный символ {this.Developerify(LexingStream.CurrentToken)} {token.Name}");
 
 					Log.Add(PotentialErrorMessage = Message.Trace(
 						$"Неожиданный символ {this.Developerify(LexingStream.CurrentToken)} для состояния{Environment.NewLine}\t\t" + Table.ToString(StatesStack.Peek(), null, "\t\t"),
