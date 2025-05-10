@@ -311,12 +311,12 @@ namespace Land.Core.Lexing
 				var cur = CurrentToken.Name; // начали восстановление прям с этого токена
 				var next = GetNextToken();
 
-				if (next.Name == "RTB" && recovering)
+				if (next.Name == "RTB" && recovering && GrammarObject.PairsRight.ContainsKey("RTB"))
 				{
 					RemovePairBalanced();
 					System.Diagnostics.Debug.WriteLine($"LOG🔔 Remove pair while recovering {next.Location.Start.Line} {next.Location.Start.Column}");
 				}
-				if (next.Name == "LTB" && recovering)
+				if (next.Name == "LTB" && recovering && GrammarObject.PairsLeft.ContainsKey("LTB"))
 				{
 					AddPairBalanced(null);
 					System.Diagnostics.Debug.WriteLine($"LOG🔔 Add pair while recovering {next.Location.Start.Line} {next.Location.Start.Column}");
