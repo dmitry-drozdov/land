@@ -9,6 +9,7 @@ using Land.Core.Parsing.Tree;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Antlr4.Runtime.Misc;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Land.Core.Parsing.LR
 {
@@ -59,7 +60,11 @@ namespace Land.Core.Parsing.LR
 
 
 			LexingStream.GrammarObject.PairDepth.Clear();
-			LexingStream.ClearPairBalancedInGrammar();
+			foreach (var item in LexingStream.GrammarObject.PairsManual)
+			{
+				LexingStream.ClearPairBalancedInGrammar(item.Value);
+			}
+			
 
 			//d.Stop("init");
 
@@ -87,15 +92,15 @@ namespace Land.Core.Parsing.LR
 
 				if (action != null)
 				{
-					if (token.Name == "LTB" && action.ActionType == 0)
+					if (GrammarObject.PairsLeftManual.ContainsKey(token.Name) && action.ActionType == 0)
 					{
-						System.Diagnostics.Debug.WriteLine("LOG🔔 Add Pair" );
-						LexingStream.AddPairBalanced(NestingStack);
+						System.Diagnostics.Debug.WriteLine($"LOG🔔 Add Pair {token.Name}");
+						LexingStream.AddPairBalanced(GrammarObject.PairsLeftManual[token.Name]);
 					}
-					if (token.Name =="RTB" && action.ActionType == 0)
+					if (GrammarObject.PairsRightManual.ContainsKey(token.Name) && action.ActionType == 0)
 					{
-						System.Diagnostics.Debug.WriteLine("LOG🔔 Remove pair" );
-						LexingStream.RemovePairBalanced();
+						System.Diagnostics.Debug.WriteLine($"LOG🔔 Remove pair {token.Name}");
+						LexingStream.RemovePairBalanced(GrammarObject.PairsRightManual[token.Name]);
 					}
 					if (token.Type == Grammar.ANY_TOKEN_TYPE)
 					{
@@ -179,10 +184,10 @@ namespace Land.Core.Parsing.LR
 				{
 					//d.Start();
 
-					if (LexingStream.CurrentToken.Name == "LTB")
+					if (GrammarObject.PairsLeftManual.ContainsKey(LexingStream.CurrentToken.Name))
 					{
 						System.Diagnostics.Debug.WriteLine("LOG🔔 Add pair before recovering");
-						LexingStream.AddPairBalanced(NestingStack);
+						LexingStream.AddPairBalanced(GrammarObject.PairsLeftManual[LexingStream.CurrentToken.Name]);
 					}
 
 					System.Diagnostics.Debug.WriteLine($"LOG🔔 Неожиданный символ {this.Developerify(LexingStream.CurrentToken)} {token.Name}");
@@ -356,7 +361,7 @@ namespace Land.Core.Parsing.LR
 					if (breakWhile)
 						break;
 				}
-				
+
 
 				anyNode.Value.Add(token.Text);
 				endLocation = token.Location.End;

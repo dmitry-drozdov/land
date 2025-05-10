@@ -308,17 +308,16 @@ namespace Land.Core.Lexing
 			skipped = new List<IToken>();
 			while (true)
 			{
-				var cur = CurrentToken.Name; // начали восстановление прям с этого токена
 				var next = GetNextToken();
 
-				if (next.Name == "RTB" && recovering && GrammarObject.PairsRight.ContainsKey("RTB"))
+				if (recovering && GrammarObject.PairsRight.ContainsKey(next.Name) && GrammarObject.PairsRightManual.ContainsKey(next.Name))
 				{
-					RemovePairBalanced();
+					RemovePairBalanced(GrammarObject.PairsRight[next.Name]);
 					System.Diagnostics.Debug.WriteLine($"LOG🔔 Remove pair while recovering {next.Location.Start.Line} {next.Location.Start.Column}");
 				}
-				if (next.Name == "LTB" && recovering && GrammarObject.PairsLeft.ContainsKey("LTB"))
+				if (recovering && GrammarObject.PairsLeft.ContainsKey(next.Name) && GrammarObject.PairsLeftManual.ContainsKey(next.Name))
 				{
-					AddPairBalanced(null);
+					AddPairBalanced(GrammarObject.PairsLeft[next.Name]);
 					System.Diagnostics.Debug.WriteLine($"LOG🔔 Add pair while recovering {next.Location.Start.Line} {next.Location.Start.Column}");
 				}
 
@@ -337,40 +336,38 @@ namespace Land.Core.Lexing
 			}
 		}
 
-		public void AddPairBalanced(  Stack<int> nestingStack)
+		public void AddPairBalanced(PairSymbol pair)
 		{
-			if (!GrammarObject.Pairs.ContainsKey("TRIANGLE_BRACKETED"))
+			if (!GrammarObject.Pairs.ContainsKey(pair.Name))
 			{
-				var pair = new PairSymbol("TRIANGLE_BRACKETED", "<", ">");
-				GrammarObject.Pairs.Add("TRIANGLE_BRACKETED", pair);
-				GrammarObject.PairsLeft.Add("LTB", pair);
-				GrammarObject.PairsRight.Add("RTB", pair);
-				OpenedPair= pair;
+				GrammarObject.Pairs.Add(pair.Name, pair);
+				GrammarObject.PairsLeft.Add(pair.Left, pair);
+				GrammarObject.PairsRight.Add(pair.Right, pair);
+				OpenedPair = pair;
 				CurrentTokenDirection = Direction.Down;
 			}
-			if (!GrammarObject.PairDepth.ContainsKey("TRIANGLE_BRACKETED"))
-				GrammarObject.PairDepth.Add("TRIANGLE_BRACKETED", 0);
-			GrammarObject.PairDepth["TRIANGLE_BRACKETED"]++;
+			if (!GrammarObject.PairDepth.ContainsKey(pair.Name))
+				GrammarObject.PairDepth.Add(pair.Name, 0);
+			GrammarObject.PairDepth[pair.Name]++;
 		}
 
-		public void RemovePairBalanced()
+		public void RemovePairBalanced(PairSymbol pair)
 		{
-			//System.Diagnostics.Debug.WriteLine($"RemovePairBalanced. {GrammarObject.PairDepth.ContainsKey("TRIANGLE_BRACKETED")} {GrammarObject.PairDepth["TRIANGLE_BRACKETED"]}");
-			if (!GrammarObject.PairDepth.ContainsKey("TRIANGLE_BRACKETED"))
+			if (!GrammarObject.PairDepth.ContainsKey(pair.Name))
 				return;
-			GrammarObject.PairDepth["TRIANGLE_BRACKETED"]--;
-			if (GrammarObject.PairDepth["TRIANGLE_BRACKETED"] == 0)
+			GrammarObject.PairDepth[pair.Name]--;
+			if (GrammarObject.PairDepth[pair.Name] == 0)
 			{
-				ClearPairBalancedInGrammar();
+				ClearPairBalancedInGrammar(pair);
 			}
 		}
 
-		public void ClearPairBalancedInGrammar()
+		public void ClearPairBalancedInGrammar(PairSymbol pair)
 		{
-			GrammarObject.Pairs.Remove("TRIANGLE_BRACKETED");
-			GrammarObject.PairsLeft.Remove("LTB");
-			GrammarObject.PairsRight.Remove("RTB");
-			GrammarObject.PairDepth.Remove("TRIANGLE_BRACKETED");
+			GrammarObject.Pairs.Remove(pair.Name);
+			GrammarObject.PairsLeft.Remove(pair.Left);
+			GrammarObject.PairsRight.Remove(pair.Right);
+			GrammarObject.PairDepth.Remove(pair.Name);
 		}
 	}
 }

@@ -32,6 +32,8 @@ CRB			: '}'
 
 EXM			: '!'
  
+ 
+TRIANGLE_BRACKET: %left_manual '<' %right_manual '>'
 CURVE_BRACKETED : %left '{' %right '}'
 ROUND_BRACKETED : %left '(' %right ')'
 SQUARE_BRACKETED : %left ('['|GENERAL_ATTRIBUTE_START) %right ']'
@@ -83,7 +85,7 @@ sub_field_arr = ID ':' '[' Any ']'
 any_or_block = Any | '{' Any '}'
 
 // helpers
-template = '<' Any ID '>'
+template = '<' (Any|template)*  '>'
 			
 func_return_type = ':' ((Any(Avoid(';', '&', [ID, LB], 'class'))|template)* | '{' Any '}')
 

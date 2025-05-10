@@ -40,6 +40,9 @@ namespace Land.Core.Specification
 		public Dictionary<string, PairSymbol> Pairs { get; private set; } = new Dictionary<string, PairSymbol>();
 		public Dictionary<string, PairSymbol> PairsRight { get; private set; } = new Dictionary<string, PairSymbol>();
 		public Dictionary<string, PairSymbol> PairsLeft{ get; private set; } = new Dictionary<string, PairSymbol>();
+		public Dictionary<string, PairSymbol> PairsManual { get; private set; } = new Dictionary<string, PairSymbol>();
+		public Dictionary<string, PairSymbol> PairsRightManual { get; private set; } = new Dictionary<string, PairSymbol>();
+		public Dictionary<string, PairSymbol> PairsLeftManual { get; private set; } = new Dictionary<string, PairSymbol>();
 		public Dictionary<string, int> PairDepth { get; private set; }= new Dictionary<string, int>();
 		public HashSet<string> NonEmptyPrecedence { get; private set; } = new HashSet<string>();
 		public List<string> TokenOrder { get; private set; } = new List<string>();
@@ -133,6 +136,11 @@ namespace Land.Core.Specification
 			{
 				PairsRight[item.Value.Right] = item.Value;
 				PairsLeft[item.Value.Left] = item.Value;
+			}
+			foreach (var item in PairsManual)
+			{
+				PairsRightManual[item.Value.Right] = item.Value;
+				PairsLeftManual[item.Value.Left] = item.Value;
 			}
 		}
 
@@ -393,6 +401,12 @@ namespace Land.Core.Specification
 			}
 
 			OnGrammarUpdate();
+		}
+
+		public void DeclareManualPair(string name,string left, string right)
+		{
+			Console.WriteLine($"declared new manual pair {name} {left} {right}");
+			PairsManual[name] = new PairSymbol(name, left, right);
 		}
 
 		private void DeclareTerminal(TerminalSymbol terminal)

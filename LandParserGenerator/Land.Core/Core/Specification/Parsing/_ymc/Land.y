@@ -56,6 +56,7 @@
 %token <quantVal> OPTIONAL ZERO_OR_MORE ONE_OR_MORE
 %token IS_LIST_NODE PREC_NONEMPTY
 %token LSQUARE_BRACKET RSQUARE_BRACKET
+%token LEFT_MANUAL RIGHT_MANUAL
 
 %type <optQuantVal> quantifier
 %type <strVal> entry_core group optional_alias grammar_entity
@@ -79,6 +80,8 @@
 %type <dynamicList> sub_args
 %type <dynamicVal> sub_arg
 
+%type <strVal> pair_manual_elem
+
 %%
 
 lp_description 
@@ -100,6 +103,7 @@ element
 	: terminal
 	| nonterminal
 	| pair
+	| pair_manual
 	;
 	
 terminal
@@ -115,6 +119,24 @@ terminal
 opt_linestart
 	: LINESTART { $$ = true; }
 	| { $$ = false; }
+	;
+	
+pair_manual
+	: ENTITY_NAME COLON LEFT_MANUAL pair_manual_elem RIGHT_MANUAL pair_manual_elem
+		{
+			SafeGrammarAction(() => { 
+				ConstructedGrammar.DeclareManualPair($1, $4, $6);
+				ConstructedGrammar.AddLocation($1, @1.Start);
+			}, @1.Start);
+		}
+	;
+
+pair_manual_elem
+	: REGEX 
+		{ 	
+			$$ = ConstructedGrammar.GenerateTerminal($1);
+			ConstructedGrammar.AddLocation($$, @1.Start);
+		}
 	;
 	
 /******** ID = %left ID1 %right (ID2 | ID3) ***************/

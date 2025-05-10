@@ -72,6 +72,8 @@ STRING \"([^"\\]*|(\\\\)+|\\[^\\])*\"
 
 "%right" return (int)Tokens.RIGHT;
 
+"%right_manual" return (int)Tokens.RIGHT_MANUAL;
+
 // Символы, означающие нечто внутри правила
 
 "|" return (int)Tokens.OR;
@@ -90,6 +92,11 @@ STRING \"([^"\\]*|(\\\\)+|\\[^\\])*\"
 	"%left" {
 		BEGIN(0);
 		return (int)Tokens.LEFT;
+	}
+	
+	"%left_manual" {
+		BEGIN(0);
+		return (int)Tokens.LEFT_MANUAL;
 	}
 	
 	// Для терминалов, начинающихся с начала строки
