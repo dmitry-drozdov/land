@@ -12,6 +12,7 @@ namespace Land.Core.Parsing.LR
 		public int ActionType;// 0 - shift, 1 - reduce, 2 - accept
 		public int TargetItemIndex;
 		public Alternative ReductionAlternative;
+		public bool Balanced;
 
 		public override int GetHashCode()
 		{

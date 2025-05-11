@@ -92,12 +92,12 @@ namespace Land.Core.Parsing.LR
 
 				if (action != null)
 				{
-					if (action.ActionType == 0 && GrammarObject.PairsLeftManual.ContainsKey(token.Name))
+					if (action.ActionType == 0 && action.Balanced && GrammarObject.PairsLeftManual.ContainsKey(token.Name))
 					{
 						System.Diagnostics.Debug.WriteLine($"LOG🔔 Add Pair {token.Name}");
 						LexingStream.AddPairBalanced(GrammarObject.PairsLeftManual[token.Name]);
 					}
-					if (action.ActionType == 0 && GrammarObject.PairsRightManual.ContainsKey(token.Name))
+					if (action.ActionType == 0 && action.Balanced && GrammarObject.PairsRightManual.ContainsKey(token.Name))
 					{
 						System.Diagnostics.Debug.WriteLine($"LOG🔔 Remove pair {token.Name}");
 						LexingStream.RemovePairBalanced(GrammarObject.PairsRightManual[token.Name]);

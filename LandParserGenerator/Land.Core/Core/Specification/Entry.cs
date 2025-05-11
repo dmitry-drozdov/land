@@ -17,6 +17,7 @@ namespace Land.Core.Specification
 		public SymbolOptionsManager Options { get; set; }
 
 		public SymbolArguments Arguments { get; set; }
+		public bool Balanced { get; set; }
 
 		public Entry(string val)
 		{
@@ -30,6 +31,13 @@ namespace Land.Core.Specification
 			Symbol = val;
 			Options = opts;
 			Arguments = new SymbolArguments();
+		}
+		public Entry(string val, SymbolOptionsManager opts, bool balanced)
+		{
+			Symbol = val;
+			Options = opts;
+			Arguments = new SymbolArguments();
+			Balanced = balanced;
 		}
 
 		public Entry(string val, SymbolOptionsManager opts, SymbolArguments args)

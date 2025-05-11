@@ -85,7 +85,7 @@ sub_field_arr = ID ':' '[' Any ']'
 any_or_block = Any | '{' Any '}'
 
 // helpers
-template = '<' (Any|template)*  '>'
+template = %'<' Any %'>' 
 			
 func_return_type = ':' ((Any(Avoid(';', '&', [ID, LB], 'class'))|template)* | '{' Any '}')
 

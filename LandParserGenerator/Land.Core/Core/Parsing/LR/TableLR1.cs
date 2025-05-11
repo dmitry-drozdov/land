@@ -68,7 +68,8 @@ namespace Land.Core.Parsing.LR
 						actions[i, Lookaheads[marker.Next]].Add(new Action()
 						{
 							ActionType = 0,
-							TargetItemIndex = Transitions[i][marker.Next]
+							TargetItemIndex = Transitions[i][marker.Next],
+							Balanced = marker.Alternative.Elements[0].Balanced
 						});
 
 						if (marker.Next == Grammar.ANY_TOKEN_NAME)

@@ -1,9 +1,16 @@
 
 
 LTB : '<'
+RTB	: '>'
+
+TRIANGLE: %left_manual '<' %right_manual '>'
 
 
-content = % '<' Any % '<'
+
+
+content =  template
+
+template =  ('<' 'X' Any 'X' '>') | (%'<' (Any|template)* %'>') 
 
 
 %%

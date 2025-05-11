@@ -504,7 +504,7 @@ public class Parser: ShiftReduceParser<ValueType, Land.Core.SegmentLocation>
 				}
 				else
 				{
-					CurrentSemanticValue.entryVal = new Entry(ValueStack[ValueStack.Depth-4].strVal, opts);
+					CurrentSemanticValue.entryVal = new Entry(ValueStack[ValueStack.Depth-4].strVal, opts, ValueStack[ValueStack.Depth - 5].optBalancedVal != null);
 				}
 			}
 		}
