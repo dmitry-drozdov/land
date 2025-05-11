@@ -42,6 +42,7 @@
 	// Информация о количестве повторений
 	public Nullable<Quantifier> optQuantVal;
 	public Nullable<double> optDoubleVal;
+	public string optBalancedVal;
 }
 
 %start lp_description
@@ -57,6 +58,7 @@
 %token IS_LIST_NODE PREC_NONEMPTY
 %token LSQUARE_BRACKET RSQUARE_BRACKET
 %token LEFT_MANUAL RIGHT_MANUAL
+%token <optBalancedVal> BALANCED
 
 %type <optQuantVal> quantifier
 %type <strVal> entry_core group optional_alias grammar_entity
@@ -81,6 +83,7 @@
 %type <dynamicVal> sub_arg
 
 %type <strVal> pair_manual_elem
+%type <optBalancedVal> balanced
 
 %%
 
@@ -209,7 +212,7 @@ optional_alias
 	;
 	
 entry
-	: context_option_groups entry_core entry_args quantifier prec_nonempty
+	: context_option_groups balanced entry_core entry_args quantifier prec_nonempty
 		{ 		
 			var opts = new SymbolOptionsManager();
 			
@@ -221,9 +224,13 @@ entry
 				}
 			}
 			
-			if($4.HasValue)
+			if ($2 != null) {
+				Console.WriteLine("BALANCED");
+			}
+			
+			if($5.HasValue)
 			{
-				if($2.StartsWith(Grammar.ANY_TOKEN_NAME))
+				if($3.StartsWith(Grammar.ANY_TOKEN_NAME))
 				{
 					Log.Add(Message.Warning(
 							"Использование квантификаторов с символом '" + Grammar.ANY_TOKEN_NAME + "' избыточно и не влияет на процесс разбора",
@@ -233,7 +240,7 @@ entry
 				}
 				else
 				{			
-					var generated = ConstructedGrammar.GenerateNonterminal($2, $4.Value, $5);
+					var generated = ConstructedGrammar.GenerateNonterminal($3, $5.Value, $6);
 					ConstructedGrammar.AddLocation(generated, @$.Start);
 					
 					$$ = new Entry(generated, opts);
@@ -242,18 +249,18 @@ entry
 			
 			if($$ == null)
 			{
-				if($2.StartsWith(Grammar.ANY_TOKEN_NAME))
+				if($3.StartsWith(Grammar.ANY_TOKEN_NAME))
 				{
 					var args = new SymbolArguments();
 					AnyArgument sugarOption;
 
-					if(Enum.TryParse($2.Substring(Grammar.ANY_TOKEN_NAME.Length), out sugarOption)) {	
-						args.Set(sugarOption, $3.Where(e => e is string).Select(e => (string)e));
-						args.SetList(sugarOption, $3.Where(e => e is List<dynamic>).Select(e => (e as List<dynamic>).Select(x => (string)x).ToList()).ToList());
+					if(Enum.TryParse($3.Substring(Grammar.ANY_TOKEN_NAME.Length), out sugarOption)) {	
+						args.Set(sugarOption, $4.Where(e => e is string).Select(e => (string)e));
+						args.SetList(sugarOption, $4.Where(e => e is List<dynamic>).Select(e => (e as List<dynamic>).Select(x => (string)x).ToList()).ToList());
 					}
 					else
 					{
-						foreach(var opt in $3)
+						foreach(var opt in $4)
 						{
 							var errorGroupName = String.Empty;
 							
@@ -292,7 +299,7 @@ entry
 				}
 				else
 				{
-					$$ = new Entry($2, opts);
+					$$ = new Entry($3, opts);
 				}
 			}
 		}
@@ -343,6 +350,11 @@ quantifier
 	: OPTIONAL { $$ = $1; }
 	| ZERO_OR_MORE { $$ = $1; }
 	| ONE_OR_MORE { $$ = $1; }
+	| { $$ = null; }
+	;
+	
+balanced
+	: BALANCED { $$ = $1; }
 	| { $$ = null; }
 	;
 	

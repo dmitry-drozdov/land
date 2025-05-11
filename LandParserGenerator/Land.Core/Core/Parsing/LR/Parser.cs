@@ -92,12 +92,12 @@ namespace Land.Core.Parsing.LR
 
 				if (action != null)
 				{
-					if (GrammarObject.PairsLeftManual.ContainsKey(token.Name) && action.ActionType == 0)
+					if (action.ActionType == 0 && GrammarObject.PairsLeftManual.ContainsKey(token.Name))
 					{
 						System.Diagnostics.Debug.WriteLine($"LOG🔔 Add Pair {token.Name}");
 						LexingStream.AddPairBalanced(GrammarObject.PairsLeftManual[token.Name]);
 					}
-					if (GrammarObject.PairsRightManual.ContainsKey(token.Name) && action.ActionType == 0)
+					if (action.ActionType == 0 && GrammarObject.PairsRightManual.ContainsKey(token.Name))
 					{
 						System.Diagnostics.Debug.WriteLine($"LOG🔔 Remove pair {token.Name}");
 						LexingStream.RemovePairBalanced(GrammarObject.PairsRightManual[token.Name]);
@@ -190,7 +190,7 @@ namespace Land.Core.Parsing.LR
 						LexingStream.AddPairBalanced(GrammarObject.PairsLeftManual[LexingStream.CurrentToken.Name]);
 					}
 
-					System.Diagnostics.Debug.WriteLine($"LOG🔔 Неожиданный символ {this.Developerify(LexingStream.CurrentToken)} {token.Name}");
+					//System.Diagnostics.Debug.WriteLine($"LOG🔔 Неожиданный символ {this.Developerify(LexingStream.CurrentToken)} {token.Name}");
 
 					Log.Add(PotentialErrorMessage = Message.Trace(
 						$"Неожиданный символ {this.Developerify(LexingStream.CurrentToken)} для состояния{Environment.NewLine}\t\t" + Table.ToString(StatesStack.Peek(), null, "\t\t"),

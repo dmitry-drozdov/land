@@ -1,12 +1,9 @@
 
-ID			: [_a-zA-Z][_0-9a-zA-Z]*
+
+LTB : '<'
 
 
-
-
-
-
-content = AnyAvoid(['a', 'b'])
+content = % '<' Any % '<'
 
 
 %%

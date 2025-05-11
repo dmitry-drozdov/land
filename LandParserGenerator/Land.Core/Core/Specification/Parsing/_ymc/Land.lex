@@ -59,6 +59,11 @@ STRING \"([^"\\]*|(\\\\)+|\\[^\\])*\"
 	return (int)Tokens.ARROW;
 }
 
+"%" {
+	yylval.optBalancedVal = "%";
+	return (int)Tokens.BALANCED;
+}
+
 // Начало правила
 
 ^{ID} {
