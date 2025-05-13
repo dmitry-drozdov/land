@@ -13,6 +13,16 @@ using static System.Net.Mime.MediaTypeNames;
 
 namespace Land.Core.Parsing.LR
 {
+	public static class Extensions
+	{
+		public static IEnumerable<List<T>> Windowed<T>(this List<T> source, int size)
+		{
+			for (int i = 0; i <= source.Count - size; i++)
+			{
+				yield return source.GetRange(i, size);
+			}
+		}
+	}
 	public class Parser : BaseParser
 	{
 		private TableLR1 Table { get; set; }
@@ -64,7 +74,7 @@ namespace Land.Core.Parsing.LR
 			{
 				LexingStream.ClearPairBalancedInGrammar(item.Value);
 			}
-			
+
 
 			//d.Stop("init");
 
@@ -344,23 +354,9 @@ namespace Land.Core.Parsing.LR
 				&& token.Type != Grammar.ERROR_TOKEN_TYPE)
 			{
 				tokens.Add(token.Name);
-				if (anyNode.Arguments.AnyArgumentsList.ContainsKey(AnyArgument.Avoid))
-				{
-					var breakWhile = false;
-					foreach (var item in anyNode.Arguments.AnyArgumentsList[AnyArgument.Avoid])
-					{
-						if (tokens.Count < item.Count)
-							continue;
-						if (item.SequenceEqual(tokens.Skip(Math.Max(0, tokens.Count - item.Count))))
-						{
-							System.Diagnostics.Debug.WriteLine("LOG🔔 break AnyAvoid");
-							breakWhile = true;
-							break;
-						}
-					}
-					if (breakWhile)
-						break;
-				}
+
+				if (HasAvoidSequence(anyNode, tokens))
+					break;
 
 
 				anyNode.Value.Add(token.Text);
@@ -375,13 +371,12 @@ namespace Land.Core.Parsing.LR
 				{
 					token = LexingStream.GetNextToken(anyLevel, out List<IToken> skippedBuffer);
 
-					//d.Start();
 					if (skippedBuffer.Count > 0)
 					{
 						anyNode.Value.AddRange(skippedBuffer.Select(t => t.Text));
+						tokens.AddRange(skippedBuffer.Select(t => t.Name));
 						endLocation = skippedBuffer.Last().Location.End;
 					}
-					//d.Stop("AddRange");
 				}
 			}
 
@@ -396,8 +391,8 @@ namespace Land.Core.Parsing.LR
 				return token;
 			}
 
-			/// Если дошли до конца входной строки, и это было не по плану
-			if (!stopTokens.Contains(token.Name))
+			/// Если дошли до конца входной строки, и это было не по плану, или если встретили подпоследовательность, которую следует избегать
+			if (!stopTokens.Contains(token.Name) || HasAvoidSequence(anyNode, tokens))
 			{
 				if (enableRecovery)
 				{
@@ -452,6 +447,24 @@ namespace Land.Core.Parsing.LR
 			}
 
 			return token;
+		}
+
+		private bool HasAvoidSequence(Node anyNode, List<string> tokens)
+		{
+			if (!anyNode.Arguments.AnyArgumentsList.ContainsKey(AnyArgument.Avoid))
+				return false;
+			foreach (var item in anyNode.Arguments.AnyArgumentsList[AnyArgument.Avoid])
+			{
+				if (tokens.Count < item.Count)
+					continue;
+
+				if (tokens.Windowed(item.Count).Any(window => window.SequenceEqual(item)))
+				{
+					System.Diagnostics.Debug.WriteLine("LOG🔔 break AnyAvoid");
+					return true;
+				}
+			}
+			return false;
 		}
 
 		public HashSet<string> GetStopTokens(SymbolArguments args, int state)
