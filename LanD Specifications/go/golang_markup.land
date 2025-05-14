@@ -53,6 +53,7 @@ func = 'func' f_reciever? f_name generic2? f_args f_returns ('{' Any '}')
 	| 'func' f_reciever? f_name generic2? f_args f_returns (NL|';')
 	| 'func' f_reciever? f_name generic2? f_args (NL|';')
 
+//  'func' f_reciever? f_name generic2? f_args f_returns ('{' AnyAvoid([ID, '.', Get', '(', DIGIT, ')', '.', '(', 'func']) '}')
 
 anon_func_title = 'func' f_args NL | 'func' f_args f_returns
 
