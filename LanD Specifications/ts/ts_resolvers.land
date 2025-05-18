@@ -74,7 +74,7 @@ struct_blocks = '{' (struct_block ',')* struct_block? '}'
 struct_block = field_block | Any
 field_block = ID ':' '{' (sub_field ',')* sub_field? '}'
 
-sub_field = sub_field_func_impl |  sub_field_any | sub_field_arr | Any 
+sub_field = sub_field_func_impl |  sub_field_any | sub_field_arr | func| Any 
 
 sub_field_func_impl = ID ':' ASYNC? '(' Any ')' (':' ID)? '=>' any_or_block
 
