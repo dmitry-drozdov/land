@@ -60,7 +60,7 @@ class = 'class' ID template? (('extends'|'implements') Any)? '{' (func|Any)* '}'
 
 
 
-func = ID+ template? '?'? '!'? '(' Any ')' func_return_type? '{' Any '}'
+func = ID+ template? '?'? '!'? '(' args ')' func_return_type? '{' Any '}'
 
 // lambda struct section
 lamda_struct = 'const' ID '=' template? '(' Any ')' func_return_type? '=>' AnyAvoid(NEW, 'class') ( '(' struct_blocks ')' | '{' Any '}' )
@@ -76,7 +76,7 @@ field_block = ID ':' '{' (sub_field ',')* sub_field? '}'
 
 sub_field = sub_field_func_impl |  sub_field_any | sub_field_arr | func| Any 
 
-sub_field_func_impl = ID ':' ASYNC? '(' Any ')' (':' ID)? '=>' any_or_block
+sub_field_func_impl = ID ':' ASYNC? '(' args ')' (':' ID)? '=>' any_or_block
 
 
 sub_field_any = ID ':' (AnyAvoid('{', BOOL, CHAR, DEC, STRING, STRING_Q)|template)*
@@ -89,7 +89,8 @@ template = %'<' Any %'>'
 			
 func_return_type = ':' ((Any(Avoid(';', '&', [ID, LB], 'class'))|template)* | '{' Any '}')
 
-
+args = (arg ',')* arg
+arg = Any
 
 water_entity	=	Any 
 
@@ -111,6 +112,6 @@ water_entity	=	Any
 
 
 %markup {
-	land func_line type_def type_line
-	headercore(id) func_line type_def
+	land func sub_field
+	headercore(id) func sub_field
 }
