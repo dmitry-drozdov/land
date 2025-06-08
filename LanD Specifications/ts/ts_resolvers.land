@@ -105,8 +105,8 @@ water_entity	=	Any
 
 %nodes {
 	ghost entity
-	leaf 
-	void LB RB COMMA COLON
+	leaf arg
+	void LB RB COMMA COLON ASYNC
 }
 
 
