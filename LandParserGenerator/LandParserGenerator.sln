@@ -27,6 +27,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NoGUI", "NoGUI\NoGUI.csproj
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GoPreprocessorBody", "Preprocessors\Conditional compilation\GoPreprocessorBody\GoPreprocessorBody.csproj", "{7F05D143-4AD6-49FE-B898-F5B9FB8FFFF1}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Land.Core8", "Land.Core8\Land.Core8.csproj", "{F22181E6-8647-466B-B266-F81E94535E03}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -107,6 +109,14 @@ Global
 		{7F05D143-4AD6-49FE-B898-F5B9FB8FFFF1}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7F05D143-4AD6-49FE-B898-F5B9FB8FFFF1}.Release|x64.ActiveCfg = Release|x64
 		{7F05D143-4AD6-49FE-B898-F5B9FB8FFFF1}.Release|x64.Build.0 = Release|x64
+		{F22181E6-8647-466B-B266-F81E94535E03}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F22181E6-8647-466B-B266-F81E94535E03}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F22181E6-8647-466B-B266-F81E94535E03}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F22181E6-8647-466B-B266-F81E94535E03}.Debug|x64.Build.0 = Debug|Any CPU
+		{F22181E6-8647-466B-B266-F81E94535E03}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F22181E6-8647-466B-B266-F81E94535E03}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F22181E6-8647-466B-B266-F81E94535E03}.Release|x64.ActiveCfg = Release|Any CPU
+		{F22181E6-8647-466B-B266-F81E94535E03}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

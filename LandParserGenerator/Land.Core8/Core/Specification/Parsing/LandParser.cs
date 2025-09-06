@@ -4,9 +4,9 @@
 
 // GPPG version 1.5.2
 // Machine:  I7-11700
-// DateTime: 11.05.2025 13:53:29
+// DateTime: 11.05.2025 13:52:29
 // UserName: dima
-// Input file <E:\phd\my\land\LandParserGenerator\Land.Core\Core\Specification\Parsing\_ymc\Land.y - 11.05.2025 13:53:29>
+// Input file <E:\phd\my\land\LandParserGenerator\Land.Core\Core\Specification\Parsing\_ymc\Land.y - 11.05.2025 13:52:29>
 
 // options: no-lines gplex
 
@@ -80,14 +80,14 @@ public class ScanObj {
 [GeneratedCodeAttribute( "Gardens Point Parser Generator", "1.5.2")]
 public class Parser: ShiftReduceParser<ValueType, Land.Core.SegmentLocation>
 {
-  // Verbatim content from E:\phd\my\land\LandParserGenerator\Land.Core\Core\Specification\Parsing\_ymc\Land.y - 11.05.2025 13:53:29
+  // Verbatim content from E:\phd\my\land\LandParserGenerator\Land.Core\Core\Specification\Parsing\_ymc\Land.y - 11.05.2025 13:52:29
     public Parser(AbstractScanner<ValueType, SegmentLocation> scanner) : base(scanner) { }
     
     public Grammar ConstructedGrammar;
     public List<Message> Log = new List<Message>();
     
     private HashSet<string> Aliases = new HashSet<string>();
-  // End verbatim content from E:\phd\my\land\LandParserGenerator\Land.Core\Core\Specification\Parsing\_ymc\Land.y - 11.05.2025 13:53:29
+  // End verbatim content from E:\phd\my\land\LandParserGenerator\Land.Core\Core\Specification\Parsing\_ymc\Land.y - 11.05.2025 13:52:29
 
 #pragma warning disable 649
   private static Dictionary<int, string> aliases;
@@ -504,7 +504,7 @@ public class Parser: ShiftReduceParser<ValueType, Land.Core.SegmentLocation>
 				}
 				else
 				{
-					CurrentSemanticValue.entryVal = new Entry(ValueStack[ValueStack.Depth-4].strVal, opts);
+					CurrentSemanticValue.entryVal = new Entry(ValueStack[ValueStack.Depth-4].strVal, opts, ValueStack[ValueStack.Depth - 5].optBalancedVal != null);
 				}
 			}
 		}
