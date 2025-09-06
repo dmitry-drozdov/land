@@ -8,6 +8,8 @@ namespace Land.Core.Parsing.Tree
 	[Serializable]
 	public class Node
 	{
+		public Guid Id { get; } = Guid.NewGuid();
+
 		/// <summary>
 		/// Родительский узел
 		/// </summary
