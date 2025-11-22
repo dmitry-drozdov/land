@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Antlr4.Runtime.Misc;
 using static System.Net.Mime.MediaTypeNames;
+using Land.Core.Core.Parsing;
 
 namespace Land.Core.Parsing.LR
 {
@@ -46,7 +47,16 @@ namespace Land.Core.Parsing.LR
 
 		protected override (Node, Durations) ParsingAlgorithm(string text)
 		{
+			Tracing.Init();
+			using (Tracing.Tracer.BuildSpan("ParsingAlgorithmHelp").StartActive())
+				return ParsingAlgorithmHelp(text);
+		}
+
+		protected (Node, Durations) ParsingAlgorithmHelp(string text)
+		{
 			Node root = null;
+
+
 
 			//var watcher = Stopwatch.StartNew();
 
@@ -114,9 +124,8 @@ namespace Land.Core.Parsing.LR
 					}
 					if (token.Type == Grammar.ANY_TOKEN_TYPE)
 					{
-						//d.Start();
-						token = SkipAny(new Node(Grammar.ANY_TOKEN_NAME), true);
-						//d.Stop("SkipAny");
+						using (Tracing.Tracer.BuildSpan("SkipAny").StartActive())
+							token = SkipAny(new Node(Grammar.ANY_TOKEN_NAME), true);
 
 						/// Если при пропуске текста произошла ошибка, прерываем разбор
 						if (token.Type == Grammar.ERROR_TOKEN_TYPE)
@@ -251,10 +260,9 @@ namespace Land.Core.Parsing.LR
 				}
 			}
 
-			//d.Start();
-			if (root != null)
-				root = TreePostProcessing(root);
-			//d.Stop("TreePostProcessing");
+			using (Tracing.Tracer.BuildSpan("TreePostProcessing").StartActive())
+				if (root != null)
+					root = TreePostProcessing(root);
 
 			//d.Add("ParsingAlgorithm", watcher);
 

@@ -9,6 +9,7 @@ using Land.Core.Lexing;
 using Land.Core.Parsing.Tree;
 using Land.Core.Parsing.Preprocessing;
 using System.Diagnostics;
+using Land.Core.Core.Parsing;
 
 namespace Land.Core.Parsing
 {
@@ -115,11 +116,16 @@ namespace Land.Core.Parsing
 		protected Node TreePostProcessing(Node root)
 		{
 			/// Запускаем стандартные визиторы
-			root.Accept(new RemoveAutoVisitor(GrammarObject));
-			root.Accept(new GhostListOptionProcessingVisitor(GrammarObject));
-			root.Accept(new LeafOptionProcessingVisitor(GrammarObject));
-			root.Accept(new MergeAnyVisitor(GrammarObject));
-			root.Accept(new UserifyVisitor(GrammarObject));
+			using (Tracing.Tracer.BuildSpan("RemoveAutoVisitor").StartActive())
+				root.Accept(new RemoveAutoVisitor(GrammarObject));
+			using (Tracing.Tracer.BuildSpan("GhostListOptionProcessingVisitor").StartActive())
+				root.Accept(new GhostListOptionProcessingVisitor(GrammarObject));
+			using (Tracing.Tracer.BuildSpan("LeafOptionProcessingVisitor").StartActive())
+				root.Accept(new LeafOptionProcessingVisitor(GrammarObject));
+			using (Tracing.Tracer.BuildSpan("MergeAnyVisitor").StartActive())
+				root.Accept(new MergeAnyVisitor(GrammarObject));
+			using (Tracing.Tracer.BuildSpan("UserifyVisitor").StartActive())
+				root.Accept(new UserifyVisitor(GrammarObject));
 
 			/// Формируем узлы для кастомных блоков
 			if (LexingStream.CustomBlockTrees?.Count > 0)
