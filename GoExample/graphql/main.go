@@ -2,7 +2,11 @@ package main
 
 import (
 	"fmt"
-	"log"
+	"io"
+	"os"
+	"time"
+
+	"github.com/graph-gophers/graphql-go"
 )
 
 var source = map[string]string{
@@ -28,7 +32,11 @@ var results = map[string]string{
 }
 
 func main() {
-	fmt.Println("===============START===============")
+	err := parseOneFile("e:\\phd\\ts\\test\\3\\schema.graphql")
+	if err != nil {
+		fmt.Println(err)
+	}
+	/*fmt.Println("===============START===============")
 	defer fmt.Println("================END================")
 	res, err := parseFolders()
 	if err != nil {
@@ -55,5 +63,28 @@ func main() {
 			fmt.Println(fmt.Errorf("[%s], LOC: [%d] OK", repoName, schema.LOC))
 		}
 	}
+	*/
+}
 
+func parseOneFile(path string) error {
+	readFile, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	defer readFile.Close()
+
+	bytes, err := io.ReadAll(readFile)
+	if err != nil {
+		return err
+	}
+
+	t0 := time.Now()
+	schema, err := graphql.ParseSchema(string(bytes), nil)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(time.Since(t0))
+	fmt.Println(len(schema.Inspect().Types()))
+	return nil
 }

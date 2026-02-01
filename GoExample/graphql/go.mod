@@ -11,6 +11,7 @@ require (
 
 require (
 	github.com/segmentio/encoding v0.4.0
+	github.com/vektah/gqlparser/v2 v2.5.31
 	golang.org/x/sync v0.8.0
 	utils v0.0.0
 )
