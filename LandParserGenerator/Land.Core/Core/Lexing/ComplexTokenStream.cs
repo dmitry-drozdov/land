@@ -299,6 +299,45 @@ namespace Land.Core.Lexing
 			return token;
 		}
 
+
+		/// <summary>
+		/// Переход к следующему токену, пока не окажемся на нужном уровне вложенности.
+		/// В отличие от перегрузки с List, не выделяет память под список пропущенных токенов.
+		/// Возвращает последний пропущенный токен (если были пропуски), чтобы можно было обновить endLocation.
+		/// </summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public IToken GetNextToken(int level, out IToken lastSkipped, bool recovering = false)
+		{
+			lastSkipped = null;
+
+			while (true)
+			{
+				var next = GetNextToken();
+
+				if (recovering && GrammarObject.PairsRight.ContainsKey(next.Name) && GrammarObject.PairsRightManual.ContainsKey(next.Name))
+				{
+					RemovePairBalanced(GrammarObject.PairsRight[next.Name]);
+					System.Diagnostics.Debug.WriteLine($"LOG🔔 Remove pair while recovering {next.Location.Start.Line} {next.Location.Start.Column}");
+				}
+				if (recovering && GrammarObject.PairsLeft.ContainsKey(next.Name) && GrammarObject.PairsLeftManual.ContainsKey(next.Name))
+				{
+					AddPairBalanced(GrammarObject.PairsLeft[next.Name]);
+					System.Diagnostics.Debug.WriteLine($"LOG🔔 Add pair while recovering {next.Location.Start.Line} {next.Location.Start.Column}");
+				}
+
+				if (PairStack.Count == level
+					|| next.Type == Grammar.EOF_TOKEN_TYPE
+					|| next.Type == Grammar.ERROR_TOKEN_TYPE)
+				{
+					return next;
+				}
+				else
+				{
+					lastSkipped = next;
+				}
+			}
+		}
+
 		/// <summary>
 		/// Получение следующего токена, находящегося на заданном уровне вложенности пар
 		/// </summary>

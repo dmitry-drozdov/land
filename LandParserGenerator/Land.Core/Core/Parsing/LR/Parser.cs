@@ -125,7 +125,7 @@ namespace Land.Core.Parsing.LR
 					if (token.Type == Grammar.ANY_TOKEN_TYPE)
 					{
 						//using (Tracing.Tracer.BuildSpan("SkipAny").StartActive())
-							token = SkipAny(new Node(Grammar.ANY_TOKEN_NAME), true);
+						token = SkipAny(new Node(Grammar.ANY_TOKEN_NAME), true);
 
 						/// Если при пропуске текста произошла ошибка, прерываем разбор
 						if (token.Type == Grammar.ERROR_TOKEN_TYPE)
@@ -242,6 +242,7 @@ namespace Land.Core.Parsing.LR
 					/// Если встретился неожиданный токен, но он в списке пропускаемых
 					if (GrammarObject.Options.IsSet(ParsingOption.GROUP_NAME, ParsingOption.SKIP, token.Name))
 					{
+						//using (Tracing.Tracer.BuildSpan("GetNextToken").StartActive())
 						token = LexingStream.GetNextToken();
 					}
 					else
@@ -355,38 +356,68 @@ namespace Land.Core.Parsing.LR
 
 			/// Пропускаем токены, пока не найдём тот, для которого
 			/// в текущем состоянии нужно выполнить перенос или свёртку
-			while (!stopTokens.Contains(token.Name)
-				&& (ignorePairs || LexingStream.CurrentTokenDirection != Direction.Up)
-				&& !anyNode.Arguments.Contains(AnyArgument.Avoid, token.Name)
-				&& token.Type != Grammar.EOF_TOKEN_TYPE
-				&& token.Type != Grammar.ERROR_TOKEN_TYPE)
+			/// (Any.Value копим лениво: вместо добавления текста на каждом шаге сохраняем диапазон индексов токенов)
+			// (Fast-path) В обычном разборе SkipAny вызывается с enableRecovery=true.
+			// Тогда Any.Value копим лениво (диапазоном токенов) — без list.Add на каждом шаге.
+			if (enableRecovery)
 			{
-				tokens.Add(token.Name);
+				var anyStartIndex = tokenIndex; // индекс первого токена, включаемого в Any
+				IToken lastSkipped = null;
 
-				if (HasAvoidSequence(anyNode, tokens))
-					break;
-
-
-				anyNode.Value.Add(token.Text);
-				endLocation = token.Location.End;
-
-
-				if (ignorePairs)
+				while (!stopTokens.Contains(token.Name)
+					&& (ignorePairs || LexingStream.CurrentTokenDirection != Direction.Up)
+					&& !anyNode.Arguments.Contains(AnyArgument.Avoid, token.Name)
+					&& token.Type != Grammar.EOF_TOKEN_TYPE
+					&& token.Type != Grammar.ERROR_TOKEN_TYPE)
 				{
-					token = LexingStream.GetNextToken();
-				}
-				else
-				{
-					token = LexingStream.GetNextToken(anyLevel, out List<IToken> skippedBuffer);
+					endLocation = token.Location.End;
 
-					if (skippedBuffer.Count > 0)
+					if (ignorePairs)
 					{
-						anyNode.Value.AddRange(skippedBuffer.Select(t => t.Text));
-						tokens.AddRange(skippedBuffer.Select(t => t.Name));
-						endLocation = skippedBuffer.Last().Location.End;
+						token = LexingStream.GetNextToken();
+					}
+					else
+					{
+						token = LexingStream.GetNextToken(anyLevel, out lastSkipped);
+						if (lastSkipped != null)
+							endLocation = lastSkipped.Location.End;
+					}
+				}
+
+				// Текущий token сейчас указывает на стоп-токен (он НЕ включается в Any),
+				// поэтому конец диапазона = CurrentIndex (exclusive).
+				var anyEndExclusive = LexingStream.CurrentIndex;
+				if (anyStartIndex >= 0 && anyEndExclusive > anyStartIndex && !anyNode.HasExplicitValue)
+					anyNode.SetLazyTokenRange(LexingStream, anyStartIndex, anyEndExclusive);
+			}
+			else
+			{
+				// Recovery-path: оставляем старое поведение с фактическим накоплением Value
+				while (!stopTokens.Contains(token.Name)
+					&& (ignorePairs || LexingStream.CurrentTokenDirection != Direction.Up)
+					&& !anyNode.Arguments.Contains(AnyArgument.Avoid, token.Name)
+					&& token.Type != Grammar.EOF_TOKEN_TYPE
+					&& token.Type != Grammar.ERROR_TOKEN_TYPE)
+				{
+					anyNode.Value.Add(token.Text);
+					endLocation = token.Location.End;
+
+					if (ignorePairs)
+					{
+						token = LexingStream.GetNextToken();
+					}
+					else
+					{
+						token = LexingStream.GetNextToken(anyLevel, out List<IToken> skippedBuffer);
+						if (skippedBuffer.Count > 0)
+						{
+							anyNode.Value.AddRange(skippedBuffer.Select(t => t.Text));
+							endLocation = skippedBuffer.Last().Location.End;
+						}
 					}
 				}
 			}
+
 
 
 			if (endLocation != null)

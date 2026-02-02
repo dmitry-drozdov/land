@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Land.Core.Specification;
+using Land.Core.Lexing;
 
 namespace Land.Core.Parsing.Tree
 {
@@ -38,6 +39,41 @@ namespace Land.Core.Parsing.Tree
 		/// </summary>
 		public string Alias { get; set; }
 
+		// Lazy Any.Value (token range). Filled by parser, materialized only on first Value access.
+		// NOTE: TokenStream reference is not serialized.
+		[NonSerialized] private TokenStream _lazyTokenStream;
+		private int _lazyTokenStart = -1;
+		private int _lazyTokenEndExclusive = -1;
+
+		public bool HasLazyTokenRange => _lazyTokenStart >= 0 && _lazyTokenEndExclusive >= _lazyTokenStart;
+
+		public void SetLazyTokenRange(TokenStream stream, int startIndex, int endExclusive)
+		{
+			_lazyTokenStream = stream;
+			_lazyTokenStart = startIndex;
+			_lazyTokenEndExclusive = endExclusive;
+			// сбрасываем материализованное значение, если было
+			_value = null;
+		}
+
+		internal bool TryGetLazyTokenRange(out TokenStream stream, out int startIndex, out int endExclusive)
+		{
+			stream = _lazyTokenStream;
+			startIndex = _lazyTokenStart;
+			endExclusive = _lazyTokenEndExclusive;
+			return stream != null && HasLazyTokenRange;
+		}
+
+		internal void ExtendLazyTokenRangeEnd(int newEndExclusive)
+		{
+			if (HasLazyTokenRange && newEndExclusive >= _lazyTokenStart)
+			{
+				_lazyTokenEndExclusive = newEndExclusive;
+				_value = null; // если уже было материализовано — сбросим
+			}
+		}
+
+
 		/// <summary>
 		/// Набор токенов, соответствующих листовому узлу
 		/// </summary>
@@ -47,11 +83,42 @@ namespace Land.Core.Parsing.Tree
 			get
 			{
 				if (_value == null)
-					_value = new List<string>(1);
+				{
+					// Materialize lazy token-range value (used for Any) on first access
+					if (_lazyTokenStream != null && HasLazyTokenRange)
+					{
+						var count = _lazyTokenEndExclusive - _lazyTokenStart;
+						var list = new List<string>(count > 0 ? count : 1);
+						for (int i = _lazyTokenStart; i < _lazyTokenEndExclusive; i++)
+						{
+							var tok = _lazyTokenStream.GetTokenAt(i);
+							if (tok != null) list.Add(tok.Text);
+						}
+						_value = list;
+						// release references to allow GC (optional)
+						_lazyTokenStream = null;
+						_lazyTokenStart = -1;
+						_lazyTokenEndExclusive = -1;
+					}
+					else
+					{
+						_value = new List<string>(1);
+					}
+				}
 				return _value;
 			}
-			set => _value = value;
+			set
+			{
+				_value = value;
+				// if Value is explicitly set, drop lazy range
+				_lazyTokenStream = null;
+				_lazyTokenStart = -1;
+				_lazyTokenEndExclusive = -1;
+			}
 		}
+
+		public bool HasExplicitValue => _value != null && _value.Count > 0;
+
 
 		/// <summary>
 		/// Потомки узла
@@ -270,7 +337,12 @@ namespace Land.Core.Parsing.Tree
 			ResetChildren();
 			if (_value != null)
 				_value.Clear();
+
+			_lazyTokenStream = null;
+			_lazyTokenStart = -1;
+			_lazyTokenEndExclusive = -1;
 		}
+
 
 		public void SetLocation(PointLocation start, PointLocation end)
 		{

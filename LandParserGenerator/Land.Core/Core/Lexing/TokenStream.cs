@@ -29,7 +29,7 @@ namespace Land.Core.Lexing
 			/// и последний считанный токен - не признак конца файла
 			if (CurrentIndex + 1 == Tokens.Count)
 			{
-				if (Tokens.Count == 0 || Tokens[Tokens.Count-1].Type != Grammar.EOF_TOKEN_TYPE)
+				if (Tokens.Count == 0 || Tokens[Tokens.Count - 1].Type != Grammar.EOF_TOKEN_TYPE)
 				{
 					++CurrentIndex;
 					Tokens.Add(Lexer.NextToken());
@@ -54,6 +54,15 @@ namespace Land.Core.Lexing
 
 		public int Count => Tokens.Count;
 
+
+
+		/// <summary>
+		/// Доступ к ранее считанному токену по индексу (без копирования)
+		/// </summary>
+		public IToken GetTokenAt(int idx)
+		{
+			return (idx >= 0 && idx < Tokens.Count) ? Tokens[idx] : null;
+		}
 		public IToken MoveTo(int idx)
 		{
 			if (idx >= 0 && idx < Tokens.Count)
