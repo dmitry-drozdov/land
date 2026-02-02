@@ -9,6 +9,15 @@ namespace Land.Core.Parsing.Tree
 	[Serializable]
 	public class Node
 	{
+		// Shared empty instances to avoid per-node allocations on read.
+		// IMPORTANT: do not mutate these instances (use GetMutableOptions/GetMutableArguments if you need to write).
+		private static readonly SymbolOptionsManager _emptyOptions = new SymbolOptionsManager();
+		private static readonly SymbolArguments _emptyArguments = new SymbolArguments();
+
+		// --------------------
+		// Lazy / lightweight
+		// --------------------
+
 		// Lazy Guid: generated only if/when Id is accessed
 		private Guid _id;
 		public Guid Id
@@ -21,14 +30,10 @@ namespace Land.Core.Parsing.Tree
 			}
 		}
 
-		/// <summary>
-		/// Родительский узел
-		/// </summary
+		/// <summary>Родительский узел</summary>
 		public Node Parent { get; set; }
 
-		/// <summary>
-		/// Символ грамматики, которому соответствует узел
-		/// </summary>
+		/// <summary>Символ грамматики, которому соответствует узел</summary>
 		public string Symbol { get; set; }
 
 		public string UserifiedSymbol { get; set; }
@@ -39,89 +44,97 @@ namespace Land.Core.Parsing.Tree
 		/// </summary>
 		public string Alias { get; set; }
 
-		// Lazy Any.Value (token range). Filled by parser, materialized only on first Value access.
-		// NOTE: TokenStream reference is not serialized.
-		[NonSerialized] private TokenStream _lazyTokenStream;
-		private int _lazyTokenStart = -1;
-		private int _lazyTokenEndExclusive = -1;
+		// --------------------
+		// Lazy Any token range
+		// --------------------
+		private TokenStream _lazyTokenStream;
+		private int _lazyStartIndex = -1;      // inclusive
+		private int _lazyEndExclusive = -1;    // exclusive
+		private bool _hasExplicitValue;
 
-		public bool HasLazyTokenRange => _lazyTokenStart >= 0 && _lazyTokenEndExclusive >= _lazyTokenStart;
+		public bool HasExplicitValue => _hasExplicitValue;
 
 		public void SetLazyTokenRange(TokenStream stream, int startIndex, int endExclusive)
 		{
 			_lazyTokenStream = stream;
-			_lazyTokenStart = startIndex;
-			_lazyTokenEndExclusive = endExclusive;
-			// сбрасываем материализованное значение, если было
-			_value = null;
+			_lazyStartIndex = startIndex;
+			_lazyEndExclusive = endExclusive;
 		}
 
-		internal bool TryGetLazyTokenRange(out TokenStream stream, out int startIndex, out int endExclusive)
+		public bool TryGetLazyTokenRange(out TokenStream stream, out int startIndex, out int endExclusive)
 		{
-			stream = _lazyTokenStream;
-			startIndex = _lazyTokenStart;
-			endExclusive = _lazyTokenEndExclusive;
-			return stream != null && HasLazyTokenRange;
-		}
-
-		internal void ExtendLazyTokenRangeEnd(int newEndExclusive)
-		{
-			if (HasLazyTokenRange && newEndExclusive >= _lazyTokenStart)
+			if (_lazyTokenStream != null && _lazyStartIndex >= 0 && _lazyEndExclusive >= _lazyStartIndex)
 			{
-				_lazyTokenEndExclusive = newEndExclusive;
-				_value = null; // если уже было материализовано — сбросим
+				stream = _lazyTokenStream;
+				startIndex = _lazyStartIndex;
+				endExclusive = _lazyEndExclusive;
+				return true;
 			}
+
+			stream = null;
+			startIndex = -1;
+			endExclusive = -1;
+			return false;
+		}
+
+		public void ExtendLazyTokenRangeEnd(int newEndExclusive)
+		{
+			if (_lazyTokenStream == null || _lazyStartIndex < 0 || _lazyEndExclusive < _lazyStartIndex)
+				return;
+			if (newEndExclusive <= _lazyEndExclusive)
+				return;
+
+			// If Value has already been materialized, keep it consistent by appending missing tokens.
+			if (_value != null && _value.Count > 0)
+			{
+				for (int i = _lazyEndExclusive; i < newEndExclusive; i++)
+					_value.Add(_lazyTokenStream.GetTokenAt(i).Text);
+			}
+
+			_lazyEndExclusive = newEndExclusive;
+		}
+
+		private void ClearLazyTokenRange()
+		{
+			_lazyTokenStream = null;
+			_lazyStartIndex = -1;
+			_lazyEndExclusive = -1;
 		}
 
 
 		/// <summary>
 		/// Набор токенов, соответствующих листовому узлу
+		/// (создаётся только если реально задавали значение)
 		/// </summary>
 		private List<string> _value;
 		public List<string> Value
 		{
 			get
 			{
-				if (_value == null)
+				// If this node represents a lazy Any range, materialize on demand.
+				if (_value == null && _lazyTokenStream != null && _lazyStartIndex >= 0 && _lazyEndExclusive >= _lazyStartIndex)
 				{
-					// Materialize lazy token-range value (used for Any) on first access
-					if (_lazyTokenStream != null && HasLazyTokenRange)
-					{
-						var count = _lazyTokenEndExclusive - _lazyTokenStart;
-						var list = new List<string>(count > 0 ? count : 1);
-						for (int i = _lazyTokenStart; i < _lazyTokenEndExclusive; i++)
-						{
-							var tok = _lazyTokenStream.GetTokenAt(i);
-							if (tok != null) list.Add(tok.Text);
-						}
-						_value = list;
-						// release references to allow GC (optional)
-						_lazyTokenStream = null;
-						_lazyTokenStart = -1;
-						_lazyTokenEndExclusive = -1;
-					}
-					else
-					{
-						_value = new List<string>(1);
-					}
+					int cnt = _lazyEndExclusive - _lazyStartIndex;
+					_value = new List<string>(cnt > 0 ? cnt : 1);
+					for (int i = _lazyStartIndex; i < _lazyEndExclusive; i++)
+						_value.Add(_lazyTokenStream.GetTokenAt(i).Text);
+					_hasExplicitValue = true;
 				}
+
+				if (_value == null)
+					_value = new List<string>(1);
 				return _value;
 			}
 			set
 			{
 				_value = value;
-				// if Value is explicitly set, drop lazy range
-				_lazyTokenStream = null;
-				_lazyTokenStart = -1;
-				_lazyTokenEndExclusive = -1;
+				_hasExplicitValue = true;
+				// If caller explicitly sets Value, lazy range is no longer authoritative.
+				ClearLazyTokenRange();
 			}
 		}
-
-		public bool HasExplicitValue => _value != null && _value.Count > 0;
-
-
 		/// <summary>
-		/// Потомки узла
+		/// Потомки узла (создаётся только если реально добавляли детей)
 		/// </summary>
 		private List<Node> _children;
 		public List<Node> Children
@@ -135,31 +148,29 @@ namespace Land.Core.Parsing.Tree
 			set => _children = value;
 		}
 
+		// ВАЖНО: Options/Arguments читаются очень часто в визиторах.
+		// Чтобы чтение НЕ создавало новые объекты на каждом узле,
+		// возвращаем shared empty по умолчанию и аллоцируем только при явном присваивании.
+		private static readonly SymbolOptionsManager EmptyOptions = new SymbolOptionsManager(
+			new Dictionary<string, Dictionary<string, List<dynamic>>>()
+		);
+		private static readonly SymbolArguments EmptyArguments = new SymbolArguments();
+
 		/// <summary>
-		/// Опции, связанные с конкретным вхождением в грамматику символа,
+		/// Опции, связанные с конкретным вхождением символа,
 		/// породившего данный узел
 		/// </summary>
 		private SymbolOptionsManager _options;
 		public SymbolOptionsManager Options
 		{
-			get
-			{
-				if (_options == null)
-					_options = new SymbolOptionsManager();
-				return _options;
-			}
+			get => _options ?? EmptyOptions;
 			set => _options = value;
 		}
 
 		private SymbolArguments _arguments;
 		public SymbolArguments Arguments
 		{
-			get
-			{
-				if (_arguments == null)
-					_arguments = new SymbolArguments();
-				return _arguments;
-			}
+			get => _arguments ?? EmptyArguments;
 			set => _arguments = value;
 		}
 
@@ -187,7 +198,6 @@ namespace Land.Core.Parsing.Tree
 		public Node(Node node)
 		{
 			_id = node._id;
-
 			Symbol = node.Symbol;
 			UserifiedSymbol = node.UserifiedSymbol;
 			_options = node._options;
@@ -197,6 +207,10 @@ namespace Land.Core.Parsing.Tree
 			_children = node._children;
 			_value = node._value;
 
+			_lazyTokenStream = node._lazyTokenStream;
+			_lazyStartIndex = node._lazyStartIndex;
+			_lazyEndExclusive = node._lazyEndExclusive;
+			_hasExplicitValue = node._hasExplicitValue;
 			_location = node._location;
 			LocationReady = node.LocationReady;
 		}
@@ -204,18 +218,21 @@ namespace Land.Core.Parsing.Tree
 		public void CopyFromNode(Node node)
 		{
 			_id = node._id;
+			Symbol = node.Symbol;
+			UserifiedSymbol = node.UserifiedSymbol;
+			_options = node._options;
+			_arguments = node._arguments;
+			Parent = node.Parent;
+			Alias = node.Alias;
+			_children = node._children;
+			_value = node._value;
 
-			this.Symbol = node.Symbol;
-			this.UserifiedSymbol = node.UserifiedSymbol;
-			this._options = node._options;
-			this._arguments = node._arguments;
-			this.Parent = node.Parent;
-			this.Alias = node.Alias;
-			this._children = node._children;
-			this._value = node._value;
-
-			this._location = node._location;
-			this.LocationReady = node.LocationReady;
+			_lazyTokenStream = node._lazyTokenStream;
+			_lazyStartIndex = node._lazyStartIndex;
+			_lazyEndExclusive = node._lazyEndExclusive;
+			_hasExplicitValue = node._hasExplicitValue;
+			_location = node._location;
+			LocationReady = node.LocationReady;
 		}
 
 		protected void GetLocationFromChildren()
@@ -240,8 +257,7 @@ namespace Land.Core.Parsing.Tree
 		}
 
 		/// <summary>
-		/// Возвращает текст токенов из области, 
-		/// соответствующей данному узлу
+		/// Возвращает текст токенов из области, соответствующей данному узлу
 		/// </summary>
 		public List<string> GetValue()
 		{
@@ -337,13 +353,9 @@ namespace Land.Core.Parsing.Tree
 			ResetChildren();
 			if (_value != null)
 				_value.Clear();
-
-			_lazyTokenStream = null;
-			_lazyTokenStart = -1;
-			_lazyTokenEndExclusive = -1;
+			_hasExplicitValue = false;
+			ClearLazyTokenRange();
 		}
-
-
 		public void SetLocation(PointLocation start, PointLocation end)
 		{
 			_location = new SegmentLocation()
@@ -363,8 +375,9 @@ namespace Land.Core.Parsing.Tree
 				_value.Clear();
 
 			_value.AddRange(vals);
+			_hasExplicitValue = true;
+			ClearLazyTokenRange();
 		}
-
 		public virtual void Accept(BaseTreeVisitor visitor)
 		{
 			visitor.Visit(this);
