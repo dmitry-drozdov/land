@@ -8,7 +8,17 @@ namespace Land.Core.Parsing.Tree
 	[Serializable]
 	public class Node
 	{
-		public Guid Id { get; } = Guid.NewGuid();
+		// Lazy Guid: generated only if/when Id is accessed
+		private Guid _id;
+		public Guid Id
+		{
+			get
+			{
+				if (_id == Guid.Empty)
+					_id = Guid.NewGuid();
+				return _id;
+			}
+		}
 
 		/// <summary>
 		/// Родительский узел
@@ -31,20 +41,60 @@ namespace Land.Core.Parsing.Tree
 		/// <summary>
 		/// Набор токенов, соответствующих листовому узлу
 		/// </summary>
-		public List<string> Value { get; set; } = new List<string>();
+		private List<string> _value;
+		public List<string> Value
+		{
+			get
+			{
+				if (_value == null)
+					_value = new List<string>(1);
+				return _value;
+			}
+			set => _value = value;
+		}
 
 		/// <summary>
 		/// Потомки узла
 		/// </summary>
-		public List<Node> Children { get; set; } = new List<Node>();
+		private List<Node> _children;
+		public List<Node> Children
+		{
+			get
+			{
+				if (_children == null)
+					_children = new List<Node>(2);
+				return _children;
+			}
+			set => _children = value;
+		}
 
 		/// <summary>
 		/// Опции, связанные с конкретным вхождением в грамматику символа,
 		/// породившего данный узел
 		/// </summary>
-		public SymbolOptionsManager Options { get; set; }
+		private SymbolOptionsManager _options;
+		public SymbolOptionsManager Options
+		{
+			get
+			{
+				if (_options == null)
+					_options = new SymbolOptionsManager();
+				return _options;
+			}
+			set => _options = value;
+		}
 
-		public SymbolArguments Arguments { get; set; }
+		private SymbolArguments _arguments;
+		public SymbolArguments Arguments
+		{
+			get
+			{
+				if (_arguments == null)
+					_arguments = new SymbolArguments();
+				return _arguments;
+			}
+			set => _arguments = value;
+		}
 
 		public string Type => Alias ?? UserifiedSymbol ?? Symbol;
 
@@ -63,20 +113,22 @@ namespace Land.Core.Parsing.Tree
 		public Node(string symbol, SymbolOptionsManager opts = null, SymbolArguments args = null)
 		{
 			Symbol = symbol;
-			Options = opts ?? new SymbolOptionsManager();
-			Arguments = args ?? new SymbolArguments();
+			_options = opts;
+			_arguments = args;
 		}
 
 		public Node(Node node)
 		{
+			_id = node._id;
+
 			Symbol = node.Symbol;
 			UserifiedSymbol = node.UserifiedSymbol;
-			Options = node.Options;
-			Arguments = node.Arguments;
+			_options = node._options;
+			_arguments = node._arguments;
 			Parent = node.Parent;
 			Alias = node.Alias;
-			Children = node.Children;
-			Value = node.Value;
+			_children = node._children;
+			_value = node._value;
 
 			_location = node._location;
 			LocationReady = node.LocationReady;
@@ -84,13 +136,16 @@ namespace Land.Core.Parsing.Tree
 
 		public void CopyFromNode(Node node)
 		{
+			_id = node._id;
+
 			this.Symbol = node.Symbol;
 			this.UserifiedSymbol = node.UserifiedSymbol;
-			this.Options = node.Options;
+			this._options = node._options;
+			this._arguments = node._arguments;
 			this.Parent = node.Parent;
 			this.Alias = node.Alias;
-			this.Children = node.Children;
-			this.Value = node.Value;
+			this._children = node._children;
+			this._value = node._value;
 
 			this._location = node._location;
 			this.LocationReady = node.LocationReady;
@@ -123,8 +178,8 @@ namespace Land.Core.Parsing.Tree
 		/// </summary>
 		public List<string> GetValue()
 		{
-			if (Value.Count > 0)
-				return new List<string>(Value);
+			if (_value != null && _value.Count > 0)
+				return new List<string>(_value);
 
 			return Children.SelectMany(c => c.GetValue()).ToList();
 		}
@@ -199,7 +254,8 @@ namespace Land.Core.Parsing.Tree
 
 		public void ResetChildren()
 		{
-			Children = new List<Node>();
+			if (_children != null)
+				_children.Clear();
 			ResetLocation();
 		}
 
@@ -212,7 +268,8 @@ namespace Land.Core.Parsing.Tree
 		public void Reset()
 		{
 			ResetChildren();
-			Value.Clear();
+			if (_value != null)
+				_value.Clear();
 		}
 
 		public void SetLocation(PointLocation start, PointLocation end)
@@ -228,7 +285,12 @@ namespace Land.Core.Parsing.Tree
 
 		public void SetValue(params string[] vals)
 		{
-			Value = new List<string>(vals);
+			if (_value == null)
+				_value = new List<string>(vals.Length);
+			else
+				_value.Clear();
+
+			_value.AddRange(vals);
 		}
 
 		public virtual void Accept(BaseTreeVisitor visitor)
@@ -238,8 +300,8 @@ namespace Land.Core.Parsing.Tree
 
 		public override string ToString()
 		{
-			return (String.IsNullOrEmpty(Alias) ? UserifiedSymbol ?? Symbol : Alias) 
-				+ (Value.Count > 0 ? ": " + String.Join(" ", Value.Select(v=>v.Trim())) : "");
+			return (String.IsNullOrEmpty(Alias) ? UserifiedSymbol ?? Symbol : Alias)
+				+ (_value != null && _value.Count > 0 ? ": " + String.Join(" ", _value.Select(v => v.Trim())) : "");
 		}
 	}
 }

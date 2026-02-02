@@ -124,7 +124,7 @@ namespace Land.Core.Parsing.LR
 					}
 					if (token.Type == Grammar.ANY_TOKEN_TYPE)
 					{
-						using (Tracing.Tracer.BuildSpan("SkipAny").StartActive())
+						//using (Tracing.Tracer.BuildSpan("SkipAny").StartActive())
 							token = SkipAny(new Node(Grammar.ANY_TOKEN_NAME), true);
 
 						/// Если при пропуске текста произошла ошибка, прерываем разбор
