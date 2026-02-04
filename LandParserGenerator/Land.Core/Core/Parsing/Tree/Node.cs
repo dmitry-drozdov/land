@@ -54,6 +54,18 @@ namespace Land.Core.Parsing.Tree
 
 		public bool HasExplicitValue => _hasExplicitValue;
 
+		public bool TryGetValueText(out string text)
+		{
+			if (_hasValueText)
+			{
+				text = _valueText;
+				return true;
+			}
+			text = null;
+			return false;
+		}
+
+
 		public void SetLazyTokenRange(TokenStream stream, int startIndex, int endExclusive)
 		{
 			_lazyTokenStream = stream;
@@ -107,6 +119,10 @@ namespace Land.Core.Parsing.Tree
 		/// (создаётся только если реально задавали значение)
 		/// </summary>
 		private List<string> _value;
+
+		// Fast-path for the common case: single terminal value without allocating List<string>
+		private string _valueText;
+		private bool _hasValueText;
 		public List<string> Value
 		{
 			get
@@ -119,6 +135,19 @@ namespace Land.Core.Parsing.Tree
 					for (int i = _lazyStartIndex; i < _lazyEndExclusive; i++)
 						_value.Add(_lazyTokenStream.GetTokenAt(i).Text);
 					_hasExplicitValue = true;
+					// list is now authoritative
+					_hasValueText = false;
+					_valueText = null;
+				}
+
+				// Fast-path: if we only have a single text value, create list on demand
+				if (_value == null && _hasValueText)
+				{
+					_value = new List<string>(1);
+					_value.Add(_valueText);
+					// list is now authoritative (caller may mutate it)
+					_hasValueText = false;
+					_valueText = null;
 				}
 
 				if (_value == null)
@@ -128,6 +157,9 @@ namespace Land.Core.Parsing.Tree
 			set
 			{
 				_value = value;
+				_hasValueText = false;
+				_valueText = null;
+
 				_hasExplicitValue = true;
 				// If caller explicitly sets Value, lazy range is no longer authoritative.
 				ClearLazyTokenRange();
@@ -206,6 +238,8 @@ namespace Land.Core.Parsing.Tree
 			Alias = node.Alias;
 			_children = node._children;
 			_value = node._value;
+			_valueText = node._valueText;
+			_hasValueText = node._hasValueText;
 
 			_lazyTokenStream = node._lazyTokenStream;
 			_lazyStartIndex = node._lazyStartIndex;
@@ -226,6 +260,8 @@ namespace Land.Core.Parsing.Tree
 			Alias = node.Alias;
 			_children = node._children;
 			_value = node._value;
+			_valueText = node._valueText;
+			_hasValueText = node._hasValueText;
 
 			_lazyTokenStream = node._lazyTokenStream;
 			_lazyStartIndex = node._lazyStartIndex;
@@ -261,6 +297,9 @@ namespace Land.Core.Parsing.Tree
 		/// </summary>
 		public List<string> GetValue()
 		{
+			if (_hasValueText)
+				return new List<string>(1) { _valueText };
+
 			if (_value != null && _value.Count > 0)
 				return new List<string>(_value);
 
@@ -367,8 +406,48 @@ namespace Land.Core.Parsing.Tree
 			LocationReady = true;
 		}
 
+		public void SetLocation(SegmentLocation loc)
+		{
+			_location = loc;
+			LocationReady = true;
+		}
+
+
+		public void SetValueText(string text)
+		{
+			_valueText = text;
+			_hasValueText = true;
+
+			// Do not allocate List<string> for the common terminal case.
+			_value = null;
+
+			_hasExplicitValue = true;
+			ClearLazyTokenRange();
+		}
+
 		public void SetValue(params string[] vals)
 		{
+			if (vals == null || vals.Length == 0)
+			{
+				_hasValueText = false;
+				_valueText = null;
+
+				if (_value != null) _value.Clear();
+
+				_hasExplicitValue = true;
+				ClearLazyTokenRange();
+				return;
+			}
+
+			if (vals.Length == 1)
+			{
+				SetValueText(vals[0]);
+				return;
+			}
+
+			_hasValueText = false;
+			_valueText = null;
+
 			if (_value == null)
 				_value = new List<string>(vals.Length);
 			else
@@ -378,6 +457,16 @@ namespace Land.Core.Parsing.Tree
 			_hasExplicitValue = true;
 			ClearLazyTokenRange();
 		}
+
+		/// <summary>
+		/// Set node value from a single token/lexeme without allocating params-array.
+		/// Keeps HasExplicitValue semantics for visitors.
+		/// </summary>
+		public void SetValueSingle(string val)
+		{
+			SetValueText(val);
+		}
+
 		public virtual void Accept(BaseTreeVisitor visitor)
 		{
 			visitor.Visit(this);
@@ -385,8 +474,15 @@ namespace Land.Core.Parsing.Tree
 
 		public override string ToString()
 		{
-			return (String.IsNullOrEmpty(Alias) ? UserifiedSymbol ?? Symbol : Alias)
-				+ (_value != null && _value.Count > 0 ? ": " + String.Join(" ", _value.Select(v => v.Trim())) : "");
+			var head = (String.IsNullOrEmpty(Alias) ? UserifiedSymbol ?? Symbol : Alias);
+
+			if (_hasValueText && !String.IsNullOrEmpty(_valueText))
+				return head + ": " + _valueText.Trim();
+
+			if (_value != null && _value.Count > 0)
+				return head + ": " + String.Join(" ", _value.Select(v => v.Trim()));
+
+			return head;
 		}
 	}
 }

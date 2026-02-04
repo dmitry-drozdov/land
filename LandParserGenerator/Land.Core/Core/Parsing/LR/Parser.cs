@@ -48,174 +48,170 @@ namespace Land.Core.Parsing.LR
 		protected override (Node, Durations) ParsingAlgorithm(string text)
 		{
 			Tracing.Init();
-			using (Tracing.Tracer.BuildSpan("ParsingAlgorithmHelp").StartActive())
-				return ParsingAlgorithmHelp(text);
+			return ParsingAlgorithmHelp(text);
 		}
+
 
 		protected (Node, Durations) ParsingAlgorithmHelp(string text)
 		{
-			Node root = null;
-
-
-
-			//var watcher = Stopwatch.StartNew();
-
-			EnableTracing = false; //debug
-
-			//d.Start();
-
-			/// Множество индексов токенов, на которых запускалось восстановление
-			PositionsWhereRecoveryStarted = new HashSet<int>();
-			/// Создаём стек для уровней вложенности пар
-			NestingStack = new Stack<int>();
-			/// Готовим лексер
-			LexingStream = new ComplexTokenStream(GrammarObject, Lexer, text, Log);
-			/// Читаем первую лексему из входного потока
-			var token = LexingStream.GetNextToken();
-			/// Создаём стек
-			StatesStack = new Stack<int>();
-			SymbolsStack = new Stack<Node>();
-			StatesStack.Push(0);
-			NestingStack.Push(0);
-
-
-			LexingStream.GrammarObject.PairDepth.Clear();
-			foreach (var item in LexingStream.GrammarObject.PairsManual)
+			using (var scope = Tracing.Tracer.BuildSpan("ParsingAlgorithmHelp").StartActive())
 			{
-				LexingStream.ClearPairBalancedInGrammar(item.Value);
-			}
+				var span = scope.Span;
+				Node root = null;
 
 
-			//d.Stop("init");
+				//var watcher = Stopwatch.StartNew();
 
-
-			while (true)
-			{
-				//d.Start();
-				if (token.Type == Grammar.ERROR_TOKEN_TYPE)
-					break;
-
-
-				var currentState = StatesStack.Peek();
-				//d.Stop("PeekState");
-
-				if (EnableTracing && token.Type != Grammar.ERROR_TOKEN_TYPE && token.Type != Grammar.ANY_TOKEN_TYPE)
-					Log.Add(Message.Trace(
-						$"Текущий токен: {this.Developerify(token)} | Стек: TODO Stack.ToString(GrammarObject)",
-						token.Location.Start
-					));
+				EnableTracing = false; //debug
 
 				//d.Start();
-				//d.Stop("cnt");
 
-				var action = Table[currentState, token.Name];
+				/// Множество индексов токенов, на которых запускалось восстановление
+				PositionsWhereRecoveryStarted = new HashSet<int>();
+				/// Создаём стек для уровней вложенности пар
+				NestingStack = new Stack<int>();
+				/// Готовим лексер
+				LexingStream = new ComplexTokenStream(GrammarObject, Lexer, text, Log);
+				/// Читаем первую лексему из входного потока
+				var token = LexingStream.GetNextToken();
+				/// Создаём стек
+				StatesStack = new Stack<int>();
+				SymbolsStack = new Stack<Node>();
+				StatesStack.Push(0);
+				NestingStack.Push(0);
 
-				if (action != null)
+
+				LexingStream.GrammarObject.PairDepth.Clear();
+				foreach (var item in LexingStream.GrammarObject.PairsManual)
 				{
-					if (action.ActionType == 0 && action.Balanced && GrammarObject.PairsLeftManual.ContainsKey(token.Name))
-					{
-						System.Diagnostics.Debug.WriteLine($"LOG🔔 Add Pair {token.Name}");
-						LexingStream.AddPairBalanced(GrammarObject.PairsLeftManual[token.Name]);
-					}
-					if (action.ActionType == 0 && action.Balanced && GrammarObject.PairsRightManual.ContainsKey(token.Name))
-					{
-						System.Diagnostics.Debug.WriteLine($"LOG🔔 Remove pair {token.Name}");
-						LexingStream.RemovePairBalanced(GrammarObject.PairsRightManual[token.Name]);
-					}
-					if (token.Type == Grammar.ANY_TOKEN_TYPE)
-					{
-						//using (Tracing.Tracer.BuildSpan("SkipAny").StartActive())
-						token = SkipAny(new Node(Grammar.ANY_TOKEN_NAME), true);
-
-						/// Если при пропуске текста произошла ошибка, прерываем разбор
-						if (token.Type == Grammar.ERROR_TOKEN_TYPE)
-							break;
-						else
-							continue;
-					}
-
-					//d.Start();
-
-					//d.Stop("GetAction");
-
-					//d.Start();
-					/// Если нужно произвести перенос
-					if (action.ActionType == 0)
-					{
-						var tokenNode = new Node(token.Name);
-						tokenNode.SetValue(token.Text);
-						tokenNode.SetLocation(token.Location.Start, token.Location.End);
-
-						/// Вносим в стек новое состояние
-						SymbolsStack.Push(tokenNode);
-						StatesStack.Push(action.TargetItemIndex);
-						NestingStack.Push(LexingStream.GetPairsCount());
-
-						if (EnableTracing)
-						{
-							Log.Add(Message.Trace(
-								$"Перенос",
-								token.Location.Start
-							));
-						}
-
-						token = LexingStream.GetNextToken();
-						//d.Stop("ShiftAction");
-					}
-					/// Если нужно произвести свёртку
-					else if (action.ActionType == 1)
-					{
-						var parentNode = new Node(action.ReductionAlternative.NonterminalSymbolName);
-
-						/// Снимаем со стека символы ветки, по которой нужно произвести свёртку
-						for (var i = 0; i < action.ReductionAlternative.Count; ++i)
-						{
-							parentNode.AddFirstChild(SymbolsStack.Peek());
-							SymbolsStack.Pop();
-							StatesStack.Pop();
-							NestingStack.Pop();
-						}
-						currentState = StatesStack.Peek();
-
-						/// Кладём на стек состояние, в которое нужно произвести переход
-						SymbolsStack.Push(parentNode);
-						StatesStack.Push(Table.Transitions[currentState][action.ReductionAlternative.NonterminalSymbolName]);
-						NestingStack.Push(LexingStream.GetPairsCount());
-
-						if (EnableTracing)
-						{
-							Log.Add(Message.Trace(
-								$"Свёртка по правилу {GrammarObject.Developerify(action.ReductionAlternative)} -> {GrammarObject.Developerify(action.ReductionAlternative.NonterminalSymbolName)}",
-								token.Location.Start
-							));
-						}
-						//d.Stop("ReduceAction");
-						continue;
-					}
-					else if (action.ActionType == 2)
-					{
-						root = SymbolsStack.Peek();
-						//d.Stop("PeekSymbol");
-						break;
-					}
+					LexingStream.ClearPairBalancedInGrammar(item.Value);
 				}
-				else if (token.Type == Grammar.ANY_TOKEN_TYPE)
+
+
+				//d.Stop("init");
+				while (true)
 				{
 					//d.Start();
+					if (token.Type == Grammar.ERROR_TOKEN_TYPE)
+						break;
 
-					if (GrammarObject.PairsLeftManual.ContainsKey(LexingStream.CurrentToken.Name))
+
+					var currentState = StatesStack.Peek();
+					//d.Stop("PeekState");
+
+					if (EnableTracing && token.Type != Grammar.ERROR_TOKEN_TYPE && token.Type != Grammar.ANY_TOKEN_TYPE)
+						Log.Add(Message.Trace(
+							$"Текущий токен: {this.Developerify(token)} | Стек: TODO Stack.ToString(GrammarObject)",
+							token.Location.Start
+						));
+
+					//d.Start();
+					//d.Stop("cnt");
+					var action = Table[currentState, token.Name];
+					if (action != null)
 					{
-						System.Diagnostics.Debug.WriteLine("LOG🔔 Add pair before recovering");
-						LexingStream.AddPairBalanced(GrammarObject.PairsLeftManual[LexingStream.CurrentToken.Name]);
-					}
-
-					//System.Diagnostics.Debug.WriteLine($"LOG🔔 Неожиданный символ {this.Developerify(LexingStream.CurrentToken)} {token.Name}");
-
-					Log.Add(PotentialErrorMessage = Message.Trace(
-						$"Неожиданный символ {this.Developerify(LexingStream.CurrentToken)} для состояния{Environment.NewLine}\t\t" + Table.ToString(StatesStack.Peek(), null, "\t\t"),
-						LexingStream.CurrentToken.Location.Start,
-						addInfo: new Dictionary<MessageAddInfoKey, object>
+						if (action.ActionType == 0 && action.Balanced && GrammarObject.PairsLeftManual.ContainsKey(token.Name))
 						{
+							System.Diagnostics.Debug.WriteLine($"LOG🔔 Add Pair {token.Name}");
+							LexingStream.AddPairBalanced(GrammarObject.PairsLeftManual[token.Name]);
+						}
+						if (action.ActionType == 0 && action.Balanced && GrammarObject.PairsRightManual.ContainsKey(token.Name))
+						{
+							System.Diagnostics.Debug.WriteLine($"LOG🔔 Remove pair {token.Name}");
+							LexingStream.RemovePairBalanced(GrammarObject.PairsRightManual[token.Name]);
+						}
+						if (token.Type == Grammar.ANY_TOKEN_TYPE)
+						{
+							//using (Tracing.Tracer.BuildSpan("SkipAny").StartActive())
+							token = SkipAny(new Node(Grammar.ANY_TOKEN_NAME), true);
+							/// Если при пропуске текста произошла ошибка, прерываем разбор
+							if (token.Type == Grammar.ERROR_TOKEN_TYPE)
+								break;
+							else
+								continue;
+						}
+
+						//d.Start();
+
+						//d.Stop("GetAction");
+
+						//d.Start();
+						/// Если нужно произвести перенос
+						if (action.ActionType == 0)
+						{
+							var tokenNode = new Node(token.Name);
+							tokenNode.SetValue(token.Text);
+							tokenNode.SetLocation(token.Location.Start, token.Location.End);
+
+							/// Вносим в стек новое состояние
+							SymbolsStack.Push(tokenNode);
+							StatesStack.Push(action.TargetItemIndex);
+							NestingStack.Push(LexingStream.GetPairsCount());
+
+							if (EnableTracing)
+							{
+								Log.Add(Message.Trace(
+									$"Перенос",
+									token.Location.Start
+								));
+							}
+							token = LexingStream.GetNextToken();
+							//d.Stop("ShiftAction");
+						}
+						/// Если нужно произвести свёртку
+						else if (action.ActionType == 1)
+						{
+							var parentNode = new Node(action.ReductionAlternative.NonterminalSymbolName);
+
+							/// Снимаем со стека символы ветки, по которой нужно произвести свёртку
+							for (var i = 0; i < action.ReductionAlternative.Count; ++i)
+							{
+								parentNode.AddFirstChild(SymbolsStack.Peek());
+								SymbolsStack.Pop();
+								StatesStack.Pop();
+								NestingStack.Pop();
+							}
+							currentState = StatesStack.Peek();
+
+							/// Кладём на стек состояние, в которое нужно произвести переход
+							SymbolsStack.Push(parentNode);
+							StatesStack.Push(Table.Transitions[currentState][action.ReductionAlternative.NonterminalSymbolName]);
+							NestingStack.Push(LexingStream.GetPairsCount());
+
+							if (EnableTracing)
+							{
+								Log.Add(Message.Trace(
+									$"Свёртка по правилу {GrammarObject.Developerify(action.ReductionAlternative)} -> {GrammarObject.Developerify(action.ReductionAlternative.NonterminalSymbolName)}",
+									token.Location.Start
+								));
+							}
+							//d.Stop("ReduceAction");
+							continue;
+						}
+						else if (action.ActionType == 2)
+						{
+							root = SymbolsStack.Peek();
+							//d.Stop("PeekSymbol");
+							break;
+						}
+					}
+					else if (token.Type == Grammar.ANY_TOKEN_TYPE)
+					{
+						//d.Start();
+
+						if (GrammarObject.PairsLeftManual.ContainsKey(LexingStream.CurrentToken.Name))
+						{
+							System.Diagnostics.Debug.WriteLine("LOG🔔 Add pair before recovering");
+							LexingStream.AddPairBalanced(GrammarObject.PairsLeftManual[LexingStream.CurrentToken.Name]);
+						}
+
+						//System.Diagnostics.Debug.WriteLine($"LOG🔔 Неожиданный символ {this.Developerify(LexingStream.CurrentToken)} {token.Name}");
+
+						Log.Add(PotentialErrorMessage = Message.Trace(
+							$"Неожиданный символ {this.Developerify(LexingStream.CurrentToken)} для состояния{Environment.NewLine}\t\t" + Table.ToString(StatesStack.Peek(), null, "\t\t"),
+							LexingStream.CurrentToken.Location.Start,
+							addInfo: new Dictionary<MessageAddInfoKey, object>
+							{
 							{
 								MessageAddInfoKey.UnexpectedToken,
 								LexingStream.CurrentToken.Name
@@ -229,48 +225,42 @@ namespace Land.Core.Parsing.LR
 								Table.Items[StatesStack.Peek()].Markers
 									.Where(i=>i.Lookahead != null).Select(e => e.Lookahead).ToList()
 							}
-						}
-					));
-
-
-					token = ErrorRecovery();
-					//d.Stop("ErrorRecovery");
-				}
-				else
-				{
-					//d.Start();
-					/// Если встретился неожиданный токен, но он в списке пропускаемых
-					if (GrammarObject.Options.IsSet(ParsingOption.GROUP_NAME, ParsingOption.SKIP, token.Name))
-					{
-						//using (Tracing.Tracer.BuildSpan("GetNextToken").StartActive())
-						token = LexingStream.GetNextToken();
+							}
+						));
+						token = ErrorRecovery();
+						//d.Stop("ErrorRecovery");
 					}
 					else
 					{
-						if (EnableTracing)
+						//d.Start();
+						/// Если встретился неожиданный токен, но он в списке пропускаемых
+						if (GrammarObject.Options.IsSet(ParsingOption.GROUP_NAME, ParsingOption.SKIP, token.Name))
 						{
-							Log.Add(Message.Trace(
-								$"Попытка трактовать текущий токен как начало участка, соответствующего Any",
-								token.Location.Start
-							));
+							//using (Tracing.Tracer.BuildSpan("GetNextToken").StartActive())
+							token = LexingStream.GetNextToken();
 						}
+						else
+						{
+							if (EnableTracing)
+							{
+								Log.Add(Message.Trace(
+									$"Попытка трактовать текущий токен как начало участка, соответствующего Any",
+									token.Location.Start
+								));
+							}
 
-						token = Lexer.CreateToken(Grammar.ANY_TOKEN_NAME, Grammar.ANY_TOKEN_TYPE);
+							token = Lexer.CreateToken(Grammar.ANY_TOKEN_NAME, Grammar.ANY_TOKEN_TYPE);
+						}
+						//d.Stop("Unexpected token");
 					}
-					//d.Stop("Unexpected token");
 				}
+				using (Tracing.Tracer.BuildSpan("TreePostProcessing").StartActive())
+					if (root != null)
+						root = TreePostProcessing(root);
+				//d.Add("ParsingAlgorithm", watcher);
+				return (root, null);
 			}
-
-			using (Tracing.Tracer.BuildSpan("TreePostProcessing").StartActive())
-				if (root != null)
-					root = TreePostProcessing(root);
-
-			//d.Add("ParsingAlgorithm", watcher);
-
-			return (root, null);
 		}
-
-
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private IToken SkipAny(Node anyNode, bool enableRecovery)
 		{
@@ -417,7 +407,6 @@ namespace Land.Core.Parsing.LR
 					}
 				}
 			}
-
 
 
 			if (endLocation != null)

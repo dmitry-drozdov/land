@@ -21,7 +21,7 @@ namespace Land.Core.Parsing.Tree
 			{
 				node.Value = FlattenValue(node);
 
-				/// Перед тем, как удалить дочерние узлы, вычисляем соответствие нового листа тексту
+				/// Перед тем, как удалить дочерние узлы,  вычисляем соответствие нового листа тексту
 				var tmp = node.Location;
 
 				node.Children.Clear();
@@ -38,6 +38,10 @@ namespace Land.Core.Parsing.Tree
 			// если у узла уже есть явное значение — просто скопируем его
 			if (root.HasExplicitValue)
 			{
+				string txt;
+				if (root.TryGetValueText(out txt))
+					return String.IsNullOrEmpty(txt) ? new List<string>(0) : new List<string>(1) { txt };
+
 				var v = root.Value;
 				return v.Count == 0 ? new List<string>(0) : new List<string>(v);
 			}
@@ -52,6 +56,14 @@ namespace Land.Core.Parsing.Tree
 
 				if (n.HasExplicitValue)
 				{
+					string txt;
+					if (n.TryGetValueText(out txt))
+					{
+						if (!String.IsNullOrEmpty(txt))
+							result.Add(txt);
+						continue;
+					}
+
 					var v = n.Value;
 					if (v.Count > 0)
 						result.AddRange(v);

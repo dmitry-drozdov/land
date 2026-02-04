@@ -349,5 +349,32 @@ namespace Land.Core.Parsing.LR
 			ExpectedTokensCache.Add(state, result);
 			return result;
 		}
+
+		// =======================
+		// Fast-path helpers
+		// =======================
+		/// <summary>
+		/// Возвращает индекс lookahead в таблице (для быстрого доступа по int).
+		/// </summary>
+		public int GetLookaheadIndex(string lookaheadName)
+		{
+			return Lookaheads[lookaheadName];
+		}
+
+		/// <summary>
+		/// Быстрый доступ к действию: Actions[state, lookaheadIndex].
+		/// </summary>
+		public Action GetAction(int state, int lookaheadIndex)
+		{
+			return Actions[state, lookaheadIndex];
+		}
+
+		/// <summary>
+		/// Быстрый доступ к конфликтам: Conflicts[state, lookaheadIndex].
+		/// </summary>
+		public bool Conflict(int state, int lookaheadIndex)
+		{
+			return Conflicts[state, lookaheadIndex];
+		}
 	}
 }
