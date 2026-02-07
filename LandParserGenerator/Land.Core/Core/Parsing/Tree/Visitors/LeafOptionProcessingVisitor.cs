@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Land.Core.Specification;
 using Land.Core.Lexing;
 
@@ -8,6 +7,11 @@ namespace Land.Core.Parsing.Tree
 {
 	public class LeafOptionProcessingVisitor : GrammarProvidedTreeVisitor
 	{
+		// Reused buffers to avoid per-leaf allocations (hot path).
+		// Visitor is executed sequentially during post-processing.
+		private readonly Stack<Node> _stack = new Stack<Node>(64);
+		private readonly List<string> _buffer = new List<string>(64);
+
 		public LeafOptionProcessingVisitor(Grammar g) : base(g) { }
 
 		public override void Visit(Node node)
@@ -19,64 +23,116 @@ namespace Land.Core.Parsing.Tree
 				!String.IsNullOrEmpty(node.Alias) &&
 				GrammarObject.Options.IsSet(NodeOption.GROUP_NAME, NodeOption.LEAF, node.Alias)))
 			{
-				node.Value = FlattenValue(node);
+				// Before dropping children, ensure location is computed.
+				// (Location may be lazy and depends on children.)
+				var _ = node.Location;
 
-				/// Перед тем, как удалить дочерние узлы,  вычисляем соответствие нового листа тексту
-				var tmp = node.Location;
+				FlattenInto(node);
 
-				node.Children.Clear();
-
-				if (node.Location != null)
-					node.SetLocation(tmp.Start, tmp.End);
+				// Drop children in O(1) (Clear() is O(n) and shows up in profiles for large lists).
+				node.Children = null;
 			}
 			else
 				base.Visit(node);
 		}
 
-		private static List<string> FlattenValue(Node root)
+		/// <summary>
+		/// Flattens all explicit values under <paramref name="root"/> into <paramref name="root"/>
+		/// while avoiding allocations for the common case (single terminal value).
+		/// </summary>
+		private void FlattenInto(Node root)
 		{
-			// если у узла уже есть явное значение — просто скопируем его
+			// If node already has explicit value, keep it as-is.
+			// Previous implementation copied it into a new List<string>, losing the single-value fast-path.
 			if (root.HasExplicitValue)
+				return;
+
+			_buffer.Clear();
+			_stack.Clear();
+			_stack.Push(root);
+
+			string first = null;
+			bool hasFirst = false;
+			bool usingBuffer = false;
+
+			while (_stack.Count > 0)
 			{
-				string txt;
-				if (root.TryGetValueText(out txt))
-					return String.IsNullOrEmpty(txt) ? new List<string>(0) : new List<string>(1) { txt };
+				var n = _stack.Pop();
 
-				var v = root.Value;
-				return v.Count == 0 ? new List<string>(0) : new List<string>(v);
-			}
-
-			var result = new List<string>(64);
-			var stack = new Stack<Node>();
-			stack.Push(root);
-
-			while (stack.Count > 0)
-			{
-				var n = stack.Pop();
+				// Handle lazy Any token range without materializing List<string>.
+				TokenStream stream;
+				int startIndex, endExclusive;
+				if (n.TryGetLazyTokenRange(out stream, out startIndex, out endExclusive))
+				{
+					for (int i = startIndex; i < endExclusive; i++)
+						AddValueInline(stream.GetTokenAt(i).Text, ref first, ref hasFirst, ref usingBuffer);
+					continue;
+				}
 
 				if (n.HasExplicitValue)
 				{
 					string txt;
 					if (n.TryGetValueText(out txt))
 					{
-						if (!String.IsNullOrEmpty(txt))
-							result.Add(txt);
+						AddValueInline(txt, ref first, ref hasFirst, ref usingBuffer);
 						continue;
 					}
 
 					var v = n.Value;
 					if (v.Count > 0)
-						result.AddRange(v);
+					{
+						for (int i = 0; i < v.Count; i++)
+							AddValueInline(v[i], ref first, ref hasFirst, ref usingBuffer);
+					}
 					continue;
 				}
 
 				var ch = n.Children;
-				// чтобы сохранить порядок слева-направо
+				// Preserve left-to-right order.
 				for (int i = ch.Count - 1; i >= 0; --i)
-					stack.Push(ch[i]);
+					_stack.Push(ch[i]);
 			}
 
-			return result;
+			if (usingBuffer)
+			{
+				// Copy buffer into a node-owned list.
+				root.Value = new List<string>(_buffer);
+			}
+			else if (hasFirst)
+			{
+				root.SetValueText(first);
+			}
+			else
+			{
+				// Explicit empty value (matches previous semantics).
+				root.SetValue();
+			}
+		}
+
+		private void AddValueInline(string s, ref string first, ref bool hasFirst, ref bool usingBuffer)
+		{
+			if (String.IsNullOrEmpty(s))
+				return;
+
+			if (!usingBuffer)
+			{
+				if (!hasFirst)
+				{
+					first = s;
+					hasFirst = true;
+					return;
+				}
+
+				usingBuffer = true;
+				_buffer.Clear();
+				_buffer.Add(first);
+				_buffer.Add(s);
+				first = null;
+				hasFirst = false;
+				return;
+			}
+
+			_buffer.Add(s);
 		}
 
 	}
