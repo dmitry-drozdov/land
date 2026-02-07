@@ -50,6 +50,16 @@ namespace Land.Core.Parsing.LR
 			if (_voidSymbols != null && _voidSymbols.Count == 0) _voidSymbols = null;
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private static bool IsAutoSymbolFast(string s)
+		{
+			// Grammar.AUTO_RULE_PREFIX == "auto__" (len=6). Char-by-char is cheaper than StartsWith(StringComparison) in hot loops.
+			return s != null
+				&& s.Length >= 6
+				&& s[0] == 'a' && s[1] == 'u' && s[2] == 't' && s[3] == 'o'
+				&& s[4] == '_' && s[5] == '_';
+		}
+
 		protected override (Node, Durations) ParsingAlgorithm(string text)
 		{
 			Tracing.Init();
@@ -189,6 +199,9 @@ namespace Land.Core.Parsing.LR
 							Node parentNode = lhsIsVoid ? null : new Node(lhs);
 
 							/// Снимаем со стека символы ветки, по которой нужно произвести свёртку
+							/// ВАЖНО: сохраняем прежний порядок детей (как при AddFirstChild),
+							/// но для AUTO-узлов инлайним их детей пакетно (InsertRange), чтобы не словить O(n^2) на Insert(0) в цикле.
+							var hasNonVoidChild = false; // первый не-void, снятый со стека, является "последним" ребёнком в финальном порядке
 							for (var i = 0; i < action.ReductionAlternative.Count; ++i)
 							{
 								var child = SymbolsStack.Peek();
@@ -196,8 +209,34 @@ namespace Land.Core.Parsing.LR
 								StatesStack.Pop();
 								NestingStack.Pop();
 
-								if (!lhsIsVoid && !Object.ReferenceEquals(child, VoidSentinel))
+								if (lhsIsVoid || Object.ReferenceEquals(child, VoidSentinel))
+									continue;
+
+								if (IsAutoSymbolFast(child.Symbol))
+								{
+									// Семантика как в RemoveAutoVisitor: если последний потомок — автонетерминал с alias, alias поднимается на родителя.
+									if (!hasNonVoidChild && !String.IsNullOrEmpty(child.Alias))
+										parentNode.Alias = child.Alias;
+
+									var autoChildren = child.Children;
+									if (autoChildren.Count > 0)
+									{
+										var parentChildren = parentNode.Children;
+										parentChildren.InsertRange(0, autoChildren);
+										for (var j = 0; j < autoChildren.Count; ++j)
+											autoChildren[j].Parent = parentNode;
+
+										// Location у Node ленивый: достаточно один раз сбросить после пакетной вставки
+										parentNode.ResetLocation();
+									}
+									// сам AUTO-узел в дерево не добавляем
+								}
+								else
+								{
 									parentNode.AddFirstChild(child);
+								}
+
+								hasNonVoidChild = true;
 							}
 							currentState = StatesStack.Peek();
 
@@ -316,6 +355,9 @@ namespace Land.Core.Parsing.LR
 				Node parentNode = lhsIsVoid ? null : new Node(lhs);
 
 				/// Снимаем со стека символы ветки, по которой нужно произвести свёртку
+				/// ВАЖНО: сохраняем прежний порядок детей (как при AddFirstChild),
+				/// но для AUTO-узлов инлайним их детей пакетно (InsertRange), чтобы не словить O(n^2) на Insert(0) в цикле.
+				var hasNonVoidChild = false; // первый не-void, снятый со стека, является "последним" ребёнком в финальном порядке
 				for (var i = 0; i < action.ReductionAlternative.Count; ++i)
 				{
 					var child = SymbolsStack.Peek();
@@ -323,10 +365,35 @@ namespace Land.Core.Parsing.LR
 					StatesStack.Pop();
 					NestingStack.Pop();
 
-					if (!lhsIsVoid && !Object.ReferenceEquals(child, VoidSentinel))
-						parentNode.AddFirstChild(child);
-				}
+					if (lhsIsVoid || Object.ReferenceEquals(child, VoidSentinel))
+						continue;
 
+					if (IsAutoSymbolFast(child.Symbol))
+					{
+						// Семантика как в RemoveAutoVisitor: если последний потомок — автонетерминал с alias, alias поднимается на родителя.
+						if (!hasNonVoidChild && !String.IsNullOrEmpty(child.Alias))
+							parentNode.Alias = child.Alias;
+
+						var autoChildren = child.Children;
+						if (autoChildren.Count > 0)
+						{
+							var parentChildren = parentNode.Children;
+							parentChildren.InsertRange(0, autoChildren);
+							for (var j = 0; j < autoChildren.Count; ++j)
+								autoChildren[j].Parent = parentNode;
+
+							// Location у Node ленивый: достаточно один раз сбросить после пакетной вставки
+							parentNode.ResetLocation();
+						}
+						// сам AUTO-узел в дерево не добавляем
+					}
+					else
+					{
+						parentNode.AddFirstChild(child);
+					}
+
+					hasNonVoidChild = true;
+				}
 				/// Кладём на стек состояние, в которое нужно произвести переход
 				var state = Table.Transitions[StatesStack.Peek()][lhs];
 				StatesStack.Push(state);
