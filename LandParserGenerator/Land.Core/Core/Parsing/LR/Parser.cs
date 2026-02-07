@@ -89,6 +89,12 @@ namespace Land.Core.Parsing.LR
 
 
 				//d.Stop("init");
+
+				// Fast-path table lookup: cache lookahead column by token.Type
+				var lookaheadByType = new Dictionary<int, int>(64);
+				var anyLookaheadIndex = Table.GetLookaheadIndex(Grammar.ANY_TOKEN_NAME);
+
+
 				while (true)
 				{
 					//d.Start();
@@ -107,7 +113,13 @@ namespace Land.Core.Parsing.LR
 
 					//d.Start();
 					//d.Stop("cnt");
-					var action = Table[currentState, token.Name];
+					int laIdx;
+					if (!lookaheadByType.TryGetValue(token.Type, out laIdx))
+					{
+						laIdx = Table.GetLookaheadIndex(token.Name);
+						lookaheadByType[token.Type] = laIdx;
+					}
+					var action = Table.GetAction(currentState, laIdx);
 					if (action != null)
 					{
 						if (action.ActionType == 0 && action.Balanced && GrammarObject.PairsLeftManual.ContainsKey(token.Name))
@@ -123,7 +135,7 @@ namespace Land.Core.Parsing.LR
 						if (token.Type == Grammar.ANY_TOKEN_TYPE)
 						{
 							//using (Tracing.Tracer.BuildSpan("SkipAny").StartActive())
-							token = SkipAny(new Node(Grammar.ANY_TOKEN_NAME), true);
+							token = SkipAny(new Node(Grammar.ANY_TOKEN_NAME), true, anyLookaheadIndex);
 							/// Если при пропуске текста произошла ошибка, прерываем разбор
 							if (token.Type == Grammar.ERROR_TOKEN_TYPE)
 								break;
@@ -227,7 +239,7 @@ namespace Land.Core.Parsing.LR
 							}
 							}
 						));
-						token = ErrorRecovery();
+						token = ErrorRecovery(anyLookaheadIndex);
 						//d.Stop("ErrorRecovery");
 					}
 					else
@@ -262,14 +274,14 @@ namespace Land.Core.Parsing.LR
 			}
 		}
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private IToken SkipAny(Node anyNode, bool enableRecovery)
+		private IToken SkipAny(Node anyNode, bool enableRecovery, int anyLookaheadIndex)
 		{
 			var nestingCopy = LexingStream.GetPairsState();
 			var token = LexingStream.CurrentToken;
 			var tokenIndex = LexingStream.CurrentIndex;
 			var peekState = StatesStack.Peek();
-			var action = Table[peekState, Grammar.ANY_TOKEN_NAME];
-			var conflict = Table.Conflict(peekState, Grammar.ANY_TOKEN_NAME);
+			var action = Table.GetAction(peekState, anyLookaheadIndex);
+			var conflict = Table.Conflict(peekState, anyLookaheadIndex);
 
 			if (EnableTracing)
 			{
@@ -301,8 +313,8 @@ namespace Land.Core.Parsing.LR
 				SymbolsStack.Push(parentNode);
 				NestingStack.Push(LexingStream.GetPairsCount());
 
-				action = Table[state, Grammar.ANY_TOKEN_NAME];
-				conflict = Table.Conflict(state, Grammar.ANY_TOKEN_NAME);
+				action = Table.GetAction(state, anyLookaheadIndex);
+				conflict = Table.Conflict(state, anyLookaheadIndex);
 			}
 
 			/// Берём опции из нужного вхождения Any
@@ -447,7 +459,7 @@ namespace Land.Core.Parsing.LR
 
 						PotentialErrorMessage = message;
 
-						return ErrorRecovery(stopTokens,
+						return ErrorRecovery(anyLookaheadIndex, stopTokens,
 							anyNode.Arguments.Contains(AnyArgument.Avoid, token.Name) ? token.Name : null);
 					}
 					else
@@ -533,7 +545,7 @@ namespace Land.Core.Parsing.LR
 			}
 		}
 
-		private IToken ErrorRecovery(HashSet<string> stopTokens = null, string avoidedToken = null)
+		private IToken ErrorRecovery(int anyLookaheadIndex, HashSet<string> stopTokens = null, string avoidedToken = null)
 		{
 			// Если восстановление от ошибок отключено на уровне грамматики
 			if (!GrammarObject.Options.IsRecoveryEnabled())
@@ -638,7 +650,7 @@ namespace Land.Core.Parsing.LR
 			while (StatesStack.Count > 0 && (derivationProds.Count == initialDerivationProds.Count
 				|| derivationProds.Except(initialDerivationProds).All(p => !GrammarObject.Options.IsSet(ParsingOption.GROUP_NAME, ParsingOption.RECOVERY, p.Alt[p.Pos]))
 				|| StartsWithAny(previouslyMatched)
-				|| IsUnsafeAny(stopTokens, avoidedToken))
+				|| IsUnsafeAny(anyLookaheadIndex, stopTokens, avoidedToken))
 			);
 
 			if (StatesStack.Count > 0)
@@ -686,7 +698,7 @@ namespace Land.Core.Parsing.LR
 					LexingStream.CurrentToken.Location.Start
 				));*/
 
-				var token = SkipAny(anyNode, false);
+				var token = SkipAny(anyNode, false, anyLookaheadIndex);
 
 				// Если Any успешно пропустили и возобновили разбор,
 				// возвращаем токен, с которого разбор продолжается
@@ -712,7 +724,7 @@ namespace Land.Core.Parsing.LR
 			return subtree.Symbol == Grammar.ANY_TOKEN_NAME;
 		}
 
-		private bool IsUnsafeAny(HashSet<string> oldStopTokens, string avoidedToken)
+		private bool IsUnsafeAny(int anyLookaheadIndex, HashSet<string> oldStopTokens, string avoidedToken)
 		{
 			if (oldStopTokens != null && LexingStream.GetPairsCount() == NestingStack.Peek())
 			{
@@ -721,11 +733,11 @@ namespace Land.Core.Parsing.LR
 					.Select(i => i.Alternative[0].Arguments)
 					.FirstOrDefault();
 
-				/*var nextState = Table[Stack.PeekState(), Grammar.ANY_TOKEN_NAME]
+				/*var nextState = Table.GetAction(Stack.PeekState(), anyLookaheadIndex)
 					.OfType<ShiftAction>().FirstOrDefault()
 					.TargetItemIndex;*/
 
-				Action shift = Table[StatesStack.Peek(), Grammar.ANY_TOKEN_NAME];
+				Action shift = Table.GetAction(StatesStack.Peek(), anyLookaheadIndex);
 
 				return anyArgs.Contains(AnyArgument.Avoid, LexingStream.CurrentToken.Name)
 					|| GetStopTokens(anyArgs, shift.TargetItemIndex).Except(oldStopTokens).Count() == 0
