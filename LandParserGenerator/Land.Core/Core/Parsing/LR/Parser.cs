@@ -38,6 +38,10 @@ namespace Land.Core.Parsing.LR
 		private System.Collections.Generic.HashSet<string> _voidSymbols;
 		private static readonly Node VoidSentinel = new Node("$void");
 
+		// token.Type -> lookaheadIndex cache (stored as idx+1 to use 0 as "unset")
+		private int[] _typeToLookaheadPlus1 = new int[64];
+		private int _anyLookaheadIndex;
+
 
 		public Parser(
 			Grammar g,
@@ -48,6 +52,30 @@ namespace Land.Core.Parsing.LR
 			Table = new TableLR1(g);
 			_voidSymbols = GrammarObject.Options.GetSymbols(NodeOption.GROUP_NAME, NodeOption.VOID);
 			if (_voidSymbols != null && _voidSymbols.Count == 0) _voidSymbols = null;
+			_anyLookaheadIndex = Table.GetLookaheadIndex(Grammar.ANY_TOKEN_NAME);
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private int GetLookaheadIndexFast(IToken token)
+		{
+			int type = token.Type;
+			if (type >= 0)
+			{
+				// Ensure capacity
+				if (type >= _typeToLookaheadPlus1.Length)
+					Array.Resize(ref _typeToLookaheadPlus1, type + 32);
+
+				int cached = _typeToLookaheadPlus1[type];
+				if (cached != 0)
+					return cached - 1;
+
+				int idx = Table.GetLookaheadIndex(token.Name);
+				_typeToLookaheadPlus1[type] = idx + 1;
+				return idx;
+			}
+
+			// Negative types (EOF/Any/Error stubs) are rare: fall back to name.
+			return Table.GetLookaheadIndex(token.Name);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -122,7 +150,8 @@ namespace Land.Core.Parsing.LR
 
 					//d.Start();
 					//d.Stop("cnt");
-					var action = Table[currentState, token.Name];
+					var lookaheadIndex = GetLookaheadIndexFast(token);
+					var action = Table.GetAction(currentState, lookaheadIndex);
 					if (action != null)
 					{
 						if (action.ActionType == 0 && action.Balanced && GrammarObject.PairsLeftManual.ContainsKey(token.Name))
@@ -173,8 +202,10 @@ namespace Land.Core.Parsing.LR
 							}
 
 							var tokenNode = new Node(token.Name);
-							tokenNode.SetValue(token.Text);
-							tokenNode.SetLocation(token.Location.Start, token.Location.End);
+							// Avoid params-array allocation per token
+							tokenNode.SetValueSingle(token.Text);
+							// Reuse token SegmentLocation instance (no new SegmentLocation per shift)
+							tokenNode.SetLocation(token.Location);
 
 							/// Вносим в стек новое состояние
 							SymbolsStack.Push(tokenNode);
@@ -334,8 +365,8 @@ namespace Land.Core.Parsing.LR
 			var token = LexingStream.CurrentToken;
 			var tokenIndex = LexingStream.CurrentIndex;
 			var peekState = StatesStack.Peek();
-			var action = Table[peekState, Grammar.ANY_TOKEN_NAME];
-			var conflict = Table.Conflict(peekState, Grammar.ANY_TOKEN_NAME);
+			var action = Table.GetAction(peekState, _anyLookaheadIndex);
+			var conflict = Table.Conflict(peekState, _anyLookaheadIndex);
 
 			if (EnableTracing)
 			{
@@ -400,8 +431,8 @@ namespace Land.Core.Parsing.LR
 				SymbolsStack.Push(lhsIsVoid ? VoidSentinel : parentNode);
 				NestingStack.Push(LexingStream.GetPairsCount());
 
-				action = Table[state, Grammar.ANY_TOKEN_NAME];
-				conflict = Table.Conflict(state, Grammar.ANY_TOKEN_NAME);
+				action = Table.GetAction(state, _anyLookaheadIndex);
+				conflict = Table.Conflict(state, _anyLookaheadIndex);
 			}
 
 			/// Берём опции из нужного вхождения Any
